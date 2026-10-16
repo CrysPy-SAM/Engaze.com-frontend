@@ -241,7 +241,7 @@ function RandomVideoPage() {
 
         const socket = io(server, {
             auth: { token: authToken },
-            transports: ["websocket"],
+            transports: ["websocket", "polling"],
         });
         socketRef.current = socket;
 
