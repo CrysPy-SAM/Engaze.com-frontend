@@ -4,6 +4,8 @@ import io from "socket.io-client";
 import withAuth from "../utils/withAuth";
 import { AuthContext } from "../contexts/AuthContext";
 import server from "../environment";
+import Navbar from "../components/Navbar";
+import { BRAND_COLORS } from "../theme";
 import "../App.css";
 import {
     Avatar,
@@ -12,6 +14,7 @@ import {
     Button,
     CircularProgress,
     IconButton,
+    InputAdornment,
     List,
     ListItem,
     ListItemAvatar,
@@ -21,20 +24,21 @@ import {
     Skeleton,
     Stack,
     TextField,
+    Tooltip,
     Typography,
     useMediaQuery,
     useTheme,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import WhatshotIcon from "@mui/icons-material/Whatshot";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import VideocamIcon from "@mui/icons-material/Videocam";
-import PersonIcon from "@mui/icons-material/Person";
-import HomeIcon from "@mui/icons-material/Home";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import DoneIcon from "@mui/icons-material/Done";
 import WifiOffIcon from "@mui/icons-material/WifiOff";
+import SearchIcon from "@mui/icons-material/Search";
+import ForumIcon from "@mui/icons-material/Forum";
+import SparklesIcon from "@mui/icons-material/AutoAwesome";
 
 function ChatPage() {
     const navigate = useNavigate();
@@ -50,7 +54,6 @@ function ChatPage() {
         getOrCreateConversationByMatch,
         getConversationMessages,
         markConversationRead,
-        handleLogout,
     } = useContext(AuthContext);
 
     // State
@@ -58,6 +61,7 @@ function ChatPage() {
     const [activeConversation, setActiveConversation] = useState(null);
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
     const [loadingConversations, setLoadingConversations] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [sending, setSending] = useState(false);
@@ -92,7 +96,6 @@ function ChatPage() {
 
         socket.on("connect", () => {
             setIsConnected(true);
-            // Re-join active conversation room if reconnecting
             if (activeConvRef.current?._id) {
                 socket.emit("chat:join", { conversationId: activeConvRef.current._id });
             }
@@ -191,7 +194,6 @@ function ChatPage() {
                     setActiveConversation(targetConv);
                     setMobileShowChat(true);
 
-                    // If not in list, add it
                     if (!convList.some((c) => c._id === targetConv._id)) {
                         setConversations([targetConv, ...convList]);
                     }
@@ -244,7 +246,6 @@ function ChatPage() {
                     setMessages(data.messages);
                     setTimeout(scrollToBottom, 100);
                 }
-                // Mark as read in DB and update local counter
                 await markConversationRead(convId);
                 setConversations((prev) =>
                     prev.map((c) => (c._id === convId ? { ...c, unreadCount: 0 } : c))
@@ -289,7 +290,6 @@ function ChatPage() {
         setTimeout(scrollToBottom, 50);
 
         try {
-            // Send via Socket.io with acknowledgement
             if (socketRef.current?.connected) {
                 socketRef.current.emit(
                     "chat:send",
@@ -310,7 +310,6 @@ function ChatPage() {
                     }
                 );
             } else {
-                // REST API Fallback
                 const response = await fetch(`${server}/api/v1/conversations/${convId}/messages`, {
                     method: "POST",
                     headers: {
@@ -344,83 +343,35 @@ function ChatPage() {
         return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     };
 
-    return (
-        <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", bgcolor: "#f0f2f5" }}>
-            {/* Top Navigation Bar */}
-            <Box
-                sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    px: { xs: 2, md: 4 },
-                    py: 1.5,
-                    backgroundColor: "#ffffff",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.06)",
-                    zIndex: 10,
-                }}
-            >
-                <Typography
-                    variant="h6"
-                    component="h1"
-                    sx={{
-                        fontWeight: 700,
-                        color: "#FF9839",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                    }}
-                    onClick={() => navigate("/home")}
-                >
-                    <WhatshotIcon sx={{ color: "#FF9839" }} /> ENGAZE.com
-                </Typography>
+    // Filter conversations by search term
+    const filteredConversations = conversations.filter((c) => {
+        if (!searchTerm) return true;
+        const name = c.otherParticipant?.name?.toLowerCase() || "";
+        const username = c.otherParticipant?.username?.toLowerCase() || "";
+        const term = searchTerm.toLowerCase();
+        return name.includes(term) || username.includes(term);
+    });
 
-                <Stack direction="row" spacing={1} alignItems="center">
-                    <Button
-                        startIcon={<WhatshotIcon />}
-                        onClick={() => navigate("/discovery")}
-                        sx={{ color: "#333", textTransform: "none" }}
-                    >
-                        Discovery
-                    </Button>
-                    <Button
-                        startIcon={<FavoriteIcon />}
-                        onClick={() => navigate("/matches")}
-                        sx={{ color: "#333", textTransform: "none" }}
-                    >
-                        Matches
-                    </Button>
-                    <Button
-                        startIcon={<VideocamIcon />}
-                        onClick={() => navigate("/random-video")}
-                        sx={{ color: "#FF9839", fontWeight: 700, textTransform: "none" }}
-                    >
-                        Video Match
-                    </Button>
-                    <IconButton title="Profile" onClick={() => navigate("/profile")} sx={{ color: "#555" }}>
-                        <PersonIcon />
-                    </IconButton>
-                    <IconButton title="Home" onClick={() => navigate("/home")} sx={{ color: "#555" }}>
-                        <HomeIcon />
-                    </IconButton>
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        onClick={handleLogout}
-                        sx={{ textTransform: "none" }}
-                    >
-                        Logout
-                    </Button>
-                </Stack>
-            </Box>
+    return (
+        <Box
+            sx={{
+                height: "100vh",
+                display: "flex",
+                flexDirection: "column",
+                bgcolor: BRAND_COLORS.backgroundDark,
+                overflow: "hidden",
+            }}
+        >
+            {/* Unified Brand Navigation */}
+            <Navbar hideBottomNav={isMobile && mobileShowChat} />
 
             {/* Offline warning banner */}
             {!isConnected && (
                 <Box
                     sx={{
-                        bgcolor: "#fff3e0",
-                        py: 0.5,
+                        bgcolor: "rgba(245, 158, 11, 0.15)",
+                        borderBottom: "1px solid rgba(245, 158, 11, 0.3)",
+                        py: 0.6,
                         px: 2,
                         display: "flex",
                         alignItems: "center",
@@ -428,8 +379,8 @@ function ChatPage() {
                         gap: 1,
                     }}
                 >
-                    <WifiOffIcon sx={{ fontSize: 16, color: "#e65100" }} />
-                    <Typography variant="caption" sx={{ color: "#e65100", fontWeight: 600 }}>
+                    <WifiOffIcon sx={{ fontSize: 16, color: "#F59E0B" }} />
+                    <Typography variant="caption" sx={{ color: "#F59E0B", fontWeight: 600 }}>
                         Reconnecting to live chat server... Messages will still send via HTTP fallback.
                     </Typography>
                 </Box>
@@ -440,71 +391,150 @@ function ChatPage() {
                 {/* LEFT COLUMN: Conversations Sidebar */}
                 <Box
                     sx={{
-                        width: { xs: "100%", md: 360 },
-                        bgcolor: "#ffffff",
-                        borderRight: "1px solid #e0e0e0",
+                        width: { xs: "100%", md: 380 },
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        borderRight: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                         display: {
                             xs: mobileShowChat ? "none" : "flex",
                             md: "flex",
                         },
                         flexDirection: "column",
                         height: "100%",
+                        zIndex: 1,
                     }}
                 >
-                    <Box sx={{ p: 2, borderBottom: "1px solid #f0f0f0" }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                            Conversations
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                            Private chats with your mutual matches
-                        </Typography>
+                    {/* Header & Search */}
+                    <Box sx={{ p: 2.5, pb: 2, borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
+                        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                            <Box>
+                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.01em" }}>
+                                    Messages
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    Private chats with your matches
+                                </Typography>
+                            </Box>
+                            <Box
+                                sx={{
+                                    px: 1.2,
+                                    py: 0.4,
+                                    borderRadius: "12px",
+                                    bgcolor: "rgba(253, 58, 115, 0.12)",
+                                    border: "1px solid rgba(253, 58, 115, 0.25)",
+                                }}
+                            >
+                                <Typography variant="caption" sx={{ fontWeight: 700, color: BRAND_COLORS.coralPink }}>
+                                    {conversations.length} Active
+                                </Typography>
+                            </Box>
+                        </Stack>
+
+                        {/* Search Input */}
+                        <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Search conversation..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon sx={{ color: BRAND_COLORS.textSecondary, fontSize: 18 }} />
+                                    </InputAdornment>
+                                ),
+                            }}
+                            sx={{
+                                "& .MuiOutlinedInput-root": {
+                                    borderRadius: "14px",
+                                    bgcolor: "rgba(255, 255, 255, 0.04)",
+                                    fontSize: "0.88rem",
+                                    "& fieldset": { borderColor: BRAND_COLORS.surfaceDarkBorder },
+                                    "&:hover fieldset": { borderColor: "rgba(255, 255, 255, 0.2)" },
+                                },
+                            }}
+                        />
                     </Box>
 
                     {/* Conversations List */}
-                    <Box sx={{ flex: 1, overflowY: "auto" }}>
+                    <Box
+                        sx={{
+                            flex: 1,
+                            overflowY: "auto",
+                            p: 1.5,
+                            "&::-webkit-scrollbar": { width: 5 },
+                            "&::-webkit-scrollbar-thumb": {
+                                bgcolor: "rgba(255, 255, 255, 0.1)",
+                                borderRadius: 4,
+                            },
+                        }}
+                    >
                         {loadingConversations && (
-                            <Box sx={{ p: 2 }}>
-                                {[1, 2, 3].map((n) => (
+                            <Box sx={{ p: 1.5 }}>
+                                {[1, 2, 3, 4].map((n) => (
                                     <Box key={n} sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                                        <Skeleton variant="circular" width={48} height={48} />
+                                        <Skeleton variant="circular" width={52} height={52} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
                                         <Box sx={{ flex: 1 }}>
-                                            <Skeleton variant="text" width="60%" />
-                                            <Skeleton variant="text" width="80%" />
+                                            <Skeleton variant="text" width="60%" height={24} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
+                                            <Skeleton variant="text" width="85%" height={18} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
                                         </Box>
                                     </Box>
                                 ))}
                             </Box>
                         )}
 
-                        {!loadingConversations && conversations.length === 0 && (
-                            <Box sx={{ p: 4, textAlign: "center", color: "text.secondary" }}>
-                                <FavoriteIcon sx={{ fontSize: 48, color: "#ccc", mb: 1 }} />
-                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                                    No conversations yet
-                                </Typography>
-                                <Typography variant="caption" display="block" sx={{ mb: 2 }}>
-                                    Match with someone in Discovery to start chatting!
-                                </Typography>
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => navigate("/discovery")}
-                                    sx={{ textTransform: "none", color: "#FF9839", borderColor: "#FF9839" }}
+                        {!loadingConversations && filteredConversations.length === 0 && (
+                            <Box sx={{ p: 4, textAlign: "center", color: BRAND_COLORS.textSecondary }}>
+                                <Box
+                                    sx={{
+                                        width: 64,
+                                        height: 64,
+                                        borderRadius: "50%",
+                                        bgcolor: "rgba(253, 58, 115, 0.1)",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        mx: "auto",
+                                        mb: 2,
+                                    }}
                                 >
-                                    Go to Discovery
-                                </Button>
+                                    <ForumIcon sx={{ fontSize: 32, color: BRAND_COLORS.coralPink }} />
+                                </Box>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#FFFFFF", mb: 0.5 }}>
+                                    {searchTerm ? "No results found" : "No conversations yet"}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 2.5, px: 2 }}>
+                                    {searchTerm
+                                        ? "Try searching for a different match name."
+                                        : "Match with amazing people in Discovery to unlock private messaging!"}
+                                </Typography>
+                                {!searchTerm && (
+                                    <Button
+                                        variant="contained"
+                                        size="medium"
+                                        onClick={() => navigate("/discovery")}
+                                        startIcon={<SparklesIcon />}
+                                        sx={{
+                                            background: BRAND_COLORS.primaryGradient,
+                                            borderRadius: "12px",
+                                            boxShadow: "0 6px 20px rgba(253, 58, 115, 0.4)",
+                                        }}
+                                    >
+                                        Explore Discovery
+                                    </Button>
+                                )}
                             </Box>
                         )}
 
-                        {!loadingConversations && conversations.length > 0 && (
-                            <List sx={{ p: 0 }}>
-                                {conversations.map((conv) => {
+                        {!loadingConversations && filteredConversations.length > 0 && (
+                            <List sx={{ p: 0, display: "flex", flexDirection: "column", gap: 0.8 }}>
+                                {filteredConversations.map((conv) => {
                                     const other = conv.otherParticipant;
                                     if (!other) return null;
                                     const isSelected = activeConversation?._id === conv._id;
+                                    const hasUnread = (conv.unreadCount || 0) > 0;
 
                                     return (
-                                        <ListItem key={conv._id} disablePadding divider>
+                                        <ListItem key={conv._id} disablePadding>
                                             <ListItemButton
                                                 selected={isSelected}
                                                 onClick={() => {
@@ -512,10 +542,19 @@ function ChatPage() {
                                                     setMobileShowChat(true);
                                                 }}
                                                 sx={{
-                                                    py: 1.5,
-                                                    "&.Mui-selected": {
-                                                        bgcolor: "#fff3e0",
-                                                        borderLeft: "4px solid #FF9839",
+                                                    p: 1.5,
+                                                    borderRadius: "16px",
+                                                    transition: "all 0.2s ease",
+                                                    bgcolor: isSelected
+                                                        ? "rgba(253, 58, 115, 0.12)"
+                                                        : "transparent",
+                                                    border: isSelected
+                                                        ? `1px solid rgba(253, 58, 115, 0.35)`
+                                                        : `1px solid transparent`,
+                                                    "&:hover": {
+                                                        bgcolor: isSelected
+                                                            ? "rgba(253, 58, 115, 0.16)"
+                                                            : "rgba(255, 255, 255, 0.04)",
                                                     },
                                                 }}
                                             >
@@ -524,21 +563,49 @@ function ChatPage() {
                                                         badgeContent={conv.unreadCount || 0}
                                                         color="error"
                                                         overlap="circular"
+                                                        sx={{
+                                                            "& .MuiBadge-badge": {
+                                                                background: BRAND_COLORS.primaryGradient,
+                                                                color: "#fff",
+                                                                fontWeight: 800,
+                                                                fontSize: "0.72rem",
+                                                            },
+                                                        }}
                                                     >
                                                         <Avatar
                                                             src={other.photos?.[0]}
                                                             alt={other.name}
-                                                            sx={{ width: 48, height: 48 }}
+                                                            sx={{
+                                                                width: 52,
+                                                                height: 52,
+                                                                border: isSelected
+                                                                    ? `2px solid ${BRAND_COLORS.coralPink}`
+                                                                    : `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                                            }}
                                                         />
                                                     </Badge>
                                                 </ListItemAvatar>
                                                 <ListItemText
                                                     primary={
-                                                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                                                            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.3 }}>
+                                                            <Typography
+                                                                variant="subtitle2"
+                                                                sx={{
+                                                                    fontWeight: hasUnread ? 800 : 600,
+                                                                    color: isSelected ? "#FFFFFF" : hasUnread ? "#FFFFFF" : BRAND_COLORS.textSecondary,
+                                                                    fontSize: "0.95rem",
+                                                                }}
+                                                            >
                                                                 {other.name}
                                                             </Typography>
-                                                            <Typography variant="caption" color="text.secondary">
+                                                            <Typography
+                                                                variant="caption"
+                                                                sx={{
+                                                                    color: hasUnread ? BRAND_COLORS.coralPink : BRAND_COLORS.textSecondary,
+                                                                    fontWeight: hasUnread ? 700 : 400,
+                                                                    fontSize: "0.72rem",
+                                                                }}
+                                                            >
                                                                 {formatTime(conv.lastMessageAt)}
                                                             </Typography>
                                                         </Box>
@@ -546,11 +613,11 @@ function ChatPage() {
                                                     secondary={
                                                         <Typography
                                                             variant="body2"
-                                                            color="text.secondary"
                                                             noWrap
                                                             sx={{
-                                                                fontWeight: conv.unreadCount > 0 ? 600 : 400,
-                                                                color: conv.unreadCount > 0 ? "#111" : "text.secondary",
+                                                                fontWeight: hasUnread ? 600 : 400,
+                                                                color: hasUnread ? "#FFFFFF" : BRAND_COLORS.textSecondary,
+                                                                fontSize: "0.84rem",
                                                             }}
                                                         >
                                                             {conv.lastMessage?.content || "Say hello! 👋"}
@@ -576,7 +643,7 @@ function ChatPage() {
                         },
                         flexDirection: "column",
                         height: "100%",
-                        bgcolor: "#ffffff",
+                        bgcolor: BRAND_COLORS.backgroundDark,
                     }}
                 >
                     {activeConversation && otherUser ? (
@@ -584,21 +651,21 @@ function ChatPage() {
                             {/* Chat Header */}
                             <Box
                                 sx={{
-                                    p: 1.5,
-                                    px: 2,
-                                    borderBottom: "1px solid #e0e0e0",
+                                    p: 1.8,
+                                    px: { xs: 2, md: 3 },
+                                    borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "space-between",
-                                    bgcolor: "#ffffff",
+                                    bgcolor: BRAND_COLORS.surfaceDark,
                                 }}
                             >
-                                <Stack direction="row" spacing={1.5} alignItems="center">
+                                <Stack direction="row" spacing={1.8} alignItems="center">
                                     {isMobile && (
                                         <IconButton
                                             edge="start"
                                             onClick={() => setMobileShowChat(false)}
-                                            sx={{ mr: 0.5 }}
+                                            sx={{ color: "#FFFFFF", mr: 0.5 }}
                                         >
                                             <ArrowBackIcon />
                                         </IconButton>
@@ -606,17 +673,39 @@ function ChatPage() {
                                     <Avatar
                                         src={otherUser.photos?.[0]}
                                         alt={otherUser.name}
-                                        sx={{ width: 42, height: 42 }}
+                                        sx={{
+                                            width: 46,
+                                            height: 46,
+                                            border: `2px solid ${BRAND_COLORS.coralPink}`,
+                                        }}
                                     />
                                     <Box>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#FFFFFF", lineHeight: 1.2 }}>
                                             {otherUser.name}
                                             {otherUser.age ? `, ${otherUser.age}` : ""}
                                         </Typography>
-                                        <Typography variant="caption" color="text.secondary">
+                                        <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
                                             @{otherUser.username}
                                         </Typography>
                                     </Box>
+                                </Stack>
+
+                                <Stack direction="row" spacing={1}>
+                                    <Tooltip title="Start Random Video Match">
+                                        <IconButton
+                                            onClick={() => navigate("/random-video")}
+                                            sx={{
+                                                bgcolor: "rgba(139, 92, 246, 0.15)",
+                                                border: "1px solid rgba(139, 92, 246, 0.3)",
+                                                color: BRAND_COLORS.violet,
+                                                "&:hover": {
+                                                    bgcolor: "rgba(139, 92, 246, 0.25)",
+                                                },
+                                            }}
+                                        >
+                                            <VideocamIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
                                 </Stack>
                             </Box>
 
@@ -624,17 +713,22 @@ function ChatPage() {
                             <Box
                                 sx={{
                                     flex: 1,
-                                    p: 2,
+                                    p: { xs: 2, md: 3 },
                                     overflowY: "auto",
-                                    bgcolor: "#fafafa",
+                                    bgcolor: "#0A0C16",
                                     display: "flex",
                                     flexDirection: "column",
                                     gap: 1.5,
+                                    "&::-webkit-scrollbar": { width: 6 },
+                                    "&::-webkit-scrollbar-thumb": {
+                                        bgcolor: "rgba(255, 255, 255, 0.1)",
+                                        borderRadius: 4,
+                                    },
                                 }}
                             >
                                 {loadingMessages && (
                                     <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-                                        <CircularProgress size={32} />
+                                        <CircularProgress size={32} sx={{ color: BRAND_COLORS.coralPink }} />
                                     </Box>
                                 )}
 
@@ -643,25 +737,44 @@ function ChatPage() {
                                         sx={{
                                             m: "auto",
                                             textAlign: "center",
-                                            p: 3,
-                                            maxWidth: 320,
+                                            p: 4,
+                                            maxWidth: 380,
+                                            bgcolor: BRAND_COLORS.surfaceDark,
+                                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                            borderRadius: "24px",
+                                            boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
                                         }}
                                     >
                                         <Avatar
                                             src={otherUser.photos?.[0]}
-                                            sx={{ width: 72, height: 72, mx: "auto", mb: 2 }}
+                                            sx={{
+                                                width: 80,
+                                                height: 80,
+                                                mx: "auto",
+                                                mb: 2,
+                                                border: `3px solid ${BRAND_COLORS.coralPink}`,
+                                                boxShadow: "0 0 25px rgba(253, 58, 115, 0.3)",
+                                            }}
                                         />
-                                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                            You matched with {otherUser.name}!
+                                        <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF" }}>
+                                            You and {otherUser.name} matched!
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
-                                            Break the ice and send the first message.
+                                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mt: 1, mb: 3 }}>
+                                            Don't wait for the right moment. Break the ice and send the first message!
                                         </Typography>
                                         <Button
                                             variant="outlined"
-                                            size="small"
+                                            size="medium"
                                             onClick={() => setInputText("Hey! How's your week going? 👋")}
-                                            sx={{ borderRadius: 4, textTransform: "none" }}
+                                            sx={{
+                                                borderRadius: "9999px",
+                                                color: BRAND_COLORS.coralPink,
+                                                borderColor: BRAND_COLORS.coralPink,
+                                                "&:hover": {
+                                                    borderColor: BRAND_COLORS.sunsetOrange,
+                                                    bgcolor: "rgba(253, 58, 115, 0.08)",
+                                                },
+                                            }}
                                         >
                                             "Hey! How's your week going? 👋"
                                         </Button>
@@ -685,20 +798,26 @@ function ChatPage() {
                                                 }}
                                             >
                                                 <Paper
-                                                    elevation={1}
+                                                    elevation={2}
                                                     sx={{
-                                                        p: 1.5,
-                                                        px: 2,
-                                                        borderRadius: 3,
-                                                        maxWidth: { xs: "82%", sm: "70%" },
-                                                        bgcolor: isMine ? "#FF9839" : "#ffffff",
-                                                        color: isMine ? "#ffffff" : "#222222",
-                                                        borderTopRightRadius: isMine ? 2 : 12,
-                                                        borderTopLeftRadius: !isMine ? 2 : 12,
+                                                        p: 1.6,
+                                                        px: 2.2,
+                                                        borderRadius: "20px",
+                                                        maxWidth: { xs: "84%", sm: "68%" },
+                                                        background: isMine
+                                                            ? BRAND_COLORS.primaryGradient
+                                                            : BRAND_COLORS.surfaceDarkCard,
+                                                        color: "#FFFFFF",
+                                                        borderTopRightRadius: isMine ? "4px" : "20px",
+                                                        borderTopLeftRadius: !isMine ? "4px" : "20px",
+                                                        border: isMine ? "none" : `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                                         wordBreak: "break-word",
+                                                        boxShadow: isMine
+                                                            ? "0 4px 15px rgba(253, 58, 115, 0.25)"
+                                                            : "0 4px 12px rgba(0,0,0,0.2)",
                                                     }}
                                                 >
-                                                    <Typography variant="body1" sx={{ fontSize: "0.95rem" }}>
+                                                    <Typography variant="body1" sx={{ fontSize: "0.95rem", lineHeight: 1.45, fontWeight: 400 }}>
                                                         {msg.content}
                                                     </Typography>
                                                 </Paper>
@@ -707,16 +826,16 @@ function ChatPage() {
                                                     direction="row"
                                                     spacing={0.5}
                                                     alignItems="center"
-                                                    sx={{ mt: 0.3, px: 0.5 }}
+                                                    sx={{ mt: 0.4, px: 0.6 }}
                                                 >
-                                                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.72rem" }}>
+                                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "0.72rem" }}>
                                                         {formatTime(msg.createdAt)}
                                                     </Typography>
                                                     {isMine && (
                                                         isRead ? (
-                                                            <DoneAllIcon sx={{ fontSize: 14, color: "#1976d2" }} />
+                                                            <DoneAllIcon sx={{ fontSize: 14, color: "#60A5FA" }} />
                                                         ) : (
-                                                            <DoneIcon sx={{ fontSize: 14, color: "#999999" }} />
+                                                            <DoneIcon sx={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }} />
                                                         )
                                                     )}
                                                 </Stack>
@@ -731,12 +850,12 @@ function ChatPage() {
                                 component="form"
                                 onSubmit={handleSendMessage}
                                 sx={{
-                                    p: 1.5,
-                                    borderTop: "1px solid #e0e0e0",
-                                    bgcolor: "#ffffff",
+                                    p: 2,
+                                    borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                    bgcolor: BRAND_COLORS.surfaceDark,
                                     display: "flex",
                                     alignItems: "center",
-                                    gap: 1,
+                                    gap: 1.5,
                                 }}
                             >
                                 <TextField
@@ -754,20 +873,30 @@ function ChatPage() {
                                     }}
                                     sx={{
                                         "& .MuiOutlinedInput-root": {
-                                            borderRadius: 4,
+                                            borderRadius: "9999px",
+                                            bgcolor: "rgba(255, 255, 255, 0.05)",
+                                            fontSize: "0.92rem",
+                                            "& fieldset": { borderColor: BRAND_COLORS.surfaceDarkBorder },
+                                            "&:hover fieldset": { borderColor: "rgba(255, 255, 255, 0.2)" },
                                         },
                                     }}
                                 />
                                 <IconButton
                                     type="submit"
-                                    color="primary"
                                     disabled={!inputText.trim() || sending}
                                     sx={{
-                                        bgcolor: "#FF9839",
+                                        background: BRAND_COLORS.primaryGradient,
                                         color: "#ffffff",
-                                        "&:hover": { bgcolor: "#e68933" },
-                                        "&.Mui-disabled": { bgcolor: "#f0f0f0", color: "#bbb" },
-                                        p: 1.2,
+                                        "&:hover": {
+                                            opacity: 0.9,
+                                        },
+                                        "&.Mui-disabled": {
+                                            bgcolor: "rgba(255, 255, 255, 0.06)",
+                                            color: "rgba(255, 255, 255, 0.2)",
+                                        },
+                                        width: 44,
+                                        height: 44,
+                                        boxShadow: "0 4px 15px rgba(253, 58, 115, 0.3)",
                                     }}
                                 >
                                     {sending ? <CircularProgress size={20} color="inherit" /> : <SendIcon fontSize="small" />}
@@ -782,16 +911,30 @@ function ChatPage() {
                                 flexDirection: "column",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                color: "text.secondary",
                                 p: 3,
+                                textAlign: "center",
                             }}
                         >
-                            <FavoriteIcon sx={{ fontSize: 64, color: "#e0e0e0", mb: 2 }} />
-                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                            <Box
+                                sx={{
+                                    width: 80,
+                                    height: 80,
+                                    borderRadius: "50%",
+                                    bgcolor: "rgba(253, 58, 115, 0.08)",
+                                    border: "1px solid rgba(253, 58, 115, 0.2)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mb: 2.5,
+                                }}
+                            >
+                                <FavoriteIcon sx={{ fontSize: 40, color: BRAND_COLORS.coralPink }} />
+                            </Box>
+                            <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 1 }}>
                                 Select a conversation
                             </Typography>
-                            <Typography variant="body2">
-                                Choose someone from the list to start messaging.
+                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, maxWidth: 360 }}>
+                                Choose a match from your list on the left to start exchanging messages.
                             </Typography>
                         </Box>
                     )}

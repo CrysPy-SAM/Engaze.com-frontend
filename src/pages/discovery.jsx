@@ -2,25 +2,26 @@ import React, { useContext, useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import withAuth from "../utils/withAuth";
 import { AuthContext } from "../contexts/AuthContext";
+import Navbar from "../components/Navbar";
+import { BRAND_COLORS } from "../theme";
 import "../App.css";
 import {
     Avatar,
     Box,
     Button,
     Card,
-    CardContent,
     Chip,
     Container,
     Dialog,
-    DialogActions,
     DialogContent,
-    DialogTitle,
+    Fade,
     IconButton,
     Paper,
     Skeleton,
     Snackbar,
     Alert,
     Stack,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -29,24 +30,25 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
-import PersonIcon from "@mui/icons-material/Person";
-import ForumIcon from "@mui/icons-material/Forum";
-import VideocamIcon from "@mui/icons-material/Videocam";
-import HomeIcon from "@mui/icons-material/Home";
-import CelebrationIcon from "@mui/icons-material/Celebration";
+import ChatIcon from "@mui/icons-material/Chat";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import VerifiedIcon from "@mui/icons-material/Verified";
+import TuneIcon from "@mui/icons-material/Tune";
 
 function DiscoveryPage() {
     const navigate = useNavigate();
-    const { userData, getDiscovery, sendSwipe, handleLogout } = useContext(AuthContext);
+    const { userData, getDiscovery, sendSwipe } = useContext(AuthContext);
 
     const [profiles, setProfiles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
     const [loading, setLoading] = useState(true);
     const [swiping, setSwiping] = useState(false);
+    const [swipeAnimation, setSwipeAnimation] = useState(""); // 'swipe-left-exit' | 'swipe-right-exit'
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [error, setError] = useState("");
+    const [showFullBio, setShowFullBio] = useState(false);
 
     // Match celebration modal state
     const [matchModalOpen, setMatchModalOpen] = useState(false);
@@ -62,17 +64,20 @@ function DiscoveryPage() {
         setLoading(true);
         setError("");
         try {
-            const data = await getDiscovery(pageNum, 10);
+            const data = await getDiscovery(pageNum, 15);
             if (data && data.profiles) {
-                setProfiles(data.profiles);
-                setCurrentIndex(0);
-                setCurrentPhotoIndex(0);
+                if (pageNum === 1) {
+                    setProfiles(data.profiles);
+                    setCurrentIndex(0);
+                } else {
+                    setProfiles((prev) => [...prev, ...data.profiles]);
+                }
                 setHasMore(pageNum < data.totalPages);
                 setPage(pageNum);
             }
         } catch (err) {
             console.error("Discovery fetch error:", err);
-            setError(err.message || "Failed to load discovery profiles.");
+            setError(err.message || "Failed to load profiles. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -82,465 +87,532 @@ function DiscoveryPage() {
         fetchProfiles(1);
     }, [fetchProfiles]);
 
-    const currentProfile = profiles[currentIndex];
+    const currentProfile = profiles[currentIndex] || null;
+    const photos = currentProfile?.photos && currentProfile.photos.length > 0
+        ? currentProfile.photos
+        : ["/logo192.png"];
 
-    // Handle Swiping action (like or pass)
+    // Reset photo index and bio toggle when active profile changes
+    useEffect(() => {
+        setCurrentPhotoIndex(0);
+        setShowFullBio(false);
+        setSwipeAnimation("");
+    }, [currentIndex]);
+
+    // Check if next page of profiles should be preloaded
+    useEffect(() => {
+        if (profiles.length > 0 && currentIndex >= profiles.length - 3 && hasMore && !loading) {
+            fetchProfiles(page + 1);
+        }
+    }, [currentIndex, profiles.length, hasMore, loading, page, fetchProfiles]);
+
+    // Handle Swipe (Like or Pass)
     const handleSwipeAction = useCallback(async (action) => {
         if (!currentProfile || swiping) return;
 
         setSwiping(true);
+        setSwipeAnimation(action === "like" ? "swipe-right-exit" : "swipe-left-exit");
+
         try {
             const targetId = currentProfile._id;
             const res = await sendSwipe(targetId, action);
 
-            if (res.isMatch) {
-                // Mutual match found! Open celebration modal
-                setMatchedUserData(res.match?.matchedUser || currentProfile);
+            // Check if mutual match occurred
+            if (res && res.isMatch && res.match) {
+                setMatchedUserData(res.match.matchedUser || currentProfile);
                 setMatchModalOpen(true);
-            } else if (action === "like") {
-                setToastMessage(`Liked ${currentProfile.name}!`);
-                setToastSeverity("success");
-                setOpenToast(true);
             }
 
-            // Move to next profile
-            if (currentIndex + 1 < profiles.length) {
+            // Advance card after exit animation finishes
+            setTimeout(() => {
                 setCurrentIndex((prev) => prev + 1);
-                setCurrentPhotoIndex(0);
-            } else if (hasMore) {
-                // Fetch next page
-                await fetchProfiles(page + 1);
-            } else {
-                // Reached end of current deck
-                setCurrentIndex(profiles.length);
-            }
+                setSwipeAnimation("");
+                setSwiping(false);
+            }, 300);
         } catch (err) {
-            console.error("Swipe error:", err);
-            setToastMessage(err.message || "Failed to record swipe.");
+            console.error("Swipe submission error:", err);
+            setToastMessage(err.message || "Failed to submit swipe. Please retry.");
             setToastSeverity("error");
             setOpenToast(true);
-        } finally {
+            setSwipeAnimation("");
             setSwiping(false);
         }
-    }, [currentProfile, swiping, sendSwipe, currentIndex, profiles.length, hasMore, fetchProfiles, page]);
+    }, [currentProfile, swiping, sendSwipe]);
 
-    // Keyboard navigation (ArrowLeft = Pass, ArrowRight = Like)
+    // Photo gallery controls
+    const handleNextPhoto = useCallback((e) => {
+        if (e) e.stopPropagation();
+        if (photos.length > 1) {
+            setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
+        }
+    }, [photos.length]);
+
+    const handlePrevPhoto = useCallback((e) => {
+        if (e) e.stopPropagation();
+        if (photos.length > 1) {
+            setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
+        }
+    }, [photos.length]);
+
+    // Keyboard navigation (Tinder standard: ArrowLeft = Pass, ArrowRight = Like, Space/Up = Next Photo)
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (matchModalOpen || loading || !currentProfile) return;
+            if (matchModalOpen || loading || !currentProfile || swiping) return;
             if (e.key === "ArrowLeft") {
                 handleSwipeAction("pass");
             } else if (e.key === "ArrowRight") {
                 handleSwipeAction("like");
+            } else if (e.key === " " || e.key === "ArrowUp") {
+                e.preventDefault();
+                handleNextPhoto();
             }
         };
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [currentProfile, loading, matchModalOpen, handleSwipeAction]);
-
-    // Handle multiple photos pagination
-    const photos = currentProfile?.photos || [];
-    const handleNextPhoto = (e) => {
-        e.stopPropagation();
-        if (photos.length > 1) {
-            setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
-        }
-    };
-
-    const handlePrevPhoto = (e) => {
-        e.stopPropagation();
-        if (photos.length > 1) {
-            setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
-        }
-    };
+    }, [matchModalOpen, loading, currentProfile, swiping, handleSwipeAction, handleNextPhoto]);
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#f4f6f8", pb: 6 }}>
-            {/* Navigation Header */}
-            <Box
-                sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    px: { xs: 2, md: 4 },
-                    py: 2,
-                    backgroundColor: "#ffffff",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                }}
-            >
-                <Typography
-                    variant="h5"
-                    component="h1"
-                    sx={{
-                        fontWeight: 700,
-                        color: "#FF9839",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                    }}
-                    onClick={() => navigate("/home")}
-                >
-                    <WhatshotIcon sx={{ color: "#FF9839", fontSize: 28 }} /> ENGAZE.com
-                </Typography>
+        <Box sx={{ minHeight: "100vh", backgroundColor: BRAND_COLORS.bgDark, pb: { xs: 10, md: 6 } }}>
+            {/* Unified Brand Navigation */}
+            <Navbar />
 
-                <Stack direction="row" spacing={1} alignItems="center">
-                    <Button
-                        variant="contained"
-                        size="small"
-                        sx={{
-                            backgroundColor: "#FF9839",
-                            "&:hover": { backgroundColor: "#e68933" },
-                            textTransform: "none",
-                            borderRadius: 4,
-                            px: 2,
-                        }}
-                    >
-                        Discovery
-                    </Button>
-                    <Button
-                        startIcon={<FavoriteIcon />}
-                        onClick={() => navigate("/matches")}
-                        sx={{ color: "#333", textTransform: "none" }}
-                    >
-                        Matches
-                    </Button>
-                    <Button
-                        startIcon={<ForumIcon />}
-                        onClick={() => navigate("/chat")}
-                        sx={{ color: "#333", textTransform: "none" }}
-                    >
-                        Chat
-                    </Button>
-                    <Button
-                        startIcon={<VideocamIcon />}
-                        onClick={() => navigate("/random-video")}
-                        sx={{ color: "#FF9839", fontWeight: 700, textTransform: "none" }}
-                    >
-                        Video Match
-                    </Button>
-                    <IconButton
-                        title="My Profile"
-                        onClick={() => navigate("/profile")}
-                        sx={{ color: "#555" }}
-                    >
-                        <PersonIcon />
-                    </IconButton>
-                    <IconButton
-                        title="Home"
-                        onClick={() => navigate("/home")}
-                        sx={{ color: "#555" }}
-                    >
-                        <HomeIcon />
-                    </IconButton>
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        onClick={handleLogout}
-                        sx={{ textTransform: "none" }}
-                    >
-                        Logout
-                    </Button>
-                </Stack>
-            </Box>
-
-            <Container maxWidth="sm" sx={{ mt: 4 }}>
-                {/* 1. LOADING STATE */}
-                {loading && (
-                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mt: 4 }}>
-                        <Skeleton variant="rounded" width="100%" height={450} sx={{ borderRadius: 4, mb: 2 }} />
-                        <Skeleton variant="text" width="60%" height={40} />
-                        <Skeleton variant="text" width="90%" height={60} />
+            <Container maxWidth="sm" sx={{ mt: { xs: 2, md: 3 }, px: { xs: 1.5, sm: 3 } }}>
+                {/* 1. LOADING SKELETON */}
+                {loading && profiles.length === 0 && (
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                        <Skeleton
+                            variant="rounded"
+                            width="100%"
+                            height={580}
+                            sx={{ borderRadius: "28px", backgroundColor: "rgba(255,255,255,0.05)" }}
+                        />
+                        <Stack direction="row" spacing={3} sx={{ mt: 3 }}>
+                            <Skeleton variant="circular" width={68} height={68} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+                            <Skeleton variant="circular" width={52} height={52} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+                            <Skeleton variant="circular" width={76} height={76} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+                        </Stack>
                     </Box>
                 )}
 
                 {/* 2. ERROR STATE */}
                 {!loading && error && (
-                    <Paper elevation={2} sx={{ p: 4, textAlign: "center", borderRadius: 4, mt: 4 }}>
-                        <Typography variant="h6" color="error" gutterBottom>
-                            Oops! Something went wrong
+                    <Paper
+                        elevation={4}
+                        sx={{
+                            p: 4,
+                            textAlign: "center",
+                            borderRadius: "24px",
+                            mt: 4,
+                            backgroundColor: BRAND_COLORS.surfaceDark,
+                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        }}
+                    >
+                        <Typography variant="h6" color="error" gutterBottom sx={{ fontWeight: 700 }}>
+                            Unable to Load Profiles
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
                             {error}
                         </Typography>
                         <Button
                             variant="contained"
                             startIcon={<RefreshIcon />}
                             onClick={() => fetchProfiles(1)}
-                            sx={{ backgroundColor: "#FF9839", "&:hover": { backgroundColor: "#e68933" } }}
+                            sx={{
+                                background: BRAND_COLORS.primaryGradient,
+                                borderRadius: 9999,
+                                px: 4,
+                            }}
                         >
-                            Retry Loading
+                            Retry
                         </Button>
                     </Paper>
                 )}
 
-                {/* 3. ACTIVE PROFILE CARD */}
+                {/* 3. DATING DISCOVERY PROFILE CARD */}
                 {!loading && !error && currentProfile && currentIndex < profiles.length && (
-                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", position: "relative" }}>
                         <Card
+                            className={swipeAnimation}
                             sx={{
                                 width: "100%",
-                                borderRadius: 4,
+                                height: { xs: 540, sm: 600 },
+                                borderRadius: "28px",
                                 overflow: "hidden",
-                                boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
                                 position: "relative",
-                                bgcolor: "#ffffff",
+                                bgcolor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid rgba(255, 255, 255, 0.1)`,
+                                boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
+                                userSelect: "none",
+                                transition: "transform 0.25s ease, box-shadow 0.25s ease",
                             }}
                         >
-                            {/* Photo Container */}
+                            {/* Main Portrait Photo */}
                             <Box
-                                sx={{
-                                    position: "relative",
-                                    width: "100%",
-                                    height: { xs: 380, sm: 460 },
-                                    backgroundColor: "#1a1a1a",
-                                    userSelect: "none",
+                                component="img"
+                                src={photos[currentPhotoIndex]}
+                                alt={currentProfile.name}
+                                onError={(e) => {
+                                    e.target.src = "/logo192.png";
                                 }}
-                            >
-                                <Box
-                                    component="img"
-                                    src={photos[currentPhotoIndex] || "/logo192.png"}
-                                    alt={currentProfile.name}
-                                    onError={(e) => {
-                                        e.target.src = "/logo192.png";
-                                    }}
-                                    sx={{
-                                        width: "100%",
-                                        height: "100%",
-                                        objectFit: "cover",
-                                    }}
-                                />
+                                sx={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    display: "block",
+                                }}
+                            />
 
-                                {/* Multiple Photos Indicators */}
-                                {photos.length > 1 && (
-                                    <Box
-                                        sx={{
-                                            position: "absolute",
-                                            top: 12,
-                                            left: 12,
-                                            right: 12,
-                                            display: "flex",
-                                            gap: 0.8,
-                                            zIndex: 2,
-                                        }}
-                                    >
-                                        {photos.map((_, idx) => (
-                                            <Box
-                                                key={idx}
-                                                sx={{
-                                                    flex: 1,
-                                                    height: 4,
-                                                    borderRadius: 2,
-                                                    bgcolor: idx === currentPhotoIndex ? "#ffffff" : "rgba(255,255,255,0.4)",
-                                                    transition: "background-color 0.2s ease",
-                                                }}
-                                            />
-                                        ))}
-                                    </Box>
-                                )}
-
-                                {/* Prev / Next Photo Arrow Buttons */}
-                                {photos.length > 1 && (
-                                    <>
-                                        <IconButton
-                                            onClick={handlePrevPhoto}
-                                            sx={{
-                                                position: "absolute",
-                                                left: 8,
-                                                top: "50%",
-                                                transform: "translateY(-50%)",
-                                                bgcolor: "rgba(0,0,0,0.35)",
-                                                color: "white",
-                                                "&:hover": { bgcolor: "rgba(0,0,0,0.6)" },
-                                            }}
-                                        >
-                                            <ArrowBackIosNewIcon fontSize="small" />
-                                        </IconButton>
-                                        <IconButton
-                                            onClick={handleNextPhoto}
-                                            sx={{
-                                                position: "absolute",
-                                                right: 8,
-                                                top: "50%",
-                                                transform: "translateY(-50%)",
-                                                bgcolor: "rgba(0,0,0,0.35)",
-                                                color: "white",
-                                                "&:hover": { bgcolor: "rgba(0,0,0,0.6)" },
-                                            }}
-                                        >
-                                            <ArrowForwardIosIcon fontSize="small" />
-                                        </IconButton>
-                                    </>
-                                )}
-
-                                {/* Gradient Bottom Banner with Name, Age & Gender */}
+                            {/* Top Segmented Story-Style Photo Progress Bars */}
+                            {photos.length > 1 && (
                                 <Box
                                     sx={{
                                         position: "absolute",
-                                        bottom: 0,
-                                        left: 0,
-                                        right: 0,
-                                        p: 3,
-                                        background: "linear-gradient(transparent, rgba(0,0,0,0.85) 75%)",
-                                        color: "white",
+                                        top: 14,
+                                        left: 14,
+                                        right: 14,
+                                        display: "flex",
+                                        gap: 0.8,
+                                        zIndex: 3,
                                     }}
                                 >
-                                    <Typography variant="h4" component="h2" sx={{ fontWeight: 700 }}>
+                                    {photos.map((_, idx) => (
+                                        <Box
+                                            key={idx}
+                                            sx={{
+                                                flex: 1,
+                                                height: 4,
+                                                borderRadius: 2,
+                                                bgcolor: idx === currentPhotoIndex ? "#FFFFFF" : "rgba(255,255,255,0.3)",
+                                                boxShadow: "0 1px 4px rgba(0,0,0,0.4)",
+                                                transition: "background-color 0.2s ease",
+                                            }}
+                                        />
+                                    ))}
+                                </Box>
+                            )}
+
+                            {/* Left / Right Interactive Tap Zones for Photo Navigation */}
+                            <Box
+                                onClick={handlePrevPhoto}
+                                sx={{
+                                    position: "absolute",
+                                    top: 30,
+                                    left: 0,
+                                    width: "40%",
+                                    height: "65%",
+                                    zIndex: 2,
+                                    cursor: photos.length > 1 ? "pointer" : "default",
+                                }}
+                            />
+                            <Box
+                                onClick={handleNextPhoto}
+                                sx={{
+                                    position: "absolute",
+                                    top: 30,
+                                    right: 0,
+                                    width: "40%",
+                                    height: "65%",
+                                    zIndex: 2,
+                                    cursor: photos.length > 1 ? "pointer" : "default",
+                                }}
+                            />
+
+                            {/* Arrow Buttons for Precise Navigation */}
+                            {photos.length > 1 && (
+                                <>
+                                    <IconButton
+                                        onClick={handlePrevPhoto}
+                                        size="small"
+                                        sx={{
+                                            position: "absolute",
+                                            left: 12,
+                                            top: "40%",
+                                            transform: "translateY(-50%)",
+                                            bgcolor: "rgba(11, 13, 23, 0.6)",
+                                            color: "#fff",
+                                            backdropFilter: "blur(8px)",
+                                            zIndex: 4,
+                                            "&:hover": { bgcolor: "rgba(11, 13, 23, 0.9)" },
+                                        }}
+                                    >
+                                        <ArrowBackIosNewIcon fontSize="small" sx={{ ml: 0.5 }} />
+                                    </IconButton>
+                                    <IconButton
+                                        onClick={handleNextPhoto}
+                                        size="small"
+                                        sx={{
+                                            position: "absolute",
+                                            right: 12,
+                                            top: "40%",
+                                            transform: "translateY(-50%)",
+                                            bgcolor: "rgba(11, 13, 23, 0.6)",
+                                            color: "#fff",
+                                            backdropFilter: "blur(8px)",
+                                            zIndex: 4,
+                                            "&:hover": { bgcolor: "rgba(11, 13, 23, 0.9)" },
+                                        }}
+                                    >
+                                        <ArrowForwardIosIcon fontSize="small" />
+                                    </IconButton>
+                                </>
+                            )}
+
+                            {/* Profile Info Overlay with Dark Gradient */}
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    p: { xs: 2.5, sm: 3 },
+                                    pt: 6,
+                                    background: BRAND_COLORS.cardOverlay,
+                                    color: "#FFFFFF",
+                                    zIndex: 3,
+                                }}
+                            >
+                                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+                                    <Typography
+                                        variant="h4"
+                                        sx={{
+                                            fontWeight: 800,
+                                            fontSize: { xs: "1.75rem", sm: "2.1rem" },
+                                            letterSpacing: "-0.02em",
+                                        }}
+                                    >
                                         {currentProfile.name}
                                         {currentProfile.age ? `, ${currentProfile.age}` : ""}
                                     </Typography>
-                                    <Typography variant="subtitle1" sx={{ opacity: 0.9, textTransform: "capitalize" }}>
-                                        {currentProfile.gender || "Not specified"} • @{currentProfile.username}
-                                    </Typography>
-                                </Box>
-                            </Box>
+                                    {currentProfile.isProfileComplete && (
+                                        <VerifiedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 24 }} />
+                                    )}
+                                </Stack>
 
-                            {/* Bio & Interests Section */}
-                            <CardContent sx={{ p: 3 }}>
-                                <Typography variant="body1" sx={{ mb: 2, color: "#333", fontSize: "1.05rem", lineHeight: 1.5 }}>
-                                    {currentProfile.bio || "No bio written yet."}
+                                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+                                    <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.75)", textTransform: "capitalize", fontWeight: 500 }}>
+                                        {currentProfile.gender || "Member"} • @{currentProfile.username}
+                                    </Typography>
+                                </Stack>
+
+                                {/* Bio */}
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: "rgba(255,255,255,0.9)",
+                                        lineHeight: 1.45,
+                                        mb: 1.5,
+                                        display: "-webkit-box",
+                                        WebkitLineClamp: showFullBio ? "unset" : 2,
+                                        WebkitBoxOrient: "vertical",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                    }}
+                                >
+                                    {currentProfile.bio || "Looking for meaningful connections on Engaze."}
                                 </Typography>
 
+                                {/* Interest Badges */}
                                 {currentProfile.interests && currentProfile.interests.length > 0 && (
-                                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
-                                        {currentProfile.interests.map((tag) => (
+                                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
+                                        {currentProfile.interests.slice(0, showFullBio ? undefined : 4).map((tag) => (
                                             <Chip
                                                 key={tag}
                                                 label={tag}
                                                 size="small"
-                                                variant="outlined"
-                                                color="primary"
-                                                sx={{ fontWeight: 500 }}
+                                                sx={{
+                                                    bgcolor: "rgba(253, 58, 115, 0.15)",
+                                                    color: "#fff",
+                                                    border: "1px solid rgba(253, 58, 115, 0.4)",
+                                                    fontSize: "0.75rem",
+                                                    fontWeight: 600,
+                                                }}
                                             />
                                         ))}
+                                        {currentProfile.interests.length > 4 && !showFullBio && (
+                                            <Chip
+                                                label={`+${currentProfile.interests.length - 4}`}
+                                                size="small"
+                                                onClick={() => setShowFullBio(true)}
+                                                sx={{
+                                                    bgcolor: "rgba(255,255,255,0.1)",
+                                                    color: "rgba(255,255,255,0.8)",
+                                                    fontSize: "0.75rem",
+                                                }}
+                                            />
+                                        )}
                                     </Box>
                                 )}
-                            </CardContent>
+                            </Box>
                         </Card>
 
-                        {/* Swipe Action Controls Bar */}
+                        {/* TACTILE LIKE & PASS ACTION BAR */}
                         <Stack
                             direction="row"
-                            spacing={4}
+                            spacing={3}
                             alignItems="center"
                             justifyContent="center"
                             sx={{ mt: 3, mb: 1 }}
                         >
                             {/* Pass Button */}
-                            <IconButton
-                                aria-label="Pass profile (Arrow Left)"
-                                onClick={() => handleSwipeAction("pass")}
-                                disabled={swiping}
-                                sx={{
-                                    width: 68,
-                                    height: 68,
-                                    bgcolor: "#ffffff",
-                                    boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
-                                    border: "2px solid #e0e0e0",
-                                    color: "#d32f2f",
-                                    "&:hover": {
-                                        bgcolor: "#ffebee",
-                                        borderColor: "#d32f2f",
-                                        transform: "scale(1.08)",
-                                    },
-                                    transition: "all 0.2s ease-in-out",
-                                }}
-                            >
-                                <CloseIcon sx={{ fontSize: 36 }} />
-                            </IconButton>
+                            <Tooltip title="Pass (Left Arrow)">
+                                <IconButton
+                                    aria-label="Pass profile (Arrow Left)"
+                                    onClick={() => handleSwipeAction("pass")}
+                                    disabled={swiping}
+                                    sx={{
+                                        width: 68,
+                                        height: 68,
+                                        bgcolor: BRAND_COLORS.surfaceDarkElevated,
+                                        border: `2px solid rgba(239, 68, 68, 0.4)`,
+                                        boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                                        color: BRAND_COLORS.crimson,
+                                        transition: "all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                                        "&:hover": {
+                                            bgcolor: "rgba(239, 68, 68, 0.15)",
+                                            borderColor: BRAND_COLORS.crimson,
+                                            transform: "scale(1.12) rotate(-8deg)",
+                                            boxShadow: "0 10px 28px rgba(239, 68, 68, 0.3)",
+                                        },
+                                        "&:active": {
+                                            transform: "scale(0.95)",
+                                        },
+                                    }}
+                                >
+                                    <CloseIcon sx={{ fontSize: 34, strokeWidth: 2 }} />
+                                </IconButton>
+                            </Tooltip>
+
+                            {/* Info Toggle Button */}
+                            <Tooltip title={showFullBio ? "Collapse Bio" : "Expand Bio"}>
+                                <IconButton
+                                    onClick={() => setShowFullBio((prev) => !prev)}
+                                    size="small"
+                                    sx={{
+                                        width: 48,
+                                        height: 48,
+                                        bgcolor: BRAND_COLORS.surfaceDark,
+                                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                        color: showFullBio ? BRAND_COLORS.coralPink : BRAND_COLORS.textSecondary,
+                                        "&:hover": {
+                                            bgcolor: BRAND_COLORS.surfaceDarkElevated,
+                                            color: "#fff",
+                                            transform: "scale(1.08)",
+                                        },
+                                    }}
+                                >
+                                    <InfoOutlinedIcon fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
 
                             {/* Like Button */}
-                            <IconButton
-                                aria-label="Like profile (Arrow Right)"
-                                onClick={() => handleSwipeAction("like")}
-                                disabled={swiping}
-                                sx={{
-                                    width: 76,
-                                    height: 76,
-                                    bgcolor: "#FF9839",
-                                    boxShadow: "0 8px 20px rgba(255,152,57,0.4)",
-                                    color: "#ffffff",
-                                    "&:hover": {
-                                        bgcolor: "#e68933",
-                                        transform: "scale(1.08)",
-                                    },
-                                    transition: "all 0.2s ease-in-out",
-                                }}
-                            >
-                                <FavoriteIcon sx={{ fontSize: 40 }} />
-                            </IconButton>
+                            <Tooltip title="Like (Right Arrow)">
+                                <IconButton
+                                    aria-label="Like profile (Arrow Right)"
+                                    onClick={() => handleSwipeAction("like")}
+                                    disabled={swiping}
+                                    sx={{
+                                        width: 76,
+                                        height: 76,
+                                        background: BRAND_COLORS.primaryGradient,
+                                        color: "#FFFFFF",
+                                        boxShadow: "0 10px 30px rgba(253, 58, 115, 0.5)",
+                                        transition: "all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                                        "&:hover": {
+                                            background: BRAND_COLORS.primaryGradientHover,
+                                            transform: "scale(1.14) rotate(8deg)",
+                                            boxShadow: "0 14px 38px rgba(253, 58, 115, 0.7)",
+                                        },
+                                        "&:active": {
+                                            transform: "scale(0.95)",
+                                        },
+                                    }}
+                                >
+                                    <FavoriteIcon sx={{ fontSize: 38 }} />
+                                </IconButton>
+                            </Tooltip>
                         </Stack>
 
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                            Press <strong>← Left Arrow</strong> to Pass &bull; <strong>Right Arrow →</strong> to Like
+                        {/* Keyboard Navigation Tip */}
+                        <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, mt: 0.5 }}>
+                            <strong>← Left</strong> Pass &bull; <strong>Right →</strong> Like &bull; <strong>Space</strong> Photo
                         </Typography>
                     </Box>
                 )}
 
-                {/* 4. EMPTY DECK STATE */}
+                {/* 4. EMPTY FEED STATE */}
                 {!loading && !error && (!currentProfile || currentIndex >= profiles.length) && (
-                    <Paper
-                        elevation={2}
-                        sx={{
-                            p: { xs: 3, sm: 5 },
-                            textAlign: "center",
-                            borderRadius: 4,
-                            mt: 4,
-                        }}
-                    >
-                        <Box
+                    <Fade in timeout={500}>
+                        <Paper
+                            elevation={4}
                             sx={{
-                                width: 90,
-                                height: 90,
-                                borderRadius: "50%",
-                                bgcolor: "#fff3e0",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                mx: "auto",
-                                mb: 2,
+                                p: { xs: 4, sm: 6 },
+                                textAlign: "center",
+                                borderRadius: "28px",
+                                mt: 3,
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                             }}
                         >
-                            <WhatshotIcon sx={{ fontSize: 50, color: "#FF9839" }} />
-                        </Box>
-                        <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-                            You're all caught up!
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 4, maxWidth: 380, mx: "auto" }}>
-                            There are no more new profiles matching your current preferences right now. Check back soon or update your dating preferences in your profile.
-                        </Typography>
+                            <Box
+                                className="radar-pulse"
+                                sx={{
+                                    width: 100,
+                                    height: 100,
+                                    borderRadius: "50%",
+                                    bgcolor: "rgba(253, 58, 115, 0.15)",
+                                    border: `2px solid ${BRAND_COLORS.coralPink}`,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mx: "auto",
+                                    mb: 3,
+                                }}
+                            >
+                                <WhatshotIcon sx={{ fontSize: 50, color: BRAND_COLORS.coralPink }} />
+                            </Box>
+                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "#fff" }}>
+                                You're All Caught Up!
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 4, maxWidth: 400, mx: "auto", lineHeight: 1.6 }}>
+                                There are no more profiles matching your preferences right now. Try expanding your age range or check back soon as new members join!
+                            </Typography>
 
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center">
-                            <Button
-                                variant="contained"
-                                startIcon={<RefreshIcon />}
-                                onClick={() => fetchProfiles(1)}
-                                sx={{ backgroundColor: "#FF9839", "&:hover": { backgroundColor: "#e68933" } }}
-                            >
-                                Refresh Feed
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                startIcon={<PersonIcon />}
-                                onClick={() => navigate("/profile")}
-                            >
-                                Edit Preferences
-                            </Button>
-                            <Button
-                                variant="text"
-                                startIcon={<FavoriteIcon />}
-                                onClick={() => navigate("/matches")}
-                            >
-                                View My Matches
-                            </Button>
-                        </Stack>
-                    </Paper>
+                            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center">
+                                <Button
+                                    variant="contained"
+                                    startIcon={<RefreshIcon />}
+                                    onClick={() => fetchProfiles(1)}
+                                    sx={{
+                                        background: BRAND_COLORS.primaryGradient,
+                                        borderRadius: 9999,
+                                        py: 1.3,
+                                        px: 3.5,
+                                    }}
+                                >
+                                    Refresh Deck
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<TuneIcon />}
+                                    onClick={() => navigate("/profile")}
+                                    sx={{
+                                        borderColor: "rgba(255,255,255,0.2)",
+                                        color: "#fff",
+                                        borderRadius: 9999,
+                                        py: 1.3,
+                                        "&:hover": { borderColor: BRAND_COLORS.coralPink, bgcolor: "rgba(253, 58, 115, 0.1)" },
+                                    }}
+                                >
+                                    Adjust Preferences
+                                </Button>
+                            </Stack>
+                        </Paper>
+                    </Fade>
                 )}
             </Container>
 
-            {/* MUTUAL MATCH CELEBRATION MODAL */}
+            {/* 5. MUTUAL MATCH CELEBRATION MODAL */}
             <Dialog
                 open={matchModalOpen}
                 onClose={() => setMatchModalOpen(false)}
@@ -548,100 +620,127 @@ function DiscoveryPage() {
                 fullWidth
                 PaperProps={{
                     sx: {
-                        borderRadius: 4,
+                        borderRadius: "32px",
                         textAlign: "center",
-                        p: 2,
-                        background: "linear-gradient(135deg, #ffffff 60%, #fff8f0 100%)",
+                        p: { xs: 3, sm: 4 },
+                        backgroundColor: "#120E1C",
+                        border: "2px solid rgba(253, 58, 115, 0.4)",
+                        boxShadow: "0 25px 60px rgba(253, 58, 115, 0.35)",
+                        backgroundImage: "radial-gradient(circle at 50% 30%, rgba(253, 58, 115, 0.2) 0%, transparent 70%)",
                     },
                 }}
             >
-                <DialogTitle sx={{ pb: 1 }}>
-                    <CelebrationIcon sx={{ fontSize: 50, color: "#FF9839", mb: 1 }} />
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: "#FF9839" }}>
+                <DialogContent sx={{ p: 0 }}>
+                    <Typography
+                        variant="h3"
+                        className="gradient-text"
+                        sx={{ fontWeight: 900, mb: 1, letterSpacing: "-0.03em" }}
+                    >
                         It's a Match!
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        You and {matchedUserData?.name} liked each other!
+                    <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary, mb: 4 }}>
+                        You and <strong>{matchedUserData?.name}</strong> liked each other!
                     </Typography>
-                </DialogTitle>
 
-                <DialogContent>
+                    {/* Dual Interlocking Avatars with Glow */}
                     <Box
                         sx={{
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
-                            gap: 2,
+                            position: "relative",
                             my: 3,
                         }}
                     >
-                        {/* Current User Avatar */}
                         <Avatar
                             src={userData?.photos?.[0]}
                             alt={userData?.name}
                             sx={{
-                                width: 90,
-                                height: 90,
-                                border: "4px solid #FF9839",
-                                boxShadow: "0 6px 16px rgba(0,0,0,0.15)",
+                                width: 104,
+                                height: 104,
+                                border: "4px solid #FD3A73",
+                                boxShadow: "0 8px 30px rgba(253, 58, 115, 0.5)",
+                                mr: -2,
+                                zIndex: 1,
                             }}
                         />
-                        <FavoriteIcon sx={{ color: "#d32f2f", fontSize: 32 }} />
-                        {/* Matched User Avatar */}
+                        <Box
+                            className="match-glow"
+                            sx={{
+                                position: "absolute",
+                                zIndex: 3,
+                                width: 44,
+                                height: 44,
+                                borderRadius: "50%",
+                                bgcolor: "#FD3A73",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                boxShadow: "0 4px 15px rgba(0,0,0,0.4)",
+                            }}
+                        >
+                            <FavoriteIcon sx={{ color: "#fff", fontSize: 24 }} />
+                        </Box>
                         <Avatar
                             src={matchedUserData?.photos?.[0]}
                             alt={matchedUserData?.name}
                             sx={{
-                                width: 90,
-                                height: 90,
-                                border: "4px solid #FF9839",
-                                boxShadow: "0 6px 16px rgba(0,0,0,0.15)",
+                                width: 104,
+                                height: 104,
+                                border: "4px solid #FF7A00",
+                                boxShadow: "0 8px 30px rgba(255, 122, 0, 0.5)",
+                                ml: -2,
+                                zIndex: 2,
                             }}
                         />
                     </Box>
-                </DialogContent>
 
-                <DialogActions sx={{ flexDirection: "column", gap: 1, px: 3, pb: 2 }}>
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        startIcon={<ForumIcon />}
-                        onClick={() => {
-                            setMatchModalOpen(false);
-                            navigate("/matches");
-                        }}
-                        sx={{
-                            backgroundColor: "#FF9839",
-                            "&:hover": { backgroundColor: "#e68933" },
-                            py: 1.2,
-                            borderRadius: 3,
-                            fontWeight: 600,
-                        }}
-                    >
-                        View Matches
-                    </Button>
-                    <Button
-                        fullWidth
-                        variant="text"
-                        onClick={() => setMatchModalOpen(false)}
-                        sx={{ color: "#555" }}
-                    >
-                        Keep Swiping
-                    </Button>
-                </DialogActions>
+                    {/* Action Buttons */}
+                    <Stack spacing={1.5} sx={{ mt: 4 }}>
+                        <Button
+                            variant="contained"
+                            size="large"
+                            startIcon={<ChatIcon />}
+                            onClick={() => {
+                                setMatchModalOpen(false);
+                                navigate("/chat");
+                            }}
+                            sx={{
+                                background: BRAND_COLORS.primaryGradient,
+                                borderRadius: 9999,
+                                py: 1.5,
+                                fontSize: "1.05rem",
+                                fontWeight: 800,
+                                boxShadow: "0 6px 25px rgba(253, 58, 115, 0.4)",
+                            }}
+                        >
+                            Send a Message
+                        </Button>
+
+                        <Button
+                            variant="text"
+                            onClick={() => setMatchModalOpen(false)}
+                            sx={{
+                                color: BRAND_COLORS.textSecondary,
+                                borderRadius: 9999,
+                                py: 1.2,
+                                "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.06)" },
+                            }}
+                        >
+                            Keep Swiping
+                        </Button>
+                    </Stack>
+                </DialogContent>
             </Dialog>
 
-            {/* TOAST SNACKBAR */}
+            {/* Notification Toast */}
             <Snackbar
                 open={openToast}
-                autoHideDuration={3000}
+                autoHideDuration={4000}
                 onClose={() => setOpenToast(false)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
             >
-                <Alert
-                    onClose={() => setOpenToast(false)}
-                    severity={toastSeverity}
-                    sx={{ width: "100%", borderRadius: 2 }}
-                >
+                <Alert severity={toastSeverity} onClose={() => setOpenToast(false)} sx={{ width: "100%", borderRadius: "16px" }}>
                     {toastMessage}
                 </Alert>
             </Snackbar>

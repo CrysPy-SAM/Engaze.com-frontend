@@ -2,35 +2,37 @@ import React, { useContext, useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import withAuth from "../utils/withAuth";
 import { AuthContext } from "../contexts/AuthContext";
+import Navbar from "../components/Navbar";
+import { BRAND_COLORS } from "../theme";
 import "../App.css";
 import {
     Box,
     Button,
     Card,
-    CardContent,
-    Chip,
     Container,
     Grid,
-    IconButton,
+    InputAdornment,
     Paper,
     Skeleton,
     Stack,
+    TextField,
     Typography,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import PersonIcon from "@mui/icons-material/Person";
 import ChatIcon from "@mui/icons-material/Chat";
 import VideocamIcon from "@mui/icons-material/Videocam";
-import HomeIcon from "@mui/icons-material/Home";
-import RefreshIcon from "@mui/icons-material/Refresh";
+import SearchIcon from "@mui/icons-material/Search";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
+import VerifiedIcon from "@mui/icons-material/Verified";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 function MatchesPage() {
     const navigate = useNavigate();
-    const { getMatches, handleLogout } = useContext(AuthContext);
+    const { getMatches } = useContext(AuthContext);
 
     const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [error, setError] = useState("");
@@ -39,7 +41,7 @@ function MatchesPage() {
         setLoading(true);
         setError("");
         try {
-            const data = await getMatches(pageNum, 20);
+            const data = await getMatches(pageNum, 24);
             if (data && data.matches) {
                 setMatches(data.matches);
                 setTotalPages(data.totalPages || 1);
@@ -57,141 +59,91 @@ function MatchesPage() {
         fetchMatchesList(1);
     }, [fetchMatchesList]);
 
-    const formatDate = (isoString) => {
-        if (!isoString) return "";
-        const date = new Date(isoString);
-        return date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-        });
+    // Format relative match time
+    const formatMatchDate = (dateStr) => {
+        if (!dateStr) return "Recently matched";
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return "Recently matched";
+        const now = new Date();
+        const diffMs = now - d;
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        if (diffHours < 1) return "Just matched";
+        if (diffHours < 24) return `Matched ${diffHours}h ago`;
+        const diffDays = Math.floor(diffHours / 24);
+        return `Matched ${diffDays}d ago`;
     };
 
+    const filteredMatches = matches.filter((item) => {
+        const u = item.matchedUser;
+        if (!u) return false;
+        const query = searchQuery.toLowerCase().trim();
+        if (!query) return true;
+        return (
+            u.name?.toLowerCase().includes(query) ||
+            u.username?.toLowerCase().includes(query)
+        );
+    });
+
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#f8f9fa", pb: 6 }}>
-            {/* Navigation Header */}
-            <Box
-                sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    px: { xs: 2, md: 4 },
-                    py: 2,
-                    backgroundColor: "#ffffff",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                }}
-            >
-                <Typography
-                    variant="h5"
-                    component="h1"
+        <Box sx={{ minHeight: "100vh", backgroundColor: BRAND_COLORS.bgDark, pb: { xs: 10, md: 6 } }}>
+            {/* Unified Brand Navigation */}
+            <Navbar />
+
+            <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 4 } }}>
+                {/* Header & Search Bar */}
+                <Box
                     sx={{
-                        fontWeight: 700,
-                        color: "#FF9839",
-                        cursor: "pointer",
                         display: "flex",
-                        alignItems: "center",
-                        gap: 1,
+                        justifyContent: "space-between",
+                        alignItems: { xs: "flex-start", sm: "center" },
+                        flexDirection: { xs: "column", sm: "row" },
+                        gap: 2,
+                        mb: 4,
                     }}
-                    onClick={() => navigate("/home")}
                 >
-                    <WhatshotIcon sx={{ color: "#FF9839", fontSize: 28 }} /> ENGAZE.com
-                </Typography>
-
-                <Stack direction="row" spacing={1} alignItems="center">
-                    <Button
-                        startIcon={<WhatshotIcon />}
-                        onClick={() => navigate("/discovery")}
-                        sx={{ color: "#333", textTransform: "none" }}
-                    >
-                        Discovery
-                    </Button>
-                    <Button
-                        variant="contained"
-                        size="small"
-                        startIcon={<FavoriteIcon />}
-                        sx={{
-                            backgroundColor: "#FF9839",
-                            "&:hover": { backgroundColor: "#e68933" },
-                            textTransform: "none",
-                            borderRadius: 4,
-                            px: 2,
-                        }}
-                    >
-                        Matches
-                    </Button>
-                    <Button
-                        startIcon={<ChatIcon />}
-                        onClick={() => navigate("/chat")}
-                        sx={{ color: "#333", textTransform: "none" }}
-                    >
-                        Chat
-                    </Button>
-                    <Button
-                        startIcon={<VideocamIcon />}
-                        onClick={() => navigate("/random-video")}
-                        sx={{ color: "#FF9839", fontWeight: 700, textTransform: "none" }}
-                    >
-                        Video Match
-                    </Button>
-                    <IconButton
-                        title="My Profile"
-                        onClick={() => navigate("/profile")}
-                        sx={{ color: "#555" }}
-                    >
-                        <PersonIcon />
-                    </IconButton>
-                    <IconButton
-                        title="Home"
-                        onClick={() => navigate("/home")}
-                        sx={{ color: "#555" }}
-                    >
-                        <HomeIcon />
-                    </IconButton>
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        onClick={handleLogout}
-                        sx={{ textTransform: "none" }}
-                    >
-                        Logout
-                    </Button>
-                </Stack>
-            </Box>
-
-            <Container maxWidth="lg" sx={{ mt: 4 }}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
                     <Box>
-                        <Typography variant="h4" component="h2" sx={{ fontWeight: 700 }}>
-                            Your Matches
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            People you have mutually connected with.
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                            <Box sx={{ width: 38, height: 38, borderRadius: "10px", background: BRAND_COLORS.primaryGradient, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+                                <FavoriteIcon sx={{ fontSize: 22 }} />
+                            </Box>
+                            <Typography variant="h4" sx={{ fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
+                                Mutual Matches
+                            </Typography>
+                        </Stack>
+                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mt: 0.5 }}>
+                            People who liked you back &bull; {matches.length} connection{matches.length !== 1 ? "s" : ""}
                         </Typography>
                     </Box>
-                    <IconButton
-                        title="Refresh Matches"
-                        onClick={() => fetchMatchesList(page)}
-                        disabled={loading}
-                        sx={{ bgcolor: "#ffffff", boxShadow: "0 2px 6px rgba(0,0,0,0.08)" }}
-                    >
-                        <RefreshIcon />
-                    </IconButton>
+
+                    {matches.length > 0 && (
+                        <TextField
+                            size="small"
+                            placeholder="Search matches..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon sx={{ color: BRAND_COLORS.textSecondary }} />
+                                    </InputAdornment>
+                                ),
+                            }}
+                            sx={{ width: { xs: "100%", sm: 260 } }}
+                        />
+                    )}
                 </Box>
 
-                {/* 1. LOADING SKELETON */}
+                {/* 1. LOADING SKELETON GRID */}
                 {loading && (
                     <Grid container spacing={3}>
-                        {[1, 2, 3, 4].map((n) => (
+                        {[1, 2, 3, 4, 5, 6].map((n) => (
                             <Grid item xs={12} sm={6} md={4} lg={3} key={n}>
-                                <Card sx={{ borderRadius: 3, overflow: "hidden" }}>
-                                    <Skeleton variant="rectangular" height={220} />
-                                    <CardContent>
-                                        <Skeleton variant="text" width="70%" height={30} />
-                                        <Skeleton variant="text" width="90%" height={20} />
-                                        <Skeleton variant="text" width="40%" height={20} />
-                                    </CardContent>
-                                </Card>
+                                <Skeleton
+                                    variant="rounded"
+                                    width="100%"
+                                    height={360}
+                                    sx={{ borderRadius: "24px", bgcolor: "rgba(255,255,255,0.04)" }}
+                                />
                             </Grid>
                         ))}
                     </Grid>
@@ -199,53 +151,118 @@ function MatchesPage() {
 
                 {/* 2. ERROR STATE */}
                 {!loading && error && (
-                    <Paper elevation={2} sx={{ p: 4, textAlign: "center", borderRadius: 3 }}>
-                        <Typography variant="h6" color="error" gutterBottom>
-                            Could not load matches
+                    <Paper
+                        elevation={4}
+                        sx={{
+                            p: 5,
+                            textAlign: "center",
+                            borderRadius: "24px",
+                            backgroundColor: BRAND_COLORS.surfaceDark,
+                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        }}
+                    >
+                        <Typography variant="h6" color="error" gutterBottom sx={{ fontWeight: 700 }}>
+                            Failed to Load Matches
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
                             {error}
                         </Typography>
                         <Button
                             variant="contained"
+                            startIcon={<RefreshIcon />}
                             onClick={() => fetchMatchesList(1)}
-                            sx={{ backgroundColor: "#FF9839", "&:hover": { backgroundColor: "#e68933" } }}
+                            sx={{ background: BRAND_COLORS.primaryGradient, borderRadius: 9999, px: 3.5 }}
                         >
                             Retry
                         </Button>
                     </Paper>
                 )}
 
-                {/* 3. MATCHES GRID */}
-                {!loading && !error && matches.length > 0 && (
-                    <>
-                        <Grid container spacing={3}>
-                        {matches.map((item) => {
-                            const user = item.matchedUser;
-                            if (!user) return null;
+                {/* 3. EMPTY STATE */}
+                {!loading && !error && matches.length === 0 && (
+                    <Paper
+                        elevation={4}
+                        sx={{
+                            p: { xs: 5, sm: 8 },
+                            textAlign: "center",
+                            borderRadius: "28px",
+                            backgroundColor: BRAND_COLORS.surfaceDark,
+                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                            maxWidth: 500,
+                            mx: "auto",
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                width: 84,
+                                height: 84,
+                                borderRadius: "50%",
+                                bgcolor: "rgba(253, 58, 115, 0.12)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                mx: "auto",
+                                mb: 3,
+                            }}
+                        >
+                            <FavoriteIcon sx={{ fontSize: 44, color: BRAND_COLORS.coralPink }} />
+                        </Box>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: "#fff", mb: 1.5 }}>
+                            No Matches Yet
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 4, lineHeight: 1.6 }}>
+                            When both you and someone else swipe right on each other, they will appear here. Head over to Discovery to find your spark!
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            size="large"
+                            startIcon={<WhatshotIcon />}
+                            onClick={() => navigate("/discovery")}
+                            sx={{
+                                background: BRAND_COLORS.primaryGradient,
+                                borderRadius: 9999,
+                                px: 4,
+                                py: 1.5,
+                                fontWeight: 800,
+                                boxShadow: "0 6px 25px rgba(253, 58, 115, 0.4)",
+                            }}
+                        >
+                            Start Discovering
+                        </Button>
+                    </Paper>
+                )}
+
+                {/* 4. MATCHES CARD GRID */}
+                {!loading && !error && filteredMatches.length > 0 && (
+                    <Grid container spacing={3}>
+                        {filteredMatches.map((item) => {
+                            const u = item.matchedUser;
+                            if (!u) return null;
+                            const photo = u.photos?.[0] || "/logo192.png";
 
                             return (
                                 <Grid item xs={12} sm={6} md={4} lg={3} key={item._id}>
                                     <Card
                                         sx={{
-                                            borderRadius: 3,
+                                            borderRadius: "24px",
                                             overflow: "hidden",
-                                            boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
-                                            transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                                            position: "relative",
+                                            backgroundColor: BRAND_COLORS.surfaceDark,
+                                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                            transition: "all 0.3s ease",
                                             "&:hover": {
-                                                transform: "translateY(-4px)",
-                                                boxShadow: "0 8px 24px rgba(0,0,0,0.14)",
+                                                transform: "translateY(-6px)",
+                                                borderColor: "rgba(253, 58, 115, 0.4)",
+                                                boxShadow: "0 16px 40px rgba(0,0,0,0.6)",
                                             },
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            height: "100%",
                                         }}
                                     >
-                                        <Box sx={{ position: "relative", width: "100%", height: 240, bgcolor: "#222" }}>
+                                        {/* Portrait Photo Container */}
+                                        <Box sx={{ position: "relative", height: 320, width: "100%", overflow: "hidden" }}>
                                             <Box
                                                 component="img"
-                                                src={user.photos?.[0] || "/logo192.png"}
-                                                alt={user.name}
+                                                src={photo}
+                                                alt={u.name}
                                                 onError={(e) => {
                                                     e.target.src = "/logo192.png";
                                                 }}
@@ -253,160 +270,101 @@ function MatchesPage() {
                                                     width: "100%",
                                                     height: "100%",
                                                     objectFit: "cover",
+                                                    transition: "transform 0.4s ease",
+                                                    "&:hover": { transform: "scale(1.05)" },
                                                 }}
                                             />
+
+                                            {/* Gradient Overlay with Profile Info */}
                                             <Box
                                                 sx={{
                                                     position: "absolute",
                                                     bottom: 0,
                                                     left: 0,
                                                     right: 0,
-                                                    p: 2,
-                                                    background: "linear-gradient(transparent, rgba(0,0,0,0.85))",
-                                                    color: "white",
+                                                    p: 2.5,
+                                                    background: BRAND_COLORS.cardOverlay,
+                                                    color: "#fff",
                                                 }}
                                             >
-                                                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                                    {user.name}
-                                                    {user.age ? `, ${user.age}` : ""}
-                                                </Typography>
-                                                <Typography variant="caption" sx={{ opacity: 0.9, textTransform: "capitalize" }}>
-                                                    {user.gender || "Gender not specified"} • @{user.username}
+                                                <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mb: 0.3 }}>
+                                                    <Typography variant="h6" sx={{ fontWeight: 800, fontSize: "1.2rem" }}>
+                                                        {u.name}
+                                                        {u.age ? `, ${u.age}` : ""}
+                                                    </Typography>
+                                                    {u.isProfileComplete && (
+                                                        <VerifiedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 18 }} />
+                                                    )}
+                                                </Stack>
+                                                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.75)", display: "block", mb: 0.5 }}>
+                                                    {formatMatchDate(item.createdAt)}
                                                 </Typography>
                                             </Box>
                                         </Box>
 
-                                        <CardContent sx={{ p: 2, flexGrow: 1, display: "flex", flexDirection: "column" }}>
-                                            <Typography
-                                                variant="body2"
-                                                color="text.secondary"
+                                        {/* Action Buttons Bar */}
+                                        <Box sx={{ p: 2, bgcolor: BRAND_COLORS.surfaceDarkElevated, display: "flex", gap: 1 }}>
+                                            <Button
+                                                fullWidth
+                                                variant="contained"
+                                                size="small"
+                                                startIcon={<ChatIcon fontSize="small" />}
+                                                onClick={() => navigate(`/chat?matchId=${item._id}`)}
                                                 sx={{
-                                                    mb: 1.5,
-                                                    overflow: "hidden",
-                                                    textOverflow: "ellipsis",
-                                                    display: "-webkit-box",
-                                                    WebkitLineClamp: 2,
-                                                    WebkitBoxOrient: "vertical",
-                                                    minHeight: 40,
+                                                    background: BRAND_COLORS.primaryGradient,
+                                                    borderRadius: 9999,
+                                                    fontSize: "0.82rem",
+                                                    fontWeight: 700,
+                                                    py: 1,
                                                 }}
                                             >
-                                                {user.bio || "No bio added yet."}
-                                            </Typography>
-
-                                            {user.interests && user.interests.length > 0 && (
-                                                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6, mb: 1.5 }}>
-                                                    {user.interests.slice(0, 3).map((tag) => (
-                                                        <Chip key={tag} label={tag} size="small" variant="outlined" />
-                                                    ))}
-                                                    {user.interests.length > 3 && (
-                                                        <Chip label={`+${user.interests.length - 3}`} size="small" />
-                                                    )}
-                                                </Box>
-                                            )}
-
-                                            <Box sx={{ mt: "auto", pt: 1, borderTop: "1px solid #f0f0f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    Matched {formatDate(item.createdAt)}
-                                                </Typography>
-
-                                                <Button
-                                                    size="small"
-                                                    variant="contained"
-                                                    startIcon={<ChatIcon />}
-                                                    onClick={() => navigate(`/chat?matchId=${item._id}`)}
-                                                    sx={{
-                                                        backgroundColor: "#FF9839",
-                                                        "&:hover": { backgroundColor: "#e68933" },
-                                                        textTransform: "none",
-                                                        borderRadius: 2,
-                                                    }}
-                                                >
-                                                    Chat
-                                                </Button>
-                                            </Box>
-                                        </CardContent>
+                                                Message
+                                            </Button>
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                onClick={() => navigate("/random-video")}
+                                                sx={{
+                                                    borderColor: "rgba(255,255,255,0.15)",
+                                                    color: BRAND_COLORS.violet,
+                                                    borderRadius: 9999,
+                                                    px: 1.8,
+                                                    "&:hover": { borderColor: BRAND_COLORS.violet, bgcolor: "rgba(139, 92, 246, 0.1)" },
+                                                }}
+                                            >
+                                                <VideocamIcon fontSize="small" />
+                                            </Button>
+                                        </Box>
                                     </Card>
                                 </Grid>
                             );
                         })}
                     </Grid>
-
-                    {totalPages > 1 && (
-                        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 4, gap: 2 }}>
-                            <Button
-                                variant="outlined"
-                                disabled={page <= 1}
-                                onClick={() => fetchMatchesList(page - 1)}
-                            >
-                                Previous
-                            </Button>
-                            <Typography variant="body2" color="text.secondary">
-                                Page {page} of {totalPages}
-                            </Typography>
-                            <Button
-                                variant="outlined"
-                                disabled={page >= totalPages}
-                                onClick={() => fetchMatchesList(page + 1)}
-                            >
-                                Next
-                            </Button>
-                        </Box>
-                    )}
-                    </>
                 )}
 
-                {/* 4. EMPTY MATCHES STATE */}
-                {!loading && !error && matches.length === 0 && (
-                    <Paper
-                        elevation={1}
-                        sx={{
-                            p: { xs: 4, sm: 6 },
-                            textAlign: "center",
-                            borderRadius: 4,
-                            mt: 3,
-                            bgcolor: "#ffffff",
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                width: 80,
-                                height: 80,
-                                borderRadius: "50%",
-                                bgcolor: "#fce4ec",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                mx: "auto",
-                                mb: 2,
-                            }}
-                        >
-                            <FavoriteIcon sx={{ fontSize: 44, color: "#e91e63" }} />
-                        </Box>
-
-                        <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-                            No matches yet!
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: "auto" }}>
-                            When you and another member like each other in Discovery, they will appear here. Start swiping to find someone special!
-                        </Typography>
-
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 4 }}>
                         <Button
-                            variant="contained"
-                            size="large"
-                            startIcon={<WhatshotIcon />}
-                            onClick={() => navigate("/discovery")}
-                            sx={{
-                                backgroundColor: "#FF9839",
-                                "&:hover": { backgroundColor: "#e68933" },
-                                px: 4,
-                                py: 1.2,
-                                borderRadius: 3,
-                                fontWeight: 600,
-                            }}
+                            variant="outlined"
+                            disabled={page <= 1}
+                            onClick={() => fetchMatchesList(page - 1)}
+                            sx={{ borderRadius: "12px", color: BRAND_COLORS.coralPink, borderColor: BRAND_COLORS.surfaceDarkBorder }}
                         >
-                            Explore Discovery
+                            Previous
                         </Button>
-                    </Paper>
+                        <Typography variant="body2" sx={{ alignSelf: "center", color: BRAND_COLORS.textSecondary }}>
+                            Page {page} of {totalPages}
+                        </Typography>
+                        <Button
+                            variant="outlined"
+                            disabled={page >= totalPages}
+                            onClick={() => fetchMatchesList(page + 1)}
+                            sx={{ borderRadius: "12px", color: BRAND_COLORS.coralPink, borderColor: BRAND_COLORS.surfaceDarkBorder }}
+                        >
+                            Next
+                        </Button>
+                    </Box>
                 )}
             </Container>
         </Box>
