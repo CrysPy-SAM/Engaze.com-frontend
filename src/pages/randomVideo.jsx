@@ -4,6 +4,8 @@ import io from "socket.io-client";
 import withAuth from "../utils/withAuth";
 import { AuthContext } from "../contexts/AuthContext";
 import server from "../environment";
+import Navbar from "../components/Navbar";
+import { BRAND_COLORS } from "../theme";
 import "../App.css";
 import {
     Avatar,
@@ -30,13 +32,9 @@ import MicIcon from "@mui/icons-material/Mic";
 import MicOffIcon from "@mui/icons-material/MicOff";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
-import WhatshotIcon from "@mui/icons-material/Whatshot";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import PersonIcon from "@mui/icons-material/Person";
-import ChatIcon from "@mui/icons-material/Chat";
-import HomeIcon from "@mui/icons-material/Home";
 import SearchIcon from "@mui/icons-material/Search";
 import SecurityIcon from "@mui/icons-material/Security";
+import SparklesIcon from "@mui/icons-material/AutoAwesome";
 
 const ICE_SERVERS = {
     iceServers: [
@@ -48,7 +46,7 @@ const ICE_SERVERS = {
 
 function RandomVideoPage() {
     const navigate = useNavigate();
-    const { userData, token, handleLogout } = useContext(AuthContext);
+    const { userData, token } = useContext(AuthContext);
 
     // Call state: 'idle' | 'searching' | 'connecting' | 'connected' | 'ended'
     const [callState, setCallState] = useState("idle");
@@ -148,14 +146,12 @@ function RandomVideoPage() {
         activeCallIdRef.current = currentCallId;
         isInitiatorRef.current = isInitiator;
 
-        // Attach local tracks
         if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach((track) => {
                 pc.addTrack(track, localStreamRef.current);
             });
         }
 
-        // Handle remote stream tracks
         pc.ontrack = (event) => {
             if (remoteVideoRef.current && event.streams && event.streams[0]) {
                 remoteVideoRef.current.srcObject = event.streams[0];
@@ -163,7 +159,6 @@ function RandomVideoPage() {
             }
         };
 
-        // ICE candidate transmission
         pc.onicecandidate = (event) => {
             if (event.candidate && socketRef.current && activeCallIdRef.current === currentCallId) {
                 socketRef.current.emit("random:signal", {
@@ -176,7 +171,6 @@ function RandomVideoPage() {
             }
         };
 
-        // Connection state monitoring
         pc.onconnectionstatechange = () => {
             if (pc.connectionState === "connected") {
                 setCallState("connected");
@@ -197,13 +191,11 @@ function RandomVideoPage() {
             if (signalData.type === "offer") {
                 await pc.setRemoteDescription(new RTCSessionDescription(signalData.sdp));
 
-                // Process any ICE candidates that arrived before offer
                 while (iceCandidateQueue.current.length > 0) {
                     const cand = iceCandidateQueue.current.shift();
                     await pc.addIceCandidate(new RTCIceCandidate(cand));
                 }
 
-                // Create and send answer
                 const answer = await pc.createAnswer();
                 await pc.setLocalDescription(answer);
 
@@ -219,7 +211,6 @@ function RandomVideoPage() {
             } else if (signalData.type === "answer") {
                 await pc.setRemoteDescription(new RTCSessionDescription(signalData.sdp));
 
-                // Process any queued ICE candidates
                 while (iceCandidateQueue.current.length > 0) {
                     const cand = iceCandidateQueue.current.shift();
                     await pc.addIceCandidate(new RTCIceCandidate(cand));
@@ -246,7 +237,6 @@ function RandomVideoPage() {
             return;
         }
 
-        // Initialize media stream on mount
         initializeMedia();
 
         const socket = io(server, {
@@ -255,7 +245,6 @@ function RandomVideoPage() {
         });
         socketRef.current = socket;
 
-        // Socket Events
         socket.on("random:queue-joined", () => {
             setCallState("searching");
             showToast("Searching for an available match...", "info");
@@ -267,13 +256,9 @@ function RandomVideoPage() {
             setCallState("connecting");
             showToast(`Connected with ${matchedPartner?.name || "a member"}! Setting up video...`, "success");
 
-            // Ensure media stream is active
             await initializeMedia();
-
-            // Setup peer connection
             const pc = createPeerConnection(newCallId, isInitiator);
 
-            // If initiator: create and send WebRTC offer
             if (isInitiator) {
                 try {
                     const offer = await pc.createOffer({
@@ -334,14 +319,12 @@ function RandomVideoPage() {
         };
     }, [token, navigate, initializeMedia, createPeerConnection, handleRemoteSignal, cleanupPeerConnection, showToast]);
 
-    // Reattach local stream when video element becomes available
     useEffect(() => {
         if (localVideoRef.current && localStreamRef.current) {
             localVideoRef.current.srcObject = localStreamRef.current;
         }
     }, [callState]);
 
-    // Search timer effect
     useEffect(() => {
         if (callState === "searching") {
             setSearchDuration(0);
@@ -428,7 +411,6 @@ function RandomVideoPage() {
         }
     };
 
-    // Format seconds as MM:SS
     const formatTime = (secs) => {
         const m = Math.floor(secs / 60);
         const s = secs % 60;
@@ -436,94 +418,73 @@ function RandomVideoPage() {
     };
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#0f172a", color: "#fff", display: "flex", flexDirection: "column" }}>
-            {/* Top Navigation Bar */}
-            <Box
-                sx={{
-                    px: { xs: 2, md: 4 },
-                    py: 1.5,
-                    backgroundColor: "rgba(15, 23, 42, 0.95)",
-                    borderBottom: "1px solid rgba(255,255,255,0.1)",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    zIndex: 10,
-                }}
-            >
-                <Typography
-                    variant="h5"
-                    component="h1"
-                    sx={{
-                        fontWeight: 700,
-                        color: "#FF9839",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                    }}
-                    onClick={() => navigate("/home")}
-                >
-                    <WhatshotIcon sx={{ color: "#FF9839", fontSize: 28 }} /> ENGAZE.com
-                </Typography>
-
-                <Stack direction="row" spacing={1} alignItems="center">
-                    <Button
-                        startIcon={<WhatshotIcon />}
-                        onClick={() => navigate("/discovery")}
-                        sx={{ color: "#cbd5e1", textTransform: "none" }}
-                    >
-                        Discovery
-                    </Button>
-                    <Button
-                        startIcon={<FavoriteIcon />}
-                        onClick={() => navigate("/matches")}
-                        sx={{ color: "#cbd5e1", textTransform: "none" }}
-                    >
-                        Matches
-                    </Button>
-                    <Button
-                        startIcon={<ChatIcon />}
-                        onClick={() => navigate("/chat")}
-                        sx={{ color: "#cbd5e1", textTransform: "none" }}
-                    >
-                        Chat
-                    </Button>
-                    <IconButton title="Profile" onClick={() => navigate("/profile")} sx={{ color: "#cbd5e1" }}>
-                        <PersonIcon />
-                    </IconButton>
-                    <IconButton title="Home" onClick={() => navigate("/home")} sx={{ color: "#cbd5e1" }}>
-                        <HomeIcon />
-                    </IconButton>
-                    <Button variant="outlined" color="error" size="small" onClick={handleLogout} sx={{ textTransform: "none" }}>
-                        Logout
-                    </Button>
-                </Stack>
-            </Box>
+        <Box
+            sx={{
+                minHeight: "100vh",
+                backgroundColor: BRAND_COLORS.backgroundDark,
+                color: "#FFFFFF",
+                display: "flex",
+                flexDirection: "column",
+                overflowX: "hidden",
+            }}
+        >
+            {/* Unified Brand Navigation (hide bottom nav during active call for maximum cinema space) */}
+            <Navbar hideBottomNav={callState === "connected"} />
 
             {/* Main Video Arena */}
-            <Box sx={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", p: { xs: 1, md: 3 } }}>
+            <Box
+                sx={{
+                    flex: 1,
+                    position: "relative",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    p: { xs: 2, md: 4 },
+                }}
+            >
                 {/* 1. IDLE STATE: Local Video Preview & Start Button */}
                 {callState === "idle" && (
                     <Container maxWidth="sm" sx={{ textAlign: "center" }}>
                         <Paper
-                            elevation={6}
+                            elevation={0}
                             sx={{
-                                p: 3,
-                                borderRadius: 4,
-                                backgroundColor: "rgba(30, 41, 59, 0.9)",
-                                color: "#fff",
-                                border: "1px solid rgba(255,255,255,0.1)",
+                                p: { xs: 3, sm: 4 },
+                                borderRadius: "28px",
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                color: "#FFFFFF",
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4)",
                             }}
                         >
-                            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: "#FF9839" }}>
-                                1-to-1 Random Video Match
+                            <Box
+                                sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                    px: 2,
+                                    py: 0.6,
+                                    borderRadius: "9999px",
+                                    bgcolor: "rgba(139, 92, 246, 0.15)",
+                                    border: "1px solid rgba(139, 92, 246, 0.3)",
+                                    mb: 2,
+                                }}
+                            >
+                                <SparklesIcon sx={{ fontSize: 16, color: BRAND_COLORS.violet }} />
+                                <Typography variant="caption" sx={{ color: "#D8B4FE", fontWeight: 700 }}>
+                                    REAL-TIME 1-ON-1 VIDEO
+                                </Typography>
+                            </Box>
+
+                            <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, letterSpacing: "-0.02em" }}>
+                                Video Matchmaking
                             </Typography>
-                            <Typography variant="body2" sx={{ color: "#94a3b8", mb: 3 }}>
-                                Meet available verified members instantly via private one-to-one video calls.
+                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3.5, px: 2 }}>
+                                Connect face-to-face with verified members instantly over private, encrypted WebRTC streams.
                             </Typography>
 
                             {mediaError && (
-                                <Alert severity="warning" sx={{ mb: 2, borderRadius: 2, textAlign: "left" }}>
+                                <Alert severity="warning" variant="filled" sx={{ mb: 3, borderRadius: "14px", textAlign: "left" }}>
                                     {mediaError}
                                 </Alert>
                             )}
@@ -532,13 +493,14 @@ function RandomVideoPage() {
                             <Box
                                 sx={{
                                     width: "100%",
-                                    height: { xs: 240, md: 320 },
-                                    borderRadius: 3,
+                                    height: { xs: 260, md: 340 },
+                                    borderRadius: "20px",
                                     overflow: "hidden",
                                     backgroundColor: "#000",
                                     position: "relative",
-                                    mb: 3,
-                                    border: "2px solid rgba(255, 152, 57, 0.4)",
+                                    mb: 3.5,
+                                    border: `2px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                    boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
                                 }}
                             >
                                 <video
@@ -550,7 +512,7 @@ function RandomVideoPage() {
                                         width: "100%",
                                         height: "100%",
                                         objectFit: "cover",
-                                        transform: "scaleX(-1)", // Mirror local preview
+                                        transform: "scaleX(-1)",
                                     }}
                                 />
                                 {!videoEnabled && (
@@ -558,15 +520,15 @@ function RandomVideoPage() {
                                         sx={{
                                             position: "absolute",
                                             inset: 0,
-                                            backgroundColor: "rgba(0,0,0,0.85)",
+                                            backgroundColor: "rgba(11, 13, 23, 0.95)",
                                             display: "flex",
                                             flexDirection: "column",
                                             alignItems: "center",
                                             justifyContent: "center",
                                         }}
                                     >
-                                        <VideocamOffIcon sx={{ fontSize: 50, color: "#94a3b8", mb: 1 }} />
-                                        <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+                                        <VideocamOffIcon sx={{ fontSize: 50, color: BRAND_COLORS.textSecondary, mb: 1 }} />
+                                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
                                             Camera is turned off
                                         </Typography>
                                     </Box>
@@ -575,22 +537,40 @@ function RandomVideoPage() {
                                 {/* Floating Preview Controls */}
                                 <Stack
                                     direction="row"
-                                    spacing={1}
+                                    spacing={1.5}
                                     sx={{
                                         position: "absolute",
-                                        bottom: 12,
+                                        bottom: 14,
                                         left: "50%",
                                         transform: "translateX(-50%)",
-                                        backgroundColor: "rgba(0,0,0,0.6)",
-                                        borderRadius: 4,
+                                        backgroundColor: "rgba(11, 13, 23, 0.8)",
+                                        backdropFilter: "blur(12px)",
+                                        borderRadius: "9999px",
                                         px: 2,
-                                        py: 0.5,
+                                        py: 0.8,
+                                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                     }}
                                 >
-                                    <IconButton size="small" onClick={toggleAudio} sx={{ color: audioEnabled ? "#fff" : "#ef4444" }}>
+                                    <IconButton
+                                        size="small"
+                                        onClick={toggleAudio}
+                                        sx={{
+                                            bgcolor: audioEnabled ? "rgba(255,255,255,0.1)" : "#EF4444",
+                                            color: "#FFFFFF",
+                                            "&:hover": { bgcolor: audioEnabled ? "rgba(255,255,255,0.2)" : "#DC2626" },
+                                        }}
+                                    >
                                         {audioEnabled ? <MicIcon fontSize="small" /> : <MicOffIcon fontSize="small" />}
                                     </IconButton>
-                                    <IconButton size="small" onClick={toggleVideo} sx={{ color: videoEnabled ? "#fff" : "#ef4444" }}>
+                                    <IconButton
+                                        size="small"
+                                        onClick={toggleVideo}
+                                        sx={{
+                                            bgcolor: videoEnabled ? "rgba(255,255,255,0.1)" : "#EF4444",
+                                            color: "#FFFFFF",
+                                            "&:hover": { bgcolor: videoEnabled ? "rgba(255,255,255,0.2)" : "#DC2626" },
+                                        }}
+                                    >
                                         {videoEnabled ? <VideocamIcon fontSize="small" /> : <VideocamOffIcon fontSize="small" />}
                                     </IconButton>
                                 </Stack>
@@ -602,23 +582,24 @@ function RandomVideoPage() {
                                 startIcon={<SearchIcon />}
                                 onClick={handleStartSearch}
                                 sx={{
-                                    backgroundColor: "#FF9839",
-                                    "&:hover": { backgroundColor: "#e68933" },
-                                    fontWeight: 700,
-                                    fontSize: "1.1rem",
-                                    borderRadius: 4,
+                                    background: BRAND_COLORS.primaryGradient,
+                                    fontWeight: 800,
+                                    fontSize: "1.05rem",
+                                    borderRadius: "14px",
                                     px: 5,
-                                    py: 1.5,
-                                    textTransform: "none",
-                                    boxShadow: "0 4px 20px rgba(255, 152, 57, 0.4)",
+                                    py: 1.6,
+                                    boxShadow: "0 8px 25px rgba(253, 58, 115, 0.4)",
+                                    "&:hover": {
+                                        opacity: 0.95,
+                                    },
                                 }}
                             >
                                 Start Matchmaking
                             </Button>
 
-                            <Stack direction="row" spacing={1} justifyContent="center" alignItems="center" sx={{ mt: 2 }}>
-                                <SecurityIcon sx={{ fontSize: 16, color: "#10b981" }} />
-                                <Typography variant="caption" sx={{ color: "#94a3b8" }}>
+                            <Stack direction="row" spacing={1} justifyContent="center" alignItems="center" sx={{ mt: 3 }}>
+                                <SecurityIcon sx={{ fontSize: 16, color: "#10B981" }} />
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
                                     Private 2-participant encrypted WebRTC connection
                                 </Typography>
                             </Stack>
@@ -630,46 +611,80 @@ function RandomVideoPage() {
                 {callState === "searching" && (
                     <Container maxWidth="xs" sx={{ textAlign: "center" }}>
                         <Paper
-                            elevation={6}
+                            elevation={0}
                             sx={{
                                 p: 5,
-                                borderRadius: 4,
-                                backgroundColor: "rgba(30, 41, 59, 0.95)",
-                                border: "1px solid rgba(255,255,255,0.1)",
+                                borderRadius: "28px",
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                 display: "flex",
                                 flexDirection: "column",
                                 alignItems: "center",
+                                boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4)",
                             }}
                         >
-                            <Box sx={{ position: "relative", mb: 3 }}>
-                                <CircularProgress size={100} sx={{ color: "#FF9839" }} thickness={3} />
+                            {/* Pulsing Radar Effect */}
+                            <Box sx={{ position: "relative", mb: 4, width: 140, height: 140, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <Box
+                                    className="radar-wave"
+                                    sx={{
+                                        position: "absolute",
+                                        width: 140,
+                                        height: 140,
+                                        borderRadius: "50%",
+                                        background: "radial-gradient(circle, rgba(253, 58, 115, 0.3) 0%, rgba(253, 58, 115, 0) 70%)",
+                                    }}
+                                />
                                 <Avatar
                                     src={userData?.photos?.[0]}
                                     sx={{
-                                        position: "absolute",
-                                        top: 15,
-                                        left: 15,
-                                        width: 70,
-                                        height: 70,
-                                        border: "3px solid #FF9839",
+                                        width: 80,
+                                        height: 80,
+                                        border: `3px solid ${BRAND_COLORS.coralPink}`,
+                                        boxShadow: "0 0 30px rgba(253, 58, 115, 0.5)",
+                                        zIndex: 2,
                                     }}
                                 >
                                     {userData?.name?.charAt(0) || "U"}
                                 </Avatar>
                             </Box>
 
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                            <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.8 }}>
                                 Finding your match...
                             </Typography>
-                            <Typography variant="body2" sx={{ color: "#94a3b8", mb: 3 }}>
-                                Searching for an available person ({formatTime(searchDuration)})
+                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 1 }}>
+                                Connecting you to an active member
                             </Typography>
+
+                            {/* Timer pill */}
+                            <Box
+                                sx={{
+                                    px: 2,
+                                    py: 0.6,
+                                    borderRadius: "9999px",
+                                    bgcolor: "rgba(255, 255, 255, 0.06)",
+                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                    mb: 4,
+                                }}
+                            >
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.coralPink, fontWeight: 700 }}>
+                                    ⏱️ {formatTime(searchDuration)}
+                                </Typography>
+                            </Box>
 
                             <Button
                                 variant="outlined"
-                                color="error"
                                 onClick={handleCancelSearch}
-                                sx={{ borderRadius: 4, px: 4, textTransform: "none" }}
+                                sx={{
+                                    borderRadius: "12px",
+                                    px: 4,
+                                    borderColor: "rgba(239, 68, 68, 0.4)",
+                                    color: "#EF4444",
+                                    "&:hover": {
+                                        borderColor: "#EF4444",
+                                        bgcolor: "rgba(239, 68, 68, 0.08)",
+                                    },
+                                }}
                             >
                                 Cancel Search
                             </Button>
@@ -681,30 +696,37 @@ function RandomVideoPage() {
                 {callState === "connecting" && (
                     <Container maxWidth="xs" sx={{ textAlign: "center" }}>
                         <Paper
-                            elevation={6}
+                            elevation={0}
                             sx={{
-                                p: 4,
-                                borderRadius: 4,
-                                backgroundColor: "rgba(30, 41, 59, 0.95)",
-                                border: "1px solid rgba(255, 152, 57, 0.5)",
+                                p: 4.5,
+                                borderRadius: "28px",
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid rgba(253, 58, 115, 0.4)`,
                                 display: "flex",
                                 flexDirection: "column",
                                 alignItems: "center",
+                                boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
                             }}
                         >
                             <Avatar
                                 src={partner?.photos?.[0]}
-                                sx={{ width: 90, height: 90, mb: 2, border: "3px solid #10b981" }}
+                                sx={{
+                                    width: 90,
+                                    height: 90,
+                                    mb: 2.5,
+                                    border: `3px solid #10B981`,
+                                    boxShadow: "0 0 25px rgba(16, 185, 129, 0.4)",
+                                }}
                             >
                                 {partner?.name?.charAt(0) || "P"}
                             </Avatar>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: "#fff" }}>
+                            <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.5 }}>
                                 Matched with {partner?.name || "a member"}!
                             </Typography>
-                            <Typography variant="body2" sx={{ color: "#94a3b8", mb: 3 }}>
-                                Negotiating video stream...
+                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
+                                Negotiating encrypted video stream...
                             </Typography>
-                            <CircularProgress size={30} sx={{ color: "#FF9839" }} />
+                            <CircularProgress size={32} sx={{ color: BRAND_COLORS.coralPink }} />
                         </Paper>
                     </Container>
                 )}
@@ -717,10 +739,11 @@ function RandomVideoPage() {
                             maxWidth: 1100,
                             height: { xs: "calc(100vh - 120px)", md: "calc(100vh - 140px)" },
                             position: "relative",
-                            borderRadius: 4,
+                            borderRadius: "28px",
                             overflow: "hidden",
                             backgroundColor: "#000",
-                            boxShadow: "0 10px 40px rgba(0,0,0,0.8)",
+                            boxShadow: "0 20px 60px rgba(0, 0, 0, 0.8)",
+                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                         }}
                     >
                         {/* Remote Video (Main) */}
@@ -740,27 +763,27 @@ function RandomVideoPage() {
                             <Box
                                 sx={{
                                     position: "absolute",
-                                    top: 16,
-                                    left: 16,
-                                    backgroundColor: "rgba(0,0,0,0.6)",
-                                    backdropFilter: "blur(8px)",
-                                    borderRadius: 4,
+                                    top: 18,
+                                    left: 18,
+                                    backgroundColor: "rgba(11, 13, 23, 0.75)",
+                                    backdropFilter: "blur(12px)",
+                                    borderRadius: "16px",
                                     px: 2,
                                     py: 1,
                                     display: "flex",
                                     alignItems: "center",
                                     gap: 1.5,
-                                    border: "1px solid rgba(255,255,255,0.15)",
+                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                 }}
                             >
-                                <Avatar src={partner.photos?.[0]} sx={{ width: 36, height: 36 }}>
+                                <Avatar src={partner.photos?.[0]} sx={{ width: 40, height: 40, border: `2px solid ${BRAND_COLORS.coralPink}` }}>
                                     {partner.name?.charAt(0) || "P"}
                                 </Avatar>
                                 <Box>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF", lineHeight: 1.2 }}>
                                         {partner.name}
                                     </Typography>
-                                    <Typography variant="caption" sx={{ color: "#94a3b8" }}>
+                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
                                         @{partner.username}
                                     </Typography>
                                 </Box>
@@ -771,15 +794,15 @@ function RandomVideoPage() {
                         <Box
                             sx={{
                                 position: "absolute",
-                                top: 16,
-                                right: 16,
-                                width: { xs: 100, sm: 160, md: 220 },
-                                height: { xs: 140, sm: 110, md: 150 },
-                                borderRadius: 3,
+                                top: 18,
+                                right: 18,
+                                width: { xs: 110, sm: 160, md: 220 },
+                                height: { xs: 150, sm: 120, md: 160 },
+                                borderRadius: "18px",
                                 overflow: "hidden",
-                                border: "2px solid rgba(255,255,255,0.4)",
-                                backgroundColor: "#1e293b",
-                                boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
+                                border: `2px solid rgba(255, 255, 255, 0.3)`,
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                boxShadow: "0 8px 30px rgba(0,0,0,0.7)",
                                 zIndex: 5,
                             }}
                         >
@@ -800,13 +823,13 @@ function RandomVideoPage() {
                                     sx={{
                                         position: "absolute",
                                         inset: 0,
-                                        backgroundColor: "rgba(0,0,0,0.9)",
+                                        backgroundColor: "rgba(11, 13, 23, 0.9)",
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
                                     }}
                                 >
-                                    <VideocamOffIcon sx={{ color: "#94a3b8", fontSize: 24 }} />
+                                    <VideocamOffIcon sx={{ color: BRAND_COLORS.textSecondary, fontSize: 24 }} />
                                 </Box>
                             )}
                         </Box>
@@ -818,16 +841,16 @@ function RandomVideoPage() {
                                 bottom: 24,
                                 left: "50%",
                                 transform: "translateX(-50%)",
-                                backgroundColor: "rgba(15, 23, 42, 0.85)",
-                                backdropFilter: "blur(12px)",
-                                borderRadius: 8,
-                                px: { xs: 2, sm: 3 },
+                                backgroundColor: "rgba(11, 13, 23, 0.85)",
+                                backdropFilter: "blur(16px)",
+                                borderRadius: "9999px",
+                                px: { xs: 2.5, sm: 3.5 },
                                 py: 1.2,
                                 display: "flex",
                                 alignItems: "center",
                                 gap: { xs: 1.5, sm: 2.5 },
-                                border: "1px solid rgba(255,255,255,0.15)",
-                                boxShadow: "0 8px 30px rgba(0,0,0,0.6)",
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
                                 zIndex: 10,
                             }}
                         >
@@ -836,9 +859,9 @@ function RandomVideoPage() {
                                 <IconButton
                                     onClick={toggleAudio}
                                     sx={{
-                                        backgroundColor: audioEnabled ? "rgba(255,255,255,0.15)" : "#ef4444",
-                                        color: "#fff",
-                                        "&:hover": { backgroundColor: audioEnabled ? "rgba(255,255,255,0.25)" : "#dc2626" },
+                                        backgroundColor: audioEnabled ? "rgba(255,255,255,0.12)" : "#EF4444",
+                                        color: "#FFFFFF",
+                                        "&:hover": { backgroundColor: audioEnabled ? "rgba(255,255,255,0.22)" : "#DC2626" },
                                         width: 46,
                                         height: 46,
                                     }}
@@ -852,9 +875,9 @@ function RandomVideoPage() {
                                 <IconButton
                                     onClick={toggleVideo}
                                     sx={{
-                                        backgroundColor: videoEnabled ? "rgba(255,255,255,0.15)" : "#ef4444",
-                                        color: "#fff",
-                                        "&:hover": { backgroundColor: videoEnabled ? "rgba(255,255,255,0.25)" : "#dc2626" },
+                                        backgroundColor: videoEnabled ? "rgba(255,255,255,0.12)" : "#EF4444",
+                                        color: "#FFFFFF",
+                                        "&:hover": { backgroundColor: videoEnabled ? "rgba(255,255,255,0.22)" : "#DC2626" },
                                         width: 46,
                                         height: 46,
                                     }}
@@ -870,13 +893,13 @@ function RandomVideoPage() {
                                     startIcon={<SkipNextIcon />}
                                     onClick={handleNextMatch}
                                     sx={{
-                                        backgroundColor: "#FF9839",
-                                        "&:hover": { backgroundColor: "#e68933" },
-                                        borderRadius: 4,
-                                        px: { xs: 2, sm: 3 },
-                                        fontWeight: 700,
-                                        textTransform: "none",
+                                        background: BRAND_COLORS.primaryGradient,
+                                        color: "#FFFFFF",
+                                        borderRadius: "9999px",
+                                        px: { xs: 2.5, sm: 3.5 },
+                                        fontWeight: 800,
                                         height: 46,
+                                        boxShadow: "0 4px 15px rgba(253, 58, 115, 0.4)",
                                     }}
                                 >
                                     Next Match
@@ -888,9 +911,9 @@ function RandomVideoPage() {
                                 <IconButton
                                     onClick={handleEndCall}
                                     sx={{
-                                        backgroundColor: "#ef4444",
-                                        color: "#fff",
-                                        "&:hover": { backgroundColor: "#dc2626" },
+                                        backgroundColor: "#EF4444",
+                                        color: "#FFFFFF",
+                                        "&:hover": { backgroundColor: "#DC2626" },
                                         width: 46,
                                         height: 46,
                                     }}
@@ -906,22 +929,36 @@ function RandomVideoPage() {
                 {callState === "ended" && (
                     <Container maxWidth="xs" sx={{ textAlign: "center" }}>
                         <Paper
-                            elevation={6}
+                            elevation={0}
                             sx={{
-                                p: 4,
-                                borderRadius: 4,
-                                backgroundColor: "rgba(30, 41, 59, 0.95)",
-                                border: "1px solid rgba(255,255,255,0.1)",
+                                p: 4.5,
+                                borderRadius: "28px",
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                 display: "flex",
                                 flexDirection: "column",
                                 alignItems: "center",
+                                boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
                             }}
                         >
-                            <CallEndIcon sx={{ fontSize: 50, color: "#ef4444", mb: 2 }} />
-                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                                Call Finished
+                            <Box
+                                sx={{
+                                    width: 70,
+                                    height: 70,
+                                    borderRadius: "50%",
+                                    bgcolor: "rgba(239, 68, 68, 0.15)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mb: 2,
+                                }}
+                            >
+                                <CallEndIcon sx={{ fontSize: 34, color: "#EF4444" }} />
+                            </Box>
+                            <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.5 }}>
+                                Call Ended
                             </Typography>
-                            <Typography variant="body2" sx={{ color: "#94a3b8", mb: 3 }}>
+                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3.5 }}>
                                 {endReasonNotice || "The call has ended."}
                             </Typography>
 
@@ -931,12 +968,11 @@ function RandomVideoPage() {
                                     onClick={handleStartSearch}
                                     startIcon={<SearchIcon />}
                                     sx={{
-                                        backgroundColor: "#FF9839",
-                                        "&:hover": { backgroundColor: "#e68933" },
-                                        borderRadius: 4,
-                                        py: 1.2,
-                                        fontWeight: 700,
-                                        textTransform: "none",
+                                        background: BRAND_COLORS.primaryGradient,
+                                        borderRadius: "14px",
+                                        py: 1.4,
+                                        fontWeight: 800,
+                                        boxShadow: "0 6px 20px rgba(253, 58, 115, 0.4)",
                                     }}
                                 >
                                     Find Next Match
@@ -944,7 +980,16 @@ function RandomVideoPage() {
                                 <Button
                                     variant="outlined"
                                     onClick={() => setCallState("idle")}
-                                    sx={{ borderRadius: 4, py: 1.2, textTransform: "none", color: "#cbd5e1" }}
+                                    sx={{
+                                        borderRadius: "14px",
+                                        py: 1.2,
+                                        color: BRAND_COLORS.textSecondary,
+                                        borderColor: BRAND_COLORS.surfaceDarkBorder,
+                                        "&:hover": {
+                                            borderColor: "rgba(255,255,255,0.2)",
+                                            bgcolor: "rgba(255,255,255,0.04)",
+                                        },
+                                    }}
                                 >
                                     Back to Preview
                                 </Button>
@@ -955,23 +1000,40 @@ function RandomVideoPage() {
             </Box>
 
             {/* Permission Denied Dialog */}
-            <Dialog open={permissionDeniedDialog} onClose={() => setPermissionDeniedDialog(false)}>
-                <DialogTitle sx={{ color: "#ef4444" }}>Camera & Microphone Access Required</DialogTitle>
+            <Dialog
+                open={permissionDeniedDialog}
+                onClose={() => setPermissionDeniedDialog(false)}
+                PaperProps={{
+                    sx: {
+                        borderRadius: "20px",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        color: "#FFFFFF",
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                    },
+                }}
+            >
+                <DialogTitle sx={{ color: "#EF4444", fontWeight: 800 }}>Camera & Microphone Access Required</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
+                    <DialogContentText sx={{ color: BRAND_COLORS.textSecondary }}>
                         Engaze 1-to-1 video matchmaking requires camera and microphone permissions to connect you with members.
                         Please enable permissions in your browser's address bar and click Retry.
                     </DialogContentText>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setPermissionDeniedDialog(false)}>Cancel</Button>
+                <DialogActions sx={{ p: 2.5 }}>
+                    <Button onClick={() => setPermissionDeniedDialog(false)} sx={{ color: BRAND_COLORS.textSecondary }}>
+                        Cancel
+                    </Button>
                     <Button
                         onClick={() => {
                             setPermissionDeniedDialog(false);
                             initializeMedia();
                         }}
                         variant="contained"
-                        sx={{ backgroundColor: "#FF9839" }}
+                        sx={{
+                            background: BRAND_COLORS.primaryGradient,
+                            borderRadius: "10px",
+                            fontWeight: 700,
+                        }}
                     >
                         Retry
                     </Button>
@@ -985,7 +1047,12 @@ function RandomVideoPage() {
                 onClose={() => setOpenToast(false)}
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
             >
-                <Alert severity={toastSeverity} onClose={() => setOpenToast(false)} sx={{ width: "100%", borderRadius: 3 }}>
+                <Alert
+                    severity={toastSeverity}
+                    variant="filled"
+                    onClose={() => setOpenToast(false)}
+                    sx={{ width: "100%", borderRadius: "14px", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}
+                >
                     {toastMessage}
                 </Alert>
             </Snackbar>

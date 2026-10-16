@@ -1,5 +1,7 @@
 import './App.css';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import theme from './theme';
 import LandingPage from './pages/landing';
 import Authentication from './pages/authentication';
 import { AuthProvider } from './contexts/AuthContext';
@@ -14,9 +16,11 @@ import RandomVideoPage from './pages/randomVideo';
 
 function App() {
   return (
-    <div className="App">
-      <Router>
-        <AuthProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <div className="App">
+        <Router>
+          <AuthProvider>
           <Routes>
             <Route path='/' element={<LandingPage />} />
             <Route path='/auth' element={<Authentication />} />
@@ -34,6 +38,7 @@ function App() {
         </AuthProvider>
       </Router>
     </div>
+    </ThemeProvider>
   );
 }
 
