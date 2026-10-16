@@ -4,6 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import "../App.css";
 import { Button, IconButton, TextField } from '@mui/material';
 import RestoreIcon from '@mui/icons-material/Restore';
+import PersonIcon from '@mui/icons-material/Person';
+import WhatshotIcon from '@mui/icons-material/Whatshot';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import ChatIcon from '@mui/icons-material/Chat';
 import { AuthContext } from '../contexts/AuthContext';
 
 function HomeComponent() {
@@ -30,6 +34,33 @@ function HomeComponent() {
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center" }}>
+                    <Button
+                        startIcon={<WhatshotIcon />}
+                        onClick={() => navigate("/discovery")}
+                        sx={{ color: "#FF9839", fontWeight: 600, textTransform: "none", mr: 1 }}
+                    >
+                        Discovery
+                    </Button>
+                    <Button
+                        startIcon={<FavoriteIcon />}
+                        onClick={() => navigate("/matches")}
+                        sx={{ color: "#333", textTransform: "none", mr: 1 }}
+                    >
+                        Matches
+                    </Button>
+                    <Button
+                        startIcon={<ChatIcon />}
+                        onClick={() => navigate("/chat")}
+                        sx={{ color: "#333", textTransform: "none", mr: 1 }}
+                    >
+                        Chat
+                    </Button>
+
+                    <IconButton title="Profile" onClick={() => navigate("/profile")}>
+                        <PersonIcon />
+                    </IconButton>
+                    <p style={{ cursor: "pointer", marginRight: "10px" }} onClick={() => navigate("/profile")}>Profile</p>
+
                     <IconButton onClick={
                         () => {
                             navigate("/history")

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import "../App.css";
 import { Button, IconButton, TextField, Snackbar } from '@mui/material';
 import RestoreIcon from '@mui/icons-material/Restore';
+import PersonIcon from '@mui/icons-material/Person';
 import { AuthContext } from '../contexts/AuthContext';
 
 function HomeComponent() {
@@ -50,6 +51,11 @@ function HomeComponent() {
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <IconButton title="Profile" onClick={() => navigate("/profile")}>
+                        <PersonIcon />
+                    </IconButton>
+                    <p style={{ margin: 0, cursor: "pointer" }} onClick={() => navigate("/profile")}>Profile</p>
+
                     <IconButton onClick={() => navigate("/history")}>
                         <RestoreIcon />
                     </IconButton>

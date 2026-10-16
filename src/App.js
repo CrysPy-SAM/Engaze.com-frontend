@@ -6,6 +6,10 @@ import { AuthProvider } from './contexts/AuthContext';
 import VideoMeetComponent from './pages/VideoMeet';
 import HomeComponent from './pages/home';
 import History from './pages/history';
+import ProfilePage from './pages/profile';
+import DiscoveryPage from './pages/discovery';
+import MatchesPage from './pages/matches';
+import ChatPage from './pages/chat';
 
 function App() {
   return (
@@ -16,6 +20,11 @@ function App() {
             <Route path='/' element={<LandingPage />} />
             <Route path='/auth' element={<Authentication />} />
             <Route path='/home' element={<HomeComponent />} />
+            <Route path='/discovery' element={<DiscoveryPage />} />
+            <Route path='/matches' element={<MatchesPage />} />
+            <Route path='/chat' element={<ChatPage />} />
+            <Route path='/chat/:conversationId' element={<ChatPage />} />
+            <Route path='/profile' element={<ProfilePage />} />
             <Route path='/history' element={<History />} />
             <Route path='/:url' element={<VideoMeetComponent />} />
           </Routes>
