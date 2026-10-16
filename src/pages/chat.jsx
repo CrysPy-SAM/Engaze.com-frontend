@@ -29,6 +29,7 @@ import SendIcon from "@mui/icons-material/Send";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import VideocamIcon from "@mui/icons-material/Videocam";
 import PersonIcon from "@mui/icons-material/Person";
 import HomeIcon from "@mui/icons-material/Home";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
@@ -388,6 +389,13 @@ function ChatPage() {
                         sx={{ color: "#333", textTransform: "none" }}
                     >
                         Matches
+                    </Button>
+                    <Button
+                        startIcon={<VideocamIcon />}
+                        onClick={() => navigate("/random-video")}
+                        sx={{ color: "#FF9839", fontWeight: 700, textTransform: "none" }}
+                    >
+                        Video Match
                     </Button>
                     <IconButton title="Profile" onClick={() => navigate("/profile")} sx={{ color: "#555" }}>
                         <PersonIcon />

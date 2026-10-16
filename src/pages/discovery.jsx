@@ -31,6 +31,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
 import PersonIcon from "@mui/icons-material/Person";
 import ForumIcon from "@mui/icons-material/Forum";
+import VideocamIcon from "@mui/icons-material/Videocam";
 import HomeIcon from "@mui/icons-material/Home";
 import CelebrationIcon from "@mui/icons-material/Celebration";
 
@@ -211,6 +212,13 @@ function DiscoveryPage() {
                         sx={{ color: "#333", textTransform: "none" }}
                     >
                         Chat
+                    </Button>
+                    <Button
+                        startIcon={<VideocamIcon />}
+                        onClick={() => navigate("/random-video")}
+                        sx={{ color: "#FF9839", fontWeight: 700, textTransform: "none" }}
+                    >
+                        Video Match
                     </Button>
                     <IconButton
                         title="My Profile"

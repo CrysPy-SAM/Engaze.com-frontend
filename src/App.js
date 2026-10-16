@@ -10,6 +10,7 @@ import ProfilePage from './pages/profile';
 import DiscoveryPage from './pages/discovery';
 import MatchesPage from './pages/matches';
 import ChatPage from './pages/chat';
+import RandomVideoPage from './pages/randomVideo';
 
 function App() {
   return (
@@ -24,6 +25,8 @@ function App() {
             <Route path='/matches' element={<MatchesPage />} />
             <Route path='/chat' element={<ChatPage />} />
             <Route path='/chat/:conversationId' element={<ChatPage />} />
+            <Route path='/random-video' element={<RandomVideoPage />} />
+            <Route path='/random-call' element={<RandomVideoPage />} />
             <Route path='/profile' element={<ProfilePage />} />
             <Route path='/history' element={<History />} />
             <Route path='/:url' element={<VideoMeetComponent />} />

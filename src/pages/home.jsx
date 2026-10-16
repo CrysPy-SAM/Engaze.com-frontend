@@ -8,6 +8,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ChatIcon from '@mui/icons-material/Chat';
+import VideocamIcon from '@mui/icons-material/Videocam';
 import { AuthContext } from '../contexts/AuthContext';
 
 function HomeComponent() {
@@ -55,6 +56,13 @@ function HomeComponent() {
                     >
                         Chat
                     </Button>
+                    <Button
+                        startIcon={<VideocamIcon />}
+                        onClick={() => navigate("/random-video")}
+                        sx={{ color: "#FF9839", fontWeight: 700, textTransform: "none", mr: 1 }}
+                    >
+                        Video Match
+                    </Button>
 
                     <IconButton title="Profile" onClick={() => navigate("/profile")}>
                         <PersonIcon />
@@ -85,8 +93,43 @@ function HomeComponent() {
             <div className="meetContainer">
                 <div className="leftPanel">
                     <div>
-                        <h2>Providing Quality Video Call Just Like Quality Education.</h2>
+                        <h2>Connect & Meet Face-to-Face Instantly on Engaze.</h2>
 
+                        {/* Random Video Quick Action Card */}
+                        <div style={{
+                            margin: "20px 0 30px 0",
+                            padding: "20px",
+                            backgroundColor: "#fff7ed",
+                            borderRadius: "16px",
+                            border: "1px solid #fed7aa",
+                            boxShadow: "0 4px 15px rgba(255, 152, 57, 0.15)"
+                        }}>
+                            <h3 style={{ margin: "0 0 8px 0", color: "#FF9839" }}>Random 1-to-1 Video Match</h3>
+                            <p style={{ margin: "0 0 16px 0", color: "#475569", fontSize: "14px" }}>
+                                Find another available member online right now and start a private video call.
+                            </p>
+                            <Button
+                                variant="contained"
+                                size="large"
+                                startIcon={<VideocamIcon />}
+                                onClick={() => navigate("/random-video")}
+                                sx={{
+                                    backgroundColor: "#FF9839",
+                                    "&:hover": { backgroundColor: "#ea580c" },
+                                    fontWeight: 700,
+                                    borderRadius: 4,
+                                    px: 4,
+                                    textTransform: "none",
+                                    boxShadow: "0 4px 14px rgba(255, 152, 57, 0.4)"
+                                }}
+                            >
+                                Start Video Match
+                            </Button>
+                        </div>
+
+                        <p style={{ color: "#64748b", fontSize: "13px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                            Or join with a meeting code:
+                        </p>
                         <div style={{ display: 'flex', gap: "10px" }}>
 
                             <TextField onChange={e => setMeetingCode(e.target.value)} id="outlined-basic" label="Meeting Code" variant="outlined" />

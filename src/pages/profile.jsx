@@ -36,6 +36,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ChatIcon from "@mui/icons-material/Chat";
+import VideocamIcon from "@mui/icons-material/Videocam";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
@@ -303,6 +304,13 @@ function ProfilePage() {
                         sx={{ color: "#333", textTransform: "none" }}
                     >
                         Chat
+                    </Button>
+                    <Button
+                        startIcon={<VideocamIcon />}
+                        onClick={() => navigate("/random-video")}
+                        sx={{ color: "#FF9839", fontWeight: 700, textTransform: "none" }}
+                    >
+                        Video Match
                     </Button>
                     <Button
                         startIcon={<HomeIcon />}
