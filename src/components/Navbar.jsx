@@ -60,13 +60,13 @@ export default function Navbar({ hideBottomNav = false }) {
                     zIndex: 1100,
                 }}
             >
-                <Container maxWidth="xl">
+                <Container maxWidth="xl" sx={{ px: { xs: 1.5, sm: 3 } }}>
                     <Toolbar
                         disableGutters
                         sx={{
                             display: "flex",
                             justifyContent: "space-between",
-                            height: 70,
+                            height: { xs: 60, sm: 70 },
                         }}
                     >
                         {/* Brand Logo */}
@@ -75,7 +75,7 @@ export default function Navbar({ hideBottomNav = false }) {
                             sx={{
                                 display: "flex",
                                 alignItems: "center",
-                                gap: 1.2,
+                                gap: { xs: 0.8, sm: 1.2 },
                                 cursor: "pointer",
                                 userSelect: "none",
                                 transition: "transform 0.2s ease",
@@ -84,8 +84,8 @@ export default function Navbar({ hideBottomNav = false }) {
                         >
                             <Box
                                 sx={{
-                                    width: 40,
-                                    height: 40,
+                                    width: { xs: 34, sm: 40 },
+                                    height: { xs: 34, sm: 40 },
                                     borderRadius: "12px",
                                     background: BRAND_COLORS.primaryGradient,
                                     display: "flex",
@@ -94,13 +94,14 @@ export default function Navbar({ hideBottomNav = false }) {
                                     boxShadow: "0 4px 15px rgba(253, 58, 115, 0.4)",
                                 }}
                             >
-                                <WhatshotIcon sx={{ color: "#fff", fontSize: 26 }} />
+                                <WhatshotIcon sx={{ color: "#fff", fontSize: { xs: 20, sm: 26 } }} />
                             </Box>
                             <Typography
                                 variant="h5"
                                 sx={{
                                     fontWeight: 900,
                                     letterSpacing: "-0.03em",
+                                    fontSize: { xs: "1.2rem", sm: "1.5rem" },
                                     background: "linear-gradient(135deg, #FFFFFF 60%, rgba(255,255,255,0.7) 100%)",
                                     WebkitBackgroundClip: "text",
                                     WebkitTextFillColor: "transparent",
@@ -147,7 +148,7 @@ export default function Navbar({ hideBottomNav = false }) {
                         )}
 
                         {/* Right Section: User Profile & Logout */}
-                        <Stack direction="row" spacing={1.5} alignItems="center">
+                        <Stack direction="row" spacing={{ xs: 0.8, sm: 1.5 }} alignItems="center">
                             <Box
                                 onClick={() => navigate("/profile")}
                                 sx={{
@@ -171,8 +172,8 @@ export default function Navbar({ hideBottomNav = false }) {
                                     src={userData?.photos?.[0]}
                                     alt={userData?.name}
                                     sx={{
-                                        width: 36,
-                                        height: 36,
+                                        width: { xs: 32, sm: 36 },
+                                        height: { xs: 32, sm: 36 },
                                         border: `2px solid ${BRAND_COLORS.coralPink}`,
                                         boxShadow: "0 2px 8px rgba(253, 58, 115, 0.3)",
                                     }}

@@ -1,14 +1,15 @@
 import axios from "axios";
 import httpStatus from "http-status";
-import React, { createContext, useCallback, useEffect, useState } from "react";
+import React, { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import server from "../environment";
 
 export const AuthContext = createContext({});
 
-// Base API client pointing to /api/v1
+// Base API client pointing to /api/v1 with 60s timeout for Render free tier wakeups
 const api = axios.create({
     baseURL: `${server}/api/v1`,
+    timeout: 60000,
 });
 
 // Request interceptor to automatically attach JWT Bearer token
@@ -80,7 +81,7 @@ export const AuthProvider = ({ children }) => {
     }, [router]);
 
     // 1. REGISTER
-    const handleRegister = async (name, username, password) => {
+    const handleRegister = useCallback(async (name, username, password) => {
         try {
             if (!name || !username || !password) {
                 throw new Error("All fields are required");
@@ -105,16 +106,21 @@ export const AuthProvider = ({ children }) => {
             }
         } catch (err) {
             console.error("Registration error:", err);
-            const msg =
-                err.response?.data?.message ||
-                err.message ||
-                "Server connection error. Please try again.";
+            let msg = err.response?.data?.message || err.message;
+            if (
+                err.code === "ECONNABORTED" ||
+                (!err.response && (err.message === "Network Error" || err.message?.includes("timeout")))
+            ) {
+                msg = "Backend server is waking up (Render free tier cold-start). Please wait 10 seconds and try again.";
+            } else if (!err.response) {
+                msg = "Unable to connect to server. Please check your internet connection.";
+            }
             throw new Error(msg);
         }
-    };
+    }, []);
 
     // 2. LOGIN
-    const handleLogin = async (username, password) => {
+    const handleLogin = useCallback(async (username, password) => {
         try {
             if (!username || !password) {
                 throw new Error("Username and password are required");
@@ -137,24 +143,29 @@ export const AuthProvider = ({ children }) => {
             }
         } catch (err) {
             console.error("Login error:", err);
-            const msg =
-                err.response?.data?.message ||
-                err.message ||
-                "Unable to reach the server. Please check backend.";
+            let msg = err.response?.data?.message || err.message;
+            if (
+                err.code === "ECONNABORTED" ||
+                (!err.response && (err.message === "Network Error" || err.message?.includes("timeout")))
+            ) {
+                msg = "Backend server is waking up (Render free tier cold-start). Please wait 10-20 seconds and try again.";
+            } else if (!err.response) {
+                msg = "Unable to connect to server. Please check your internet connection.";
+            }
             throw new Error(msg);
         }
-    };
+    }, [router]);
 
     // 3. LOGOUT
-    const handleLogout = () => {
+    const handleLogout = useCallback(() => {
         localStorage.removeItem("token");
         setToken(null);
         setUserData(null);
         router("/auth");
-    };
+    }, [router]);
 
     // 4. GET PROFILE
-    const getProfile = async () => {
+    const getProfile = useCallback(async () => {
         try {
             const response = await api.get("/users/profile/me");
             if (response.data && response.data.profile) {
@@ -165,10 +176,10 @@ export const AuthProvider = ({ children }) => {
             console.error("Get profile error:", err);
             throw new Error(err.response?.data?.message || "Failed to load profile");
         }
-    };
+    }, []);
 
     // 5. UPDATE PROFILE
-    const updateProfile = async (profileData) => {
+    const updateProfile = useCallback(async (profileData) => {
         try {
             const response = await api.put("/users/profile/me", profileData);
             if (response.data && response.data.profile) {
@@ -179,10 +190,10 @@ export const AuthProvider = ({ children }) => {
             console.error("Update profile error:", err);
             throw new Error(err.response?.data?.message || "Failed to update profile");
         }
-    };
+    }, []);
 
     // 6. USER HISTORY FETCH
-    const getHistoryOfUser = async () => {
+    const getHistoryOfUser = useCallback(async () => {
         try {
             const response = await api.get("/users/get_all_activity");
             return response.data;
@@ -190,10 +201,10 @@ export const AuthProvider = ({ children }) => {
             console.error("Get history error:", err);
             throw new Error(err.response?.data?.message || "Failed to fetch history");
         }
-    };
+    }, []);
 
     // 7. ADD TO HISTORY
-    const addToUserHistory = async (meetingCode) => {
+    const addToUserHistory = useCallback(async (meetingCode) => {
         try {
             const response = await api.post("/users/add_to_activity", {
                 meeting_code: meetingCode,
@@ -203,10 +214,10 @@ export const AuthProvider = ({ children }) => {
             console.error("Add to history error:", e);
             throw new Error(e.response?.data?.message || "Unable to save meeting history");
         }
-    };
+    }, []);
 
     // 8. DATING DISCOVERY FEED
-    const getDiscovery = async (page = 1, limit = 10) => {
+    const getDiscovery = useCallback(async (page = 1, limit = 10) => {
         try {
             const response = await api.get("/discovery", {
                 params: { page, limit },
@@ -216,10 +227,10 @@ export const AuthProvider = ({ children }) => {
             console.error("Get discovery error:", e);
             throw new Error(e.response?.data?.message || "Failed to load discovery profiles");
         }
-    };
+    }, []);
 
     // 9. SWIPE (LIKE / PASS)
-    const sendSwipe = async (targetUserId, action) => {
+    const sendSwipe = useCallback(async (targetUserId, action) => {
         try {
             const response = await api.post("/discovery/swipe", {
                 targetUserId,
@@ -230,10 +241,10 @@ export const AuthProvider = ({ children }) => {
             console.error("Swipe error:", e);
             throw new Error(e.response?.data?.message || "Failed to record swipe");
         }
-    };
+    }, []);
 
     // 10. GET MUTUAL MATCHES
-    const getMatches = async (page = 1, limit = 20) => {
+    const getMatches = useCallback(async (page = 1, limit = 20) => {
         try {
             const response = await api.get("/matches", {
                 params: { page, limit },
@@ -243,10 +254,10 @@ export const AuthProvider = ({ children }) => {
             console.error("Get matches error:", e);
             throw new Error(e.response?.data?.message || "Failed to load matches");
         }
-    };
+    }, []);
 
     // 11. GET CONVERSATIONS LIST
-    const getConversations = async () => {
+    const getConversations = useCallback(async () => {
         try {
             const response = await api.get("/conversations");
             return response.data;
@@ -254,10 +265,10 @@ export const AuthProvider = ({ children }) => {
             console.error("Get conversations error:", err);
             throw new Error(err.response?.data?.message || "Failed to load conversations");
         }
-    };
+    }, []);
 
     // 12. GET OR CREATE CONVERSATION BY MATCH ID
-    const getOrCreateConversationByMatch = async (matchId) => {
+    const getOrCreateConversationByMatch = useCallback(async (matchId) => {
         try {
             const response = await api.get(`/conversations/match/${matchId}`);
             return response.data;
@@ -265,10 +276,10 @@ export const AuthProvider = ({ children }) => {
             console.error("Get conversation by match error:", err);
             throw new Error(err.response?.data?.message || "Failed to open conversation");
         }
-    };
+    }, []);
 
     // 13. GET CONVERSATION MESSAGES
-    const getConversationMessages = async (conversationId, page = 1, limit = 40) => {
+    const getConversationMessages = useCallback(async (conversationId, page = 1, limit = 40) => {
         try {
             const response = await api.get(`/conversations/${conversationId}/messages`, {
                 params: { page, limit },
@@ -278,20 +289,20 @@ export const AuthProvider = ({ children }) => {
             console.error("Get messages error:", err);
             throw new Error(err.response?.data?.message || "Failed to load messages");
         }
-    };
+    }, []);
 
     // 14. MARK CONVERSATION AS READ
-    const markConversationRead = async (conversationId) => {
+    const markConversationRead = useCallback(async (conversationId) => {
         try {
             const response = await api.put(`/conversations/${conversationId}/read`);
             return response.data;
         } catch (err) {
             console.error("Mark read error:", err);
         }
-    };
+    }, []);
 
     // 15. SEND MESSAGE (REST FALLBACK)
-    const sendMessageRest = async (conversationId, content, clientTempId) => {
+    const sendMessageRest = useCallback(async (conversationId, content, clientTempId) => {
         try {
             const response = await api.post(`/conversations/${conversationId}/messages`, {
                 content,
@@ -302,9 +313,9 @@ export const AuthProvider = ({ children }) => {
             console.error("Send message REST error:", err);
             throw new Error(err.response?.data?.message || "Failed to send message");
         }
-    };
+    }, []);
 
-    const value = {
+    const value = useMemo(() => ({
         userData,
         setUserData,
         token,
@@ -325,7 +336,26 @@ export const AuthProvider = ({ children }) => {
         getConversationMessages,
         markConversationRead,
         sendMessageRest,
-    };
+    }), [
+        userData,
+        token,
+        loading,
+        handleRegister,
+        handleLogin,
+        handleLogout,
+        getProfile,
+        updateProfile,
+        addToUserHistory,
+        getHistoryOfUser,
+        getDiscovery,
+        sendSwipe,
+        getMatches,
+        getConversations,
+        getOrCreateConversationByMatch,
+        getConversationMessages,
+        markConversationRead,
+        sendMessageRest,
+    ]);
 
     return (
         <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

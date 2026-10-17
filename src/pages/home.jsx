@@ -44,12 +44,12 @@ function HomeComponent() {
             {/* Unified Brand Navigation */}
             <Navbar />
 
-            <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 5 } }}>
+            <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 5 }, px: { xs: 1.5, sm: 3 } }}>
                 {/* User Welcome Banner */}
                 <Paper
                     elevation={4}
                     sx={{
-                        p: { xs: 3, sm: 4 },
+                        p: { xs: 2.2, sm: 4 },
                         borderRadius: "28px",
                         backgroundColor: BRAND_COLORS.surfaceDark,
                         border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,

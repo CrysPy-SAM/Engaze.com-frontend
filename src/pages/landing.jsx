@@ -26,8 +26,8 @@ export default function LandingPage() {
             {/* Top Navigation */}
             <Box
                 sx={{
-                    px: { xs: 2.5, md: 6 },
-                    py: 2.5,
+                    px: { xs: 1.5, sm: 2.5, md: 6 },
+                    py: { xs: 1.8, md: 2.5 },
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
@@ -40,11 +40,11 @@ export default function LandingPage() {
                 }}
             >
                 {/* Logo */}
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.8, sm: 1.2 } }}>
                     <Box
                         sx={{
-                            width: 42,
-                            height: 42,
+                            width: { xs: 36, sm: 42 },
+                            height: { xs: 36, sm: 42 },
                             borderRadius: "12px",
                             background: BRAND_COLORS.primaryGradient,
                             display: "flex",
@@ -53,13 +53,14 @@ export default function LandingPage() {
                             boxShadow: "0 4px 18px rgba(253, 58, 115, 0.4)",
                         }}
                     >
-                        <WhatshotIcon sx={{ color: "#fff", fontSize: 28 }} />
+                        <WhatshotIcon sx={{ color: "#fff", fontSize: { xs: 22, sm: 28 } }} />
                     </Box>
                     <Typography
                         variant="h5"
                         sx={{
                             fontWeight: 900,
                             letterSpacing: "-0.03em",
+                            fontSize: { xs: "1.2rem", sm: "1.5rem" },
                             background: "linear-gradient(135deg, #FFFFFF 60%, rgba(255,255,255,0.7) 100%)",
                             WebkitBackgroundClip: "text",
                             WebkitTextFillColor: "transparent",
@@ -70,11 +71,12 @@ export default function LandingPage() {
                 </Box>
 
                 {/* Right CTAs */}
-                <Stack direction="row" spacing={1.5} alignItems="center">
+                <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} alignItems="center">
                     <Button
                         variant="text"
                         onClick={() => navigate("/auth")}
                         sx={{
+                            display: { xs: "none", sm: "inline-flex" },
                             color: "rgba(255,255,255,0.85)",
                             borderRadius: 9999,
                             px: 3,
@@ -89,7 +91,9 @@ export default function LandingPage() {
                         sx={{
                             background: BRAND_COLORS.primaryGradient,
                             borderRadius: 9999,
-                            px: 3.5,
+                            px: { xs: 2, sm: 3.5 },
+                            py: { xs: 0.8, sm: 1 },
+                            fontSize: { xs: "0.82rem", sm: "0.95rem" },
                             fontWeight: 800,
                             boxShadow: "0 4px 20px rgba(253, 58, 115, 0.4)",
                         }}

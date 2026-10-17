@@ -8,6 +8,7 @@ import Navbar from "../components/Navbar";
 import { BRAND_COLORS } from "../theme";
 import "../App.css";
 import {
+    Alert,
     Avatar,
     Badge,
     Box,
@@ -54,6 +55,7 @@ function ChatPage() {
         getOrCreateConversationByMatch,
         getConversationMessages,
         markConversationRead,
+        sendMessageRest,
     } = useContext(AuthContext);
 
     // State
@@ -63,6 +65,7 @@ function ChatPage() {
     const [inputText, setInputText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const [loadingConversations, setLoadingConversations] = useState(true);
+    const [conversationsError, setConversationsError] = useState(null);
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [sending, setSending] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
@@ -72,6 +75,7 @@ function ChatPage() {
     const socketRef = useRef(null);
     const messagesEndRef = useRef(null);
     const activeConvRef = useRef(null);
+    const loadConversationsRef = useRef(null);
 
     // Keep activeConvRef in sync for socket event handlers
     useEffect(() => {
@@ -133,6 +137,12 @@ function ChatPage() {
 
             // Update conversation list preview
             setConversations((prevConvs) => {
+                const exists = prevConvs.some((c) => c._id.toString() === newMsg.conversation.toString());
+                if (!exists && loadConversationsRef.current) {
+                    loadConversationsRef.current();
+                    return prevConvs;
+                }
+
                 const updated = prevConvs.map((conv) => {
                     if (conv._id.toString() === newMsg.conversation.toString()) {
                         const isCurrentActive =
@@ -178,6 +188,7 @@ function ChatPage() {
     // 2. Load conversations and handle query params (e.g. ?matchId=...)
     const loadConversations = useCallback(async () => {
         setLoadingConversations(true);
+        setConversationsError(null);
         try {
             const data = await getConversations();
             const convList = data?.conversations || [];
@@ -217,10 +228,15 @@ function ChatPage() {
             }
         } catch (err) {
             console.error("Failed to load conversations:", err);
+            setConversationsError(err.message || "Failed to load conversations. Please retry.");
         } finally {
             setLoadingConversations(false);
         }
     }, [getConversations, getOrCreateConversationByMatch, location.search, paramConvId, isMobile]);
+
+    useEffect(() => {
+        loadConversationsRef.current = loadConversations;
+    }, [loadConversations]);
 
     useEffect(() => {
         loadConversations();
@@ -310,18 +326,10 @@ function ChatPage() {
                     }
                 );
             } else {
-                const response = await fetch(`${server}/api/v1/conversations/${convId}/messages`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({ content: trimmed, clientTempId }),
-                });
-                const resData = await response.json();
+                const resData = await sendMessageRest(convId, trimmed, clientTempId);
                 setSending(false);
 
-                if (resData.success && resData.message) {
+                if (resData?.success && resData.message) {
                     setMessages((prev) =>
                         prev.map((m) =>
                             m.clientTempId === clientTempId ? resData.message : m
@@ -355,7 +363,7 @@ function ChatPage() {
     return (
         <Box
             sx={{
-                height: "100vh",
+                height: { xs: "100dvh", md: "100vh" },
                 display: "flex",
                 flexDirection: "column",
                 bgcolor: BRAND_COLORS.backgroundDark,
@@ -461,6 +469,7 @@ function ChatPage() {
                             flex: 1,
                             overflowY: "auto",
                             p: 1.5,
+                            pb: { xs: 9, md: 1.5 },
                             "&::-webkit-scrollbar": { width: 5 },
                             "&::-webkit-scrollbar-thumb": {
                                 bgcolor: "rgba(255, 255, 255, 0.1)",
@@ -468,6 +477,38 @@ function ChatPage() {
                             },
                         }}
                     >
+                        {conversationsError && (
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    mb: 2,
+                                    borderRadius: "14px",
+                                    bgcolor: "rgba(239, 68, 68, 0.12)",
+                                    border: "1px solid rgba(239, 68, 68, 0.3)",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 1.2,
+                                }}
+                            >
+                                <Typography variant="body2" sx={{ color: "#EF4444", fontWeight: 600 }}>
+                                    {conversationsError}
+                                </Typography>
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={() => loadConversations()}
+                                    sx={{
+                                        color: "#EF4444",
+                                        borderColor: "#EF4444",
+                                        borderRadius: "8px",
+                                        alignSelf: "flex-start",
+                                        "&:hover": { bgcolor: "rgba(239, 68, 68, 0.15)" },
+                                    }}
+                                >
+                                    Retry Connection
+                                </Button>
+                            </Box>
+                        )}
                         {loadingConversations && (
                             <Box sx={{ p: 1.5 }}>
                                 {[1, 2, 3, 4].map((n) => (
@@ -660,31 +701,41 @@ function ChatPage() {
                                     bgcolor: BRAND_COLORS.surfaceDark,
                                 }}
                             >
-                                <Stack direction="row" spacing={1.8} alignItems="center">
+                                <Stack direction="row" spacing={{ xs: 1, sm: 1.8 }} alignItems="center" sx={{ minWidth: 0, flex: 1, mr: 1 }}>
                                     {isMobile && (
                                         <IconButton
                                             edge="start"
                                             onClick={() => setMobileShowChat(false)}
-                                            sx={{ color: "#FFFFFF", mr: 0.5 }}
+                                            sx={{ color: "#FFFFFF", p: { xs: 0.5, sm: 1 } }}
                                         >
-                                            <ArrowBackIcon />
+                                            <ArrowBackIcon fontSize="small" />
                                         </IconButton>
                                     )}
                                     <Avatar
                                         src={otherUser.photos?.[0]}
                                         alt={otherUser.name}
                                         sx={{
-                                            width: 46,
-                                            height: 46,
+                                            width: { xs: 38, sm: 46 },
+                                            height: { xs: 38, sm: 46 },
                                             border: `2px solid ${BRAND_COLORS.coralPink}`,
                                         }}
                                     />
-                                    <Box>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#FFFFFF", lineHeight: 1.2 }}>
+                                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                                        <Typography
+                                            variant="subtitle1"
+                                            noWrap
+                                            sx={{
+                                                fontWeight: 800,
+                                                color: "#FFFFFF",
+                                                lineHeight: 1.2,
+                                                fontSize: { xs: "0.9rem", sm: "1rem" },
+                                                maxWidth: { xs: 140, sm: 240, md: 360 },
+                                            }}
+                                        >
                                             {otherUser.name}
                                             {otherUser.age ? `, ${otherUser.age}` : ""}
                                         </Typography>
-                                        <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                        <Typography variant="caption" noWrap sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>
                                             @{otherUser.username}
                                         </Typography>
                                     </Box>
@@ -850,12 +901,12 @@ function ChatPage() {
                                 component="form"
                                 onSubmit={handleSendMessage}
                                 sx={{
-                                    p: 2,
+                                    p: { xs: 1.2, sm: 2 },
                                     borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                     bgcolor: BRAND_COLORS.surfaceDark,
                                     display: "flex",
                                     alignItems: "center",
-                                    gap: 1.5,
+                                    gap: { xs: 1, sm: 1.5 },
                                 }}
                             >
                                 <TextField

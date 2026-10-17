@@ -24,8 +24,10 @@ export const BRAND_COLORS = {
 
     // Backgrounds & Surfaces (Dark & Light)
     bgDark: "#0B0D17",
+    backgroundDark: "#0B0D17",
     surfaceDark: "#131625",
     surfaceDarkElevated: "#1C2035",
+    surfaceDarkCard: "#1C2035",
     surfaceDarkBorder: "rgba(255, 255, 255, 0.08)",
 
     // Neutral Text

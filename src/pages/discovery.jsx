@@ -236,7 +236,9 @@ function DiscoveryPage() {
                             className={swipeAnimation}
                             sx={{
                                 width: "100%",
-                                height: { xs: 540, sm: 600 },
+                                height: { xs: "calc(100dvh - 230px)", sm: 580, md: 600 },
+                                minHeight: { xs: 420, sm: 500 },
+                                maxHeight: { xs: 580, sm: 640 },
                                 borderRadius: "28px",
                                 overflow: "hidden",
                                 position: "relative",
@@ -449,10 +451,10 @@ function DiscoveryPage() {
                         {/* TACTILE LIKE & PASS ACTION BAR */}
                         <Stack
                             direction="row"
-                            spacing={3}
+                            spacing={{ xs: 2, sm: 3 }}
                             alignItems="center"
                             justifyContent="center"
-                            sx={{ mt: 3, mb: 1 }}
+                            sx={{ mt: { xs: 2, sm: 3 }, mb: 1 }}
                         >
                             {/* Pass Button */}
                             <Tooltip title="Pass (Left Arrow)">
@@ -461,8 +463,8 @@ function DiscoveryPage() {
                                     onClick={() => handleSwipeAction("pass")}
                                     disabled={swiping}
                                     sx={{
-                                        width: 68,
-                                        height: 68,
+                                        width: { xs: 58, sm: 68 },
+                                        height: { xs: 58, sm: 68 },
                                         bgcolor: BRAND_COLORS.surfaceDarkElevated,
                                         border: `2px solid rgba(239, 68, 68, 0.4)`,
                                         boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
@@ -479,7 +481,7 @@ function DiscoveryPage() {
                                         },
                                     }}
                                 >
-                                    <CloseIcon sx={{ fontSize: 34, strokeWidth: 2 }} />
+                                    <CloseIcon sx={{ fontSize: { xs: 28, sm: 34 }, strokeWidth: 2 }} />
                                 </IconButton>
                             </Tooltip>
 
@@ -489,8 +491,8 @@ function DiscoveryPage() {
                                     onClick={() => setShowFullBio((prev) => !prev)}
                                     size="small"
                                     sx={{
-                                        width: 48,
-                                        height: 48,
+                                        width: { xs: 40, sm: 48 },
+                                        height: { xs: 40, sm: 48 },
                                         bgcolor: BRAND_COLORS.surfaceDark,
                                         border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                         color: showFullBio ? BRAND_COLORS.coralPink : BRAND_COLORS.textSecondary,
@@ -512,8 +514,8 @@ function DiscoveryPage() {
                                     onClick={() => handleSwipeAction("like")}
                                     disabled={swiping}
                                     sx={{
-                                        width: 76,
-                                        height: 76,
+                                        width: { xs: 66, sm: 76 },
+                                        height: { xs: 66, sm: 76 },
                                         background: BRAND_COLORS.primaryGradient,
                                         color: "#FFFFFF",
                                         boxShadow: "0 10px 30px rgba(253, 58, 115, 0.5)",
@@ -528,7 +530,7 @@ function DiscoveryPage() {
                                         },
                                     }}
                                 >
-                                    <FavoriteIcon sx={{ fontSize: 38 }} />
+                                    <FavoriteIcon sx={{ fontSize: { xs: 32, sm: 38 } }} />
                                 </IconButton>
                             </Tooltip>
                         </Stack>

@@ -294,7 +294,7 @@ function ProfilePage() {
             {/* Unified Brand Navigation */}
             <Navbar />
 
-            <Container maxWidth="lg" sx={{ mt: { xs: 2.5, md: 4 } }}>
+            <Container maxWidth="lg" sx={{ mt: { xs: 2.5, md: 4 }, px: { xs: 1.5, sm: 3 } }}>
                 {/* Profile Completion Card */}
                 <Paper
                     elevation={0}
@@ -393,8 +393,9 @@ function ProfilePage() {
                                 borderRadius: "12px",
                                 textTransform: "none",
                                 fontWeight: 700,
-                                px: 3,
+                                px: { xs: 1.5, sm: 3 },
                                 minHeight: 44,
+                                fontSize: { xs: "0.85rem", sm: "0.95rem" },
                                 color: BRAND_COLORS.textSecondary,
                                 "&.Mui-selected": {
                                     background: BRAND_COLORS.primaryGradient,
@@ -406,13 +407,14 @@ function ProfilePage() {
                         <Tab
                             icon={<PreviewIcon fontSize="small" />}
                             iconPosition="start"
-                            label="Live Card Preview"
+                            label="Card Preview"
                             sx={{
                                 borderRadius: "12px",
                                 textTransform: "none",
                                 fontWeight: 700,
-                                px: 3,
+                                px: { xs: 1.5, sm: 3 },
                                 minHeight: 44,
+                                fontSize: { xs: "0.85rem", sm: "0.95rem" },
                                 color: BRAND_COLORS.textSecondary,
                                 "&.Mui-selected": {
                                     background: BRAND_COLORS.primaryGradient,

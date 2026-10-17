@@ -89,7 +89,7 @@ function MatchesPage() {
             {/* Unified Brand Navigation */}
             <Navbar />
 
-            <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 4 } }}>
+            <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 4 }, px: { xs: 1.5, sm: 3 } }}>
                 {/* Header & Search Bar */}
                 <Box
                     sx={{

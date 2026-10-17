@@ -449,7 +449,7 @@ function RandomVideoPage() {
                         <Paper
                             elevation={0}
                             sx={{
-                                p: { xs: 3, sm: 4 },
+                                p: { xs: 2, sm: 4 },
                                 borderRadius: "28px",
                                 backgroundColor: BRAND_COLORS.surfaceDark,
                                 color: "#FFFFFF",
@@ -737,7 +737,7 @@ function RandomVideoPage() {
                         sx={{
                             width: "100%",
                             maxWidth: 1100,
-                            height: { xs: "calc(100vh - 120px)", md: "calc(100vh - 140px)" },
+                            height: { xs: "calc(100dvh - 120px)", md: "calc(100vh - 140px)" },
                             position: "relative",
                             borderRadius: "28px",
                             overflow: "hidden",
@@ -763,27 +763,28 @@ function RandomVideoPage() {
                             <Box
                                 sx={{
                                     position: "absolute",
-                                    top: 18,
-                                    left: 18,
+                                    top: { xs: 12, sm: 18 },
+                                    left: { xs: 12, sm: 18 },
                                     backgroundColor: "rgba(11, 13, 23, 0.75)",
                                     backdropFilter: "blur(12px)",
                                     borderRadius: "16px",
-                                    px: 2,
-                                    py: 1,
+                                    px: { xs: 1.2, sm: 2 },
+                                    py: 0.8,
                                     display: "flex",
                                     alignItems: "center",
-                                    gap: 1.5,
+                                    gap: 1.2,
+                                    maxWidth: { xs: 170, sm: 260 },
                                     border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                 }}
                             >
-                                <Avatar src={partner.photos?.[0]} sx={{ width: 40, height: 40, border: `2px solid ${BRAND_COLORS.coralPink}` }}>
+                                <Avatar src={partner.photos?.[0]} sx={{ width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 }, border: `2px solid ${BRAND_COLORS.coralPink}` }}>
                                     {partner.name?.charAt(0) || "P"}
                                 </Avatar>
-                                <Box>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF", lineHeight: 1.2 }}>
+                                <Box sx={{ minWidth: 0, flex: 1 }}>
+                                    <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800, color: "#FFFFFF", lineHeight: 1.2, fontSize: { xs: "0.82rem", sm: "0.9rem" } }}>
                                         {partner.name}
                                     </Typography>
-                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    <Typography variant="caption" noWrap sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>
                                         @{partner.username}
                                     </Typography>
                                 </Box>
@@ -794,10 +795,10 @@ function RandomVideoPage() {
                         <Box
                             sx={{
                                 position: "absolute",
-                                top: 18,
-                                right: 18,
-                                width: { xs: 110, sm: 160, md: 220 },
-                                height: { xs: 150, sm: 120, md: 160 },
+                                top: { xs: 12, sm: 18 },
+                                right: { xs: 12, sm: 18 },
+                                width: { xs: 95, sm: 150, md: 220 },
+                                height: { xs: 130, sm: 110, md: 160 },
                                 borderRadius: "18px",
                                 overflow: "hidden",
                                 border: `2px solid rgba(255, 255, 255, 0.3)`,

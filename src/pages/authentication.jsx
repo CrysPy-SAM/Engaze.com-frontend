@@ -69,8 +69,10 @@ export default function Authentication() {
             let errorMessage = "An error occurred";
             if (err.response) {
                 errorMessage = err.response.data?.message || `Server error: ${err.response.status}`;
-            } else if (err.request) {
-                errorMessage = "Cannot connect to server. Please check if backend is running.";
+            } else if (err.message && (err.message.includes("warming up") || err.message.includes("waking up"))) {
+                errorMessage = err.message;
+            } else if (err.request || err.message === "Network Error") {
+                errorMessage = "Cannot reach server. The backend may be waking up (Render cold-start), please wait a moment and try again.";
             } else {
                 errorMessage = err.message || "An error occurred";
             }
@@ -297,7 +299,7 @@ export default function Authentication() {
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
-                    p: { xs: 3, sm: 5, md: 7 },
+                    p: { xs: 2.2, sm: 5, md: 7 },
                 }}
             >
                 <Box sx={{ maxWidth: 420, width: "100%", mx: "auto" }}>
