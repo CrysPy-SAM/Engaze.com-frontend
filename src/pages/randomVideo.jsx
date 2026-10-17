@@ -218,10 +218,16 @@ function RandomVideoPage() {
 
     // Process incoming WebRTC signals
     const handleRemoteSignal = useCallback(async (signalData, currentCallId) => {
+        // Discard signals that don't belong to the active call session
+        if (!currentCallId || (activeCallIdRef.current && activeCallIdRef.current !== currentCallId)) {
+            console.log("[WebRTC] Discarding signal from obsolete or mismatched callId:", currentCallId);
+            return;
+        }
+
         const pc = pcRef.current;
         if (!pc || activeCallIdRef.current !== currentCallId) {
             // Buffer incoming signal until peer connection finishes initialization
-            if (activeCallIdRef.current === currentCallId || !activeCallIdRef.current) {
+            if (activeCallIdRef.current === currentCallId) {
                 console.log("[WebRTC] Buffering signal while peer connection is initializing:", signalData?.type);
                 pendingSignalsRef.current.push({ signalData, currentCallId });
             }
@@ -463,21 +469,25 @@ function RandomVideoPage() {
     };
 
     const handleNextMatch = () => {
+        if (callState === "searching") return;
+        const currentCallId = callId || activeCallIdRef.current;
         cleanupPeerConnection();
+        setPartner(null);
+        setCallId(null);
         setCallState("searching");
         if (socketRef.current) {
-            socketRef.current.emit("random:next", { callId });
-            socketRef.current.emit("random:join-queue");
+            socketRef.current.emit("random:next", { callId: currentCallId });
         }
     };
 
     const handleEndCall = () => {
+        const currentCallId = callId || activeCallIdRef.current;
         cleanupPeerConnection();
         setCallState("idle");
         setPartner(null);
         setCallId(null);
         if (socketRef.current) {
-            socketRef.current.emit("random:end-call", { callId });
+            socketRef.current.emit("random:end-call", { callId: currentCallId });
         }
         showToast("Call ended.", "info");
     };

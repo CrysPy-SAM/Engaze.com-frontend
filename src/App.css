@@ -147,6 +147,47 @@ body {
   animation: matchGlow 2s infinite ease-in-out;
 }
 
+/* Tinder-style Like / Pass Stamps */
+.swipe-stamp-like {
+  position: absolute;
+  top: 40px;
+  left: 30px;
+  z-index: 10;
+  border: 4px solid #10B981;
+  color: #10B981;
+  background-color: rgba(16, 185, 129, 0.15);
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  padding: 6px 16px;
+  border-radius: 12px;
+  transform: rotate(-18deg);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+  pointer-events: none;
+  user-select: none;
+}
+
+.swipe-stamp-nope {
+  position: absolute;
+  top: 40px;
+  right: 30px;
+  z-index: 10;
+  border: 4px solid #EF4444;
+  color: #EF4444;
+  background-color: rgba(239, 68, 68, 0.15);
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  padding: 6px 16px;
+  border-radius: 12px;
+  transform: rotate(18deg);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+  pointer-events: none;
+  user-select: none;
+}
+
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -193,6 +193,13 @@ function ChatPage() {
 
     // 2. Load conversations and handle query params (e.g. ?matchId=...)
     const loadConversations = useCallback(async () => {
+        // If the conversation specified in the query parameter is already active, don't re-trigger loading
+        const queryParams = new URLSearchParams(location.search);
+        const convIdParam = queryParams.get("conversationId") || paramConvId;
+        if (convIdParam && activeConvRef.current?._id?.toString() === convIdParam.toString()) {
+            return;
+        }
+
         setLoadingConversations(true);
         setConversationsError(null);
         try {
@@ -200,30 +207,44 @@ function ChatPage() {
             const convList = data?.conversations || [];
             setConversations(convList);
 
-            // Check if URL has ?matchId=...
+            // Check if URL has ?conversationId=... or :conversationId
             const queryParams = new URLSearchParams(location.search);
+            const convIdParam = queryParams.get("conversationId") || paramConvId;
             const matchId = queryParams.get("matchId");
 
+            if (convIdParam) {
+                const target = convList.find((c) => c._id.toString() === convIdParam.toString());
+                if (target) {
+                    setActiveConversation(target);
+                    setMobileShowChat(true);
+                    return;
+                }
+            }
+
             if (matchId) {
+                const existing = convList.find((c) =>
+                    c.match?._id?.toString() === matchId.toString() ||
+                    c.match?.toString() === matchId.toString() ||
+                    c._id?.toString() === matchId.toString()
+                );
+                if (existing) {
+                    setActiveConversation(existing);
+                    setMobileShowChat(true);
+                    return;
+                }
+
                 const matchRes = await getOrCreateConversationByMatch(matchId);
                 if (matchRes?.conversation) {
                     const targetConv = matchRes.conversation;
                     setActiveConversation(targetConv);
                     setMobileShowChat(true);
 
-                    if (!convList.some((c) => c._id === targetConv._id)) {
-                        setConversations([targetConv, ...convList]);
-                    }
-                    return;
-                }
-            }
-
-            // Check if URL has :conversationId
-            if (paramConvId) {
-                const target = convList.find((c) => c._id === paramConvId);
-                if (target) {
-                    setActiveConversation(target);
-                    setMobileShowChat(true);
+                    setConversations((prev) => {
+                        if (!prev.some((c) => c._id.toString() === targetConv._id.toString())) {
+                            return [targetConv, ...prev];
+                        }
+                        return prev;
+                    });
                     return;
                 }
             }
@@ -250,9 +271,15 @@ function ChatPage() {
 
     // 3. Load messages when activeConversation changes
     useEffect(() => {
-        if (!activeConversation?._id) return;
+        if (!activeConversation?._id) {
+            setMessages([]);
+            return;
+        }
 
         const convId = activeConversation._id;
+
+        // Immediately clear previous messages to prevent leakage between conversations
+        setMessages([]);
 
         // Join room in socket
         if (socketRef.current?.connected) {
@@ -260,26 +287,38 @@ function ChatPage() {
             socketRef.current.emit("chat:read", { conversationId: convId });
         }
 
+        let isCancelled = false;
+
         const fetchMessages = async () => {
             setLoadingMessages(true);
             try {
                 const data = await getConversationMessages(convId, 1, 50);
-                if (data?.messages) {
+                if (!isCancelled && data?.messages) {
                     setMessages(data.messages);
                     setTimeout(scrollToBottom, 100);
                 }
-                await markConversationRead(convId);
-                setConversations((prev) =>
-                    prev.map((c) => (c._id === convId ? { ...c, unreadCount: 0 } : c))
-                );
+                if (!isCancelled) {
+                    await markConversationRead(convId);
+                    setConversations((prev) =>
+                        prev.map((c) => (c._id === convId ? { ...c, unreadCount: 0 } : c))
+                    );
+                }
             } catch (err) {
-                console.error("Failed to load messages:", err);
+                if (!isCancelled) {
+                    console.error("Failed to load messages:", err);
+                }
             } finally {
-                setLoadingMessages(false);
+                if (!isCancelled) {
+                    setLoadingMessages(false);
+                }
             }
         };
 
         fetchMessages();
+
+        return () => {
+            isCancelled = true;
+        };
     }, [activeConversation?._id, getConversationMessages, markConversationRead]);
 
     // 4. Send Message Handler
@@ -587,6 +626,7 @@ function ChatPage() {
                                                 onClick={() => {
                                                     setActiveConversation(conv);
                                                     setMobileShowChat(true);
+                                                    navigate(`/chat?conversationId=${conv._id}`, { replace: true });
                                                 }}
                                                 sx={{
                                                     p: 1.5,
@@ -711,7 +751,10 @@ function ChatPage() {
                                     {isMobile && (
                                         <IconButton
                                             edge="start"
-                                            onClick={() => setMobileShowChat(false)}
+                                            onClick={() => {
+                                                setMobileShowChat(false);
+                                                navigate("/chat", { replace: true });
+                                            }}
                                             sx={{ color: "#FFFFFF", p: { xs: 0.5, sm: 1 } }}
                                         >
                                             <ArrowBackIcon fontSize="small" />

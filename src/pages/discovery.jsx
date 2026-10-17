@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from "react";
+import React, { useContext, useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import withAuth from "../utils/withAuth";
 import { AuthContext } from "../contexts/AuthContext";
@@ -55,6 +55,12 @@ function DiscoveryPage() {
     // Match celebration modal state
     const [matchModalOpen, setMatchModalOpen] = useState(false);
     const [matchedUserData, setMatchedUserData] = useState(null);
+    const [matchedMatchData, setMatchedMatchData] = useState(null);
+
+    // Interactive Drag / Swipe Gesture State
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartRef = useRef({ x: 0, y: 0 });
 
     // Toast notification state
     const [toastMessage, setToastMessage] = useState("");
@@ -113,11 +119,13 @@ function DiscoveryPage() {
         ? currentProfile.photos
         : ["/logo192.png"];
 
-    // Reset photo index and bio toggle when active profile changes
+    // Reset photo index, bio toggle, and drag offsets when active profile changes
     useEffect(() => {
         setCurrentPhotoIndex(0);
         setShowFullBio(false);
         setSwipeAnimation("");
+        setDragOffset({ x: 0, y: 0 });
+        setIsDragging(false);
     }, [currentIndex]);
 
     // Check if next page of profiles should be preloaded
@@ -141,6 +149,7 @@ function DiscoveryPage() {
             // Check if mutual match occurred
             if (res && res.isMatch && res.match) {
                 setMatchedUserData(res.match.matchedUser || currentProfile);
+                setMatchedMatchData(res.match);
                 setMatchModalOpen(true);
             }
 
@@ -148,6 +157,7 @@ function DiscoveryPage() {
             setTimeout(() => {
                 setCurrentIndex((prev) => prev + 1);
                 setSwipeAnimation("");
+                setDragOffset({ x: 0, y: 0 });
                 setSwiping(false);
             }, 300);
         } catch (err) {
@@ -156,9 +166,47 @@ function DiscoveryPage() {
             setToastSeverity("error");
             setOpenToast(true);
             setSwipeAnimation("");
+            setDragOffset({ x: 0, y: 0 });
             setSwiping(false);
         }
     }, [currentProfile, swiping, sendSwipe]);
+
+    // Pointer Drag Handlers for True Tinder-Style Swipe Gestures
+    const handlePointerDown = useCallback((e) => {
+        if (swiping || loading || !currentProfile) return;
+        if (e.target.closest("button") || e.target.closest(".photo-nav-zone")) return;
+        setIsDragging(true);
+        dragStartRef.current = { x: e.clientX, y: e.clientY };
+        try {
+            e.currentTarget.setPointerCapture(e.pointerId);
+        } catch (_) {}
+    }, [swiping, loading, currentProfile]);
+
+    const handlePointerMove = useCallback((e) => {
+        if (!isDragging || swiping) return;
+        const deltaX = e.clientX - dragStartRef.current.x;
+        const deltaY = e.clientY - dragStartRef.current.y;
+        setDragOffset({ x: deltaX, y: deltaY });
+    }, [isDragging, swiping]);
+
+    const handlePointerUp = useCallback((e) => {
+        if (!isDragging) return;
+        setIsDragging(false);
+        try {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+        } catch (_) {}
+
+        const threshold = 100;
+        if (dragOffset.x > threshold) {
+            setDragOffset({ x: 0, y: 0 });
+            handleSwipeAction("like");
+        } else if (dragOffset.x < -threshold) {
+            setDragOffset({ x: 0, y: 0 });
+            handleSwipeAction("pass");
+        } else {
+            setDragOffset({ x: 0, y: 0 });
+        }
+    }, [isDragging, dragOffset.x, handleSwipeAction]);
 
     // Photo gallery controls
     const handleNextPhoto = useCallback((e) => {
@@ -273,6 +321,10 @@ function DiscoveryPage() {
 
                         <Card
                             className={swipeAnimation}
+                            onPointerDown={handlePointerDown}
+                            onPointerMove={handlePointerMove}
+                            onPointerUp={handlePointerUp}
+                            onPointerCancel={handlePointerUp}
                             sx={{
                                 width: "100%",
                                 height: { xs: "calc(100dvh - 230px)", sm: 580, md: 600 },
@@ -285,9 +337,34 @@ function DiscoveryPage() {
                                 border: `1px solid rgba(255, 255, 255, 0.1)`,
                                 boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
                                 userSelect: "none",
-                                transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                                touchAction: "pan-y",
+                                cursor: isDragging ? "grabbing" : "grab",
+                                transform: isDragging
+                                    ? `translate3d(${dragOffset.x}px, ${dragOffset.y * 0.35}px, 0) rotate(${Math.min(15, Math.max(-15, dragOffset.x * 0.08))}deg)`
+                                    : undefined,
+                                transition: isDragging
+                                    ? "none"
+                                    : "transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease",
                             }}
                         >
+                            {/* Visual Like / Pass Action Stamp Feedback */}
+                            {isDragging && dragOffset.x > 35 && (
+                                <Box
+                                    className="swipe-stamp-like"
+                                    sx={{ opacity: Math.min(1, (dragOffset.x - 35) / 65) }}
+                                >
+                                    LIKE
+                                </Box>
+                            )}
+                            {isDragging && dragOffset.x < -35 && (
+                                <Box
+                                    className="swipe-stamp-nope"
+                                    sx={{ opacity: Math.min(1, (Math.abs(dragOffset.x) - 35) / 65) }}
+                                >
+                                    NOPE
+                                </Box>
+                            )}
+
                             {/* Main Portrait Photo */}
                             <Box
                                 component="img"
@@ -301,6 +378,7 @@ function DiscoveryPage() {
                                     height: "100%",
                                     objectFit: "cover",
                                     display: "block",
+                                    pointerEvents: "none",
                                 }}
                             />
 
@@ -336,6 +414,7 @@ function DiscoveryPage() {
                             {/* Left / Right Interactive Tap Zones for Photo Navigation */}
                             <Box
                                 onClick={handlePrevPhoto}
+                                className="photo-nav-zone"
                                 sx={{
                                     position: "absolute",
                                     top: 30,
@@ -348,6 +427,7 @@ function DiscoveryPage() {
                             />
                             <Box
                                 onClick={handleNextPhoto}
+                                className="photo-nav-zone"
                                 sx={{
                                     position: "absolute",
                                     top: 30,
@@ -745,7 +825,13 @@ function DiscoveryPage() {
                             startIcon={<ChatIcon />}
                             onClick={() => {
                                 setMatchModalOpen(false);
-                                navigate("/chat");
+                                if (matchedMatchData?.conversationId) {
+                                    navigate(`/chat?conversationId=${matchedMatchData.conversationId}`);
+                                } else if (matchedMatchData?._id) {
+                                    navigate(`/chat?matchId=${matchedMatchData._id}`);
+                                } else {
+                                    navigate("/chat");
+                                }
                             }}
                             sx={{
                                 background: BRAND_COLORS.primaryGradient,
