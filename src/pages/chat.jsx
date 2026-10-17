@@ -179,6 +179,13 @@ function ChatPage() {
             }
         });
 
+        // Real-time mutual match handler
+        socket.on("match:new", () => {
+            if (loadConversationsRef.current) {
+                loadConversationsRef.current();
+            }
+        });
+
         return () => {
             socket.disconnect();
         };

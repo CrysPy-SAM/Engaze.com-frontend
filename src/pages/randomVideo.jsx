@@ -71,8 +71,10 @@ function RandomVideoPage() {
     const pcRef = useRef(null);
     const localStreamRef = useRef(null);
     const localVideoRef = useRef(null);
+    const remoteStreamRef = useRef(null);
     const remoteVideoRef = useRef(null);
     const iceCandidateQueue = useRef([]);
+    const pendingSignalsRef = useRef([]);
     const isInitiatorRef = useRef(false);
     const activeCallIdRef = useRef(null);
     const timerRef = useRef(null);
@@ -100,6 +102,7 @@ function RandomVideoPage() {
             localStreamRef.current = stream;
             if (localVideoRef.current) {
                 localVideoRef.current.srcObject = stream;
+                localVideoRef.current.play().catch(() => {});
             }
             setMediaError("");
             return stream;
@@ -124,13 +127,22 @@ function RandomVideoPage() {
             pcRef.current.ontrack = null;
             pcRef.current.onicecandidate = null;
             pcRef.current.onconnectionstatechange = null;
-            pcRef.current.close();
+            try {
+                pcRef.current.close();
+            } catch (e) {
+                console.warn("[WebRTC] Error closing peer connection:", e);
+            }
             pcRef.current = null;
+        }
+        if (remoteStreamRef.current) {
+            remoteStreamRef.current.getTracks().forEach((track) => track.stop());
+            remoteStreamRef.current = null;
         }
         if (remoteVideoRef.current) {
             remoteVideoRef.current.srcObject = null;
         }
         iceCandidateQueue.current = [];
+        pendingSignalsRef.current = [];
         isInitiatorRef.current = false;
         activeCallIdRef.current = null;
     }, []);
@@ -153,9 +165,30 @@ function RandomVideoPage() {
         }
 
         pc.ontrack = (event) => {
-            if (remoteVideoRef.current && event.streams && event.streams[0]) {
-                remoteVideoRef.current.srcObject = event.streams[0];
-                setCallState("connected");
+            console.log("[WebRTC] ontrack received track:", event.track.kind);
+            let stream = remoteStreamRef.current;
+            if (!stream) {
+                stream = (event.streams && event.streams[0]) ? event.streams[0] : new MediaStream();
+                remoteStreamRef.current = stream;
+            }
+            if (event.streams && event.streams[0]) {
+                remoteStreamRef.current = event.streams[0];
+            } else {
+                if (!stream.getTracks().includes(event.track)) {
+                    stream.addTrack(event.track);
+                }
+            }
+
+            // Always transition callState to connected immediately upon receiving remote track
+            setCallState("connected");
+
+            if (remoteVideoRef.current && remoteStreamRef.current) {
+                if (remoteVideoRef.current.srcObject !== remoteStreamRef.current) {
+                    remoteVideoRef.current.srcObject = remoteStreamRef.current;
+                }
+                remoteVideoRef.current.play().catch((err) => {
+                    console.warn("[WebRTC] remote video play error:", err);
+                });
             }
         };
 
@@ -172,6 +205,7 @@ function RandomVideoPage() {
         };
 
         pc.onconnectionstatechange = () => {
+            console.log("[WebRTC] connectionState:", pc.connectionState);
             if (pc.connectionState === "connected") {
                 setCallState("connected");
             } else if (pc.connectionState === "disconnected" || pc.connectionState === "failed") {
@@ -185,15 +219,27 @@ function RandomVideoPage() {
     // Process incoming WebRTC signals
     const handleRemoteSignal = useCallback(async (signalData, currentCallId) => {
         const pc = pcRef.current;
-        if (!pc || activeCallIdRef.current !== currentCallId) return;
+        if (!pc || activeCallIdRef.current !== currentCallId) {
+            // Buffer incoming signal until peer connection finishes initialization
+            if (activeCallIdRef.current === currentCallId || !activeCallIdRef.current) {
+                console.log("[WebRTC] Buffering signal while peer connection is initializing:", signalData?.type);
+                pendingSignalsRef.current.push({ signalData, currentCallId });
+            }
+            return;
+        }
 
         try {
             if (signalData.type === "offer") {
+                console.log("[WebRTC] Received offer, setting remote description");
                 await pc.setRemoteDescription(new RTCSessionDescription(signalData.sdp));
 
                 while (iceCandidateQueue.current.length > 0) {
                     const cand = iceCandidateQueue.current.shift();
-                    await pc.addIceCandidate(new RTCIceCandidate(cand));
+                    try {
+                        await pc.addIceCandidate(new RTCIceCandidate(cand));
+                    } catch (e) {
+                        console.warn("[WebRTC] Error adding queued ICE candidate:", e);
+                    }
                 }
 
                 const answer = await pc.createAnswer();
@@ -209,15 +255,26 @@ function RandomVideoPage() {
                     });
                 }
             } else if (signalData.type === "answer") {
-                await pc.setRemoteDescription(new RTCSessionDescription(signalData.sdp));
+                console.log("[WebRTC] Received answer, setting remote description");
+                if (pc.signalingState === "have-local-offer") {
+                    await pc.setRemoteDescription(new RTCSessionDescription(signalData.sdp));
 
-                while (iceCandidateQueue.current.length > 0) {
-                    const cand = iceCandidateQueue.current.shift();
-                    await pc.addIceCandidate(new RTCIceCandidate(cand));
+                    while (iceCandidateQueue.current.length > 0) {
+                        const cand = iceCandidateQueue.current.shift();
+                        try {
+                            await pc.addIceCandidate(new RTCIceCandidate(cand));
+                        } catch (e) {
+                            console.warn("[WebRTC] Error adding queued ICE candidate:", e);
+                        }
+                    }
                 }
             } else if (signalData.type === "ice-candidate") {
                 if (pc.remoteDescription && pc.remoteDescription.type) {
-                    await pc.addIceCandidate(new RTCIceCandidate(signalData.candidate));
+                    try {
+                        await pc.addIceCandidate(new RTCIceCandidate(signalData.candidate));
+                    } catch (e) {
+                        console.warn("[WebRTC] Error adding ICE candidate:", e);
+                    }
                 } else {
                     iceCandidateQueue.current.push(signalData.candidate);
                 }
@@ -251,6 +308,7 @@ function RandomVideoPage() {
         });
 
         socket.on("random:matched", async ({ callId: newCallId, isInitiator, partner: matchedPartner }) => {
+            activeCallIdRef.current = newCallId;
             setCallId(newCallId);
             setPartner(matchedPartner);
             setCallState("connecting");
@@ -258,6 +316,16 @@ function RandomVideoPage() {
 
             await initializeMedia();
             const pc = createPeerConnection(newCallId, isInitiator);
+
+            // Drain any signals that arrived while initializeMedia was executing
+            if (pendingSignalsRef.current.length > 0) {
+                console.log(`[WebRTC] Processing ${pendingSignalsRef.current.length} queued signals`);
+                const queued = [...pendingSignalsRef.current];
+                pendingSignalsRef.current = [];
+                for (const item of queued) {
+                    await handleRemoteSignal(item.signalData, item.currentCallId || newCallId);
+                }
+            }
 
             if (isInitiator) {
                 try {
@@ -319,9 +387,34 @@ function RandomVideoPage() {
         };
     }, [token, navigate, initializeMedia, createPeerConnection, handleRemoteSignal, cleanupPeerConnection, showToast]);
 
+    // Continuously synchronize media streams with video DOM elements whenever callState changes
     useEffect(() => {
-        if (localVideoRef.current && localStreamRef.current) {
-            localVideoRef.current.srcObject = localStreamRef.current;
+        if (callState === "connected") {
+            if (remoteVideoRef.current && remoteStreamRef.current) {
+                if (remoteVideoRef.current.srcObject !== remoteStreamRef.current) {
+                    remoteVideoRef.current.srcObject = remoteStreamRef.current;
+                }
+                remoteVideoRef.current.play().catch((err) => {
+                    console.warn("[WebRTC] remote video play error:", err);
+                });
+            }
+            if (localVideoRef.current && localStreamRef.current) {
+                if (localVideoRef.current.srcObject !== localStreamRef.current) {
+                    localVideoRef.current.srcObject = localStreamRef.current;
+                }
+                localVideoRef.current.play().catch((err) => {
+                    console.warn("[WebRTC] local video play error:", err);
+                });
+            }
+        } else if (callState === "idle") {
+            if (localVideoRef.current && localStreamRef.current) {
+                if (localVideoRef.current.srcObject !== localStreamRef.current) {
+                    localVideoRef.current.srcObject = localStreamRef.current;
+                }
+                localVideoRef.current.play().catch((err) => {
+                    console.warn("[WebRTC] local preview play error:", err);
+                });
+            }
         }
     }, [callState]);
 
@@ -504,7 +597,13 @@ function RandomVideoPage() {
                                 }}
                             >
                                 <video
-                                    ref={localVideoRef}
+                                    ref={(el) => {
+                                        localVideoRef.current = el;
+                                        if (el && localStreamRef.current && el.srcObject !== localStreamRef.current) {
+                                            el.srcObject = localStreamRef.current;
+                                            el.play().catch(() => {});
+                                        }
+                                    }}
                                     autoPlay
                                     playsInline
                                     muted
@@ -748,7 +847,13 @@ function RandomVideoPage() {
                     >
                         {/* Remote Video (Main) */}
                         <video
-                            ref={remoteVideoRef}
+                            ref={(el) => {
+                                remoteVideoRef.current = el;
+                                if (el && remoteStreamRef.current && el.srcObject !== remoteStreamRef.current) {
+                                    el.srcObject = remoteStreamRef.current;
+                                    el.play().catch(() => {});
+                                }
+                            }}
                             autoPlay
                             playsInline
                             style={{
@@ -808,7 +913,13 @@ function RandomVideoPage() {
                             }}
                         >
                             <video
-                                ref={localVideoRef}
+                                ref={(el) => {
+                                    localVideoRef.current = el;
+                                    if (el && localStreamRef.current && el.srcObject !== localStreamRef.current) {
+                                        el.srcObject = localStreamRef.current;
+                                        el.play().catch(() => {});
+                                    }
+                                }}
                                 autoPlay
                                 playsInline
                                 muted
