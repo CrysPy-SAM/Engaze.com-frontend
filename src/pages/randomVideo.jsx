@@ -35,6 +35,7 @@ import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SearchIcon from "@mui/icons-material/Search";
 import SecurityIcon from "@mui/icons-material/Security";
 import SparklesIcon from "@mui/icons-material/AutoAwesome";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 
 const ICE_SERVERS = {
     iceServers: [
@@ -60,6 +61,7 @@ function RandomVideoPage() {
     const [mediaError, setMediaError] = useState("");
     const [permissionDeniedDialog, setPermissionDeniedDialog] = useState(false);
     const [endReasonNotice, setEndReasonNotice] = useState("");
+    const [audioPlaybackBlocked, setAudioPlaybackBlocked] = useState(false);
 
     // Notification toast
     const [toastMessage, setToastMessage] = useState("");
@@ -86,6 +88,76 @@ function RandomVideoPage() {
     }, []);
 
     // -------------------------------------------------------------
+    // Audio Route & Playback Recovery Engine
+    // -------------------------------------------------------------
+    const resumeRemoteAudio = useCallback(async () => {
+        const videoEl = remoteVideoRef.current;
+        if (!videoEl) return;
+
+        try {
+            // Reset sinkId to system default output (built-in speaker on mobile)
+            if (typeof videoEl.setSinkId === "function") {
+                try {
+                    await videoEl.setSinkId("");
+                } catch (sinkErr) {
+                    console.warn("[WebRTC Audio] setSinkId('') error:", sinkErr);
+                }
+            }
+
+            videoEl.muted = false;
+            videoEl.volume = 1.0;
+
+            if (videoEl.paused) {
+                console.log("[WebRTC Audio] Resuming paused remote video/audio element");
+                await videoEl.play();
+            }
+            setAudioPlaybackBlocked(false);
+        } catch (err) {
+            console.warn("[WebRTC Audio] resumeRemoteAudio error:", err);
+            if (err.name === "NotAllowedError" || err.name === "NotSupportedError") {
+                setAudioPlaybackBlocked(true);
+            }
+        }
+    }, []);
+
+    const recoverLocalAudioTrack = useCallback(async () => {
+        if (!localStreamRef.current || !pcRef.current) return;
+
+        const currentAudioTracks = localStreamRef.current.getAudioTracks();
+        const isTrackDead =
+            currentAudioTracks.length === 0 ||
+            currentAudioTracks.some((t) => t.readyState === "ended");
+
+        if (isTrackDead) {
+            console.log("[WebRTC Audio] Local audio track ended after device change. Re-acquiring microphone...");
+            try {
+                const newStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true,
+                    },
+                });
+                const newAudioTrack = newStream.getAudioTracks()[0];
+                if (!newAudioTrack) return;
+
+                currentAudioTracks.forEach((t) => t.stop());
+                currentAudioTracks.forEach((t) => localStreamRef.current.removeTrack(t));
+                localStreamRef.current.addTrack(newAudioTrack);
+
+                const senders = pcRef.current.getSenders();
+                const audioSender = senders.find((s) => s.track && s.track.kind === "audio");
+                if (audioSender) {
+                    await audioSender.replaceTrack(newAudioTrack);
+                    console.log("[WebRTC Audio] Successfully replaced audio track on RTCRtpSender with built-in mic");
+                }
+            } catch (err) {
+                console.warn("[WebRTC Audio] Could not re-acquire local microphone:", err);
+            }
+        }
+    }, []);
+
+    // -------------------------------------------------------------
     // 1. Initialize Local Media Stream
     // -------------------------------------------------------------
     const initializeMedia = useCallback(async () => {
@@ -96,7 +168,11 @@ function RandomVideoPage() {
 
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-                audio: true,
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                },
             });
 
             localStreamRef.current = stream;
@@ -139,8 +215,10 @@ function RandomVideoPage() {
             remoteStreamRef.current = null;
         }
         if (remoteVideoRef.current) {
+            remoteVideoRef.current.pause();
             remoteVideoRef.current.srcObject = null;
         }
+        setAudioPlaybackBlocked(false);
         iceCandidateQueue.current = [];
         pendingSignalsRef.current = [];
         isInitiatorRef.current = false;
@@ -179,6 +257,21 @@ function RandomVideoPage() {
                 }
             }
 
+            // Route & unmute recovery listeners for audio track
+            if (event.track.kind === "audio") {
+                const audioTrack = event.track;
+                audioTrack.onmute = () => {
+                    console.log("[WebRTC Audio] Remote audio track muted (switching route/device)");
+                };
+                audioTrack.onunmute = () => {
+                    console.log("[WebRTC Audio] Remote audio track unmuted - restoring audio playback");
+                    resumeRemoteAudio();
+                };
+                audioTrack.onended = () => {
+                    console.log("[WebRTC Audio] Remote audio track ended");
+                };
+            }
+
             // Always transition callState to connected immediately upon receiving remote track
             setCallState("connected");
 
@@ -188,6 +281,9 @@ function RandomVideoPage() {
                 }
                 remoteVideoRef.current.play().catch((err) => {
                     console.warn("[WebRTC] remote video play error:", err);
+                    if (err.name === "NotAllowedError") {
+                        setAudioPlaybackBlocked(true);
+                    }
                 });
             }
         };
@@ -214,7 +310,7 @@ function RandomVideoPage() {
         };
 
         return pc;
-    }, [cleanupPeerConnection, showToast]);
+    }, [cleanupPeerConnection, resumeRemoteAudio, showToast]);
 
     // Process incoming WebRTC signals
     const handleRemoteSignal = useCallback(async (signalData, currentCallId) => {
@@ -442,6 +538,52 @@ function RandomVideoPage() {
     }, [callState]);
 
     // -------------------------------------------------------------
+    // Hardware Audio & Routing Event Handlers (Bluetooth Disconnect Recovery)
+    // -------------------------------------------------------------
+    useEffect(() => {
+        let deviceChangeTimeout = null;
+
+        const handleDeviceChange = async () => {
+            console.log("[WebRTC Audio] Audio device change detected (Bluetooth connect/disconnect)");
+            clearTimeout(deviceChangeTimeout);
+            deviceChangeTimeout = setTimeout(async () => {
+                if (activeCallIdRef.current) {
+                    await resumeRemoteAudio();
+                    await recoverLocalAudioTrack();
+                }
+            }, 200);
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible" && activeCallIdRef.current) {
+                console.log("[WebRTC Audio] Tab returned to visible - verifying audio playback");
+                resumeRemoteAudio();
+            }
+        };
+
+        const handleWindowFocus = () => {
+            if (activeCallIdRef.current) {
+                resumeRemoteAudio();
+            }
+        };
+
+        if (navigator.mediaDevices?.addEventListener) {
+            navigator.mediaDevices.addEventListener("devicechange", handleDeviceChange);
+        }
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("focus", handleWindowFocus);
+
+        return () => {
+            clearTimeout(deviceChangeTimeout);
+            if (navigator.mediaDevices?.removeEventListener) {
+                navigator.mediaDevices.removeEventListener("devicechange", handleDeviceChange);
+            }
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("focus", handleWindowFocus);
+        };
+    }, [resumeRemoteAudio, recoverLocalAudioTrack]);
+
+    // -------------------------------------------------------------
     // 4. User Actions: Start, Cancel, Next, End, Mute, Camera
     // -------------------------------------------------------------
     const handleStartSearch = async () => {
@@ -511,6 +653,37 @@ function RandomVideoPage() {
                 videoTracks.forEach((t) => (t.enabled = nextState));
                 setVideoEnabled(nextState);
             }
+        }
+    };
+
+    const handleRouteAudioToSpeaker = async () => {
+        try {
+            if (
+                navigator.mediaDevices &&
+                typeof navigator.mediaDevices.selectAudioOutput === "function"
+            ) {
+                try {
+                    const audioDevice = await navigator.mediaDevices.selectAudioOutput();
+                    if (
+                        remoteVideoRef.current &&
+                        typeof remoteVideoRef.current.setSinkId === "function"
+                    ) {
+                        await remoteVideoRef.current.setSinkId(audioDevice.deviceId);
+                        showToast(`Audio output: ${audioDevice.label || "Speaker"}`, "success");
+                        return;
+                    }
+                } catch (selErr) {
+                    if (selErr.name !== "AbortError" && selErr.name !== "NotAllowedError") {
+                        console.warn("[WebRTC Audio] selectAudioOutput error:", selErr);
+                    }
+                }
+            }
+
+            // Default fallback: resume audio and route to default built-in speaker
+            await resumeRemoteAudio();
+            showToast("Audio routed to phone speaker 🔊", "success");
+        } catch (e) {
+            console.warn("[WebRTC Audio] handleRouteAudioToSpeaker error:", e);
         }
     };
 
@@ -861,17 +1034,60 @@ function RandomVideoPage() {
                                 remoteVideoRef.current = el;
                                 if (el && remoteStreamRef.current && el.srcObject !== remoteStreamRef.current) {
                                     el.srcObject = remoteStreamRef.current;
-                                    el.play().catch(() => {});
+                                    el.play().catch((err) => {
+                                        if (err.name === "NotAllowedError") {
+                                            setAudioPlaybackBlocked(true);
+                                        }
+                                    });
                                 }
                             }}
                             autoPlay
                             playsInline
+                            onPause={() => {
+                                if (activeCallIdRef.current) {
+                                    console.log("[WebRTC Audio] Remote video paused by browser (e.g. Bluetooth disconnected). Auto-resuming...");
+                                    setTimeout(() => {
+                                        resumeRemoteAudio();
+                                    }, 100);
+                                }
+                            }}
+                            onPlay={() => setAudioPlaybackBlocked(false)}
                             style={{
                                 width: "100%",
                                 height: "100%",
                                 objectFit: "cover",
                             }}
                         />
+
+                        {/* Floating Audio Playback Blocked Alert (Tap to Resume) */}
+                        {audioPlaybackBlocked && (
+                            <Box
+                                onClick={resumeRemoteAudio}
+                                sx={{
+                                    position: "absolute",
+                                    top: { xs: 70, sm: 80 },
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    backgroundColor: "rgba(253, 58, 115, 0.95)",
+                                    backdropFilter: "blur(12px)",
+                                    borderRadius: "9999px",
+                                    px: { xs: 2.2, sm: 3 },
+                                    py: 0.9,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1.2,
+                                    boxShadow: "0 8px 30px rgba(253, 58, 115, 0.5)",
+                                    cursor: "pointer",
+                                    zIndex: 25,
+                                    border: "1px solid rgba(255, 255, 255, 0.3)",
+                                }}
+                            >
+                                <VolumeUpIcon sx={{ fontSize: 20, color: "#FFFFFF" }} />
+                                <Typography variant="body2" sx={{ fontWeight: 800, color: "#FFFFFF", fontSize: { xs: "0.82rem", sm: "0.9rem" } }}>
+                                    Audio Paused — Tap to Hear Sound 🔊
+                                </Typography>
+                            </Box>
+                        )}
 
                         {/* Partner Profile Badge (Top Left) */}
                         {partner && (
@@ -1005,6 +1221,22 @@ function RandomVideoPage() {
                                     }}
                                 >
                                     {videoEnabled ? <VideocamIcon /> : <VideocamOffIcon />}
+                                </IconButton>
+                            </Tooltip>
+
+                            {/* Audio Output / Speaker Route Button */}
+                            <Tooltip title="Route Audio to Phone Speaker / Output">
+                                <IconButton
+                                    onClick={handleRouteAudioToSpeaker}
+                                    sx={{
+                                        backgroundColor: "rgba(255, 255, 255, 0.12)",
+                                        color: "#FFFFFF",
+                                        "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.22)" },
+                                        width: 46,
+                                        height: 46,
+                                    }}
+                                >
+                                    <VolumeUpIcon />
                                 </IconButton>
                             </Tooltip>
 

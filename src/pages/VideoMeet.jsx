@@ -74,6 +74,40 @@ export default function VideoMeetComponent() {
         // eslint-disable-next-line
     }, [])
 
+    useEffect(() => {
+        const handleDeviceChange = () => {
+            console.log('[VideoMeet Audio] Audio device change detected (Bluetooth connect/disconnect)');
+            setTimeout(() => {
+                const videoElements = document.querySelectorAll(`.${styles.conferenceView} video`);
+                videoElements.forEach(async (el) => {
+                    try {
+                        if (typeof el.setSinkId === 'function') {
+                            await el.setSinkId('');
+                        }
+                        el.muted = false;
+                        if (el.paused) {
+                            await el.play();
+                        }
+                    } catch (e) {
+                        console.warn('[VideoMeet Audio] Recovery error:', e);
+                    }
+                });
+            }, 200);
+        };
+
+        if (navigator.mediaDevices?.addEventListener) {
+            navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
+        }
+        document.addEventListener('visibilitychange', handleDeviceChange);
+
+        return () => {
+            if (navigator.mediaDevices?.removeEventListener) {
+                navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
+            }
+            document.removeEventListener('visibilitychange', handleDeviceChange);
+        };
+    }, []);
+
     const getPermissions = async () => {
         try {
             const videoPermission = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -522,11 +556,28 @@ export default function VideoMeetComponent() {
                                     data-socket={video.socketId}
                                     ref={ref => {
                                         if (ref && video.stream) {
-                                            ref.srcObject = video.stream;
+                                            if (ref.srcObject !== video.stream) {
+                                                ref.srcObject = video.stream;
+                                            }
+                                            ref.play().catch(() => {});
                                         }
                                     }}
                                     autoPlay
                                     playsInline
+                                    onPause={(e) => {
+                                        const el = e.currentTarget;
+                                        if (el) {
+                                            setTimeout(async () => {
+                                                try {
+                                                    if (typeof el.setSinkId === 'function') {
+                                                        await el.setSinkId('');
+                                                    }
+                                                    el.muted = false;
+                                                    if (el.paused) await el.play();
+                                                } catch (err) {}
+                                            }, 100);
+                                        }
+                                    }}
                                 >
                                 </video>
                             </div>
