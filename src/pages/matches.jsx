@@ -9,10 +9,19 @@ import {
     Avatar,
     Box,
     Button,
-    Card,
     Container,
-    Grid,
+    Dialog,
+    DialogContent,
+    Divider,
+    IconButton,
     InputAdornment,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemButton,
+    ListItemText,
+    Menu,
+    MenuItem,
     Paper,
     Skeleton,
     Stack,
@@ -20,72 +29,94 @@ import {
     Typography,
 } from "@mui/material";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
-import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
-import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import WhatshotRoundedIcon from "@mui/icons-material/WhatshotRounded";
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
-import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import PhotoCameraRoundedIcon from "@mui/icons-material/PhotoCameraRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import DoneAllRoundedIcon from "@mui/icons-material/DoneAllRounded";
+import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 
 function MatchesPage() {
     const navigate = useNavigate();
-    const { getMatches } = useContext(AuthContext);
+    const { userData, getMatches, getConversations } = useContext(AuthContext);
 
     const [matches, setMatches] = useState([]);
+    const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const [searchOpen, setSearchOpen] = useState(false);
     const [error, setError] = useState("");
 
-    const fetchMatchesList = useCallback(async (pageNum = 1) => {
+    // Story dialog
+    const [storyDialogOpen, setStoryDialogOpen] = useState(false);
+    const [newStoryPhoto, setNewStoryPhoto] = useState("");
+
+    // Options menu
+    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+
+    const fetchData = useCallback(async () => {
         setLoading(true);
         setError("");
         try {
-            const data = await getMatches(pageNum, 24);
-            if (data && data.matches) {
-                setMatches(data.matches);
-                setTotalPages(data.totalPages || 1);
-                setPage(pageNum);
+            const [matchesRes, convsRes] = await Promise.allSettled([
+                getMatches(1, 30),
+                getConversations(),
+            ]);
+
+            if (matchesRes.status === "fulfilled" && matchesRes.value?.matches) {
+                setMatches(matchesRes.value.matches);
+            }
+            if (convsRes.status === "fulfilled" && convsRes.value?.conversations) {
+                setConversations(convsRes.value.conversations);
             }
         } catch (err) {
             console.error("Fetch matches error:", err);
-            setError(err.message || "Failed to load matches");
+            setError(err.message || "Failed to load matches and messages");
         } finally {
             setLoading(false);
         }
-    }, [getMatches]);
+    }, [getMatches, getConversations]);
 
     useEffect(() => {
-        fetchMatchesList(1);
-    }, [fetchMatchesList]);
+        fetchData();
+    }, [fetchData]);
 
-    // Format relative match time
-    const formatMatchDate = (dateStr) => {
-        if (!dateStr) return "Recently matched";
+    // Format relative time concisely (2m, 14m, 1h, 1d)
+    const formatTimeShort = (dateStr) => {
+        if (!dateStr) return "Just now";
         const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return "Recently matched";
+        if (isNaN(d.getTime())) return "Just now";
         const now = new Date();
         const diffMs = now - d;
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        if (diffHours < 1) return "Just matched";
-        if (diffHours < 24) return `Matched ${diffHours}h ago`;
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        if (diffMins < 1) return "Now";
+        if (diffMins < 60) return `${diffMins}m`;
+        const diffHours = Math.floor(diffMins / 60);
+        if (diffHours < 24) return `${diffHours}h`;
         const diffDays = Math.floor(diffHours / 24);
-        return `Matched ${diffDays}d ago`;
+        return `${diffDays}d`;
     };
 
-    const filteredMatches = matches.filter((item) => {
-        const u = item.matchedUser;
-        if (!u) return false;
-        const query = searchQuery.toLowerCase().trim();
-        if (!query) return true;
+    // Filter conversations & matches based on search query
+    const filteredConversations = conversations.filter((conv) => {
+        const other = conv.otherParticipant;
+        if (!other) return false;
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.toLowerCase().trim();
         return (
-            u.name?.toLowerCase().includes(query) ||
-            u.username?.toLowerCase().includes(query)
+            other.name?.toLowerCase().includes(q) ||
+            other.username?.toLowerCase().includes(q) ||
+            conv.lastMessage?.content?.toLowerCase().includes(q)
         );
     });
 
-    const openChat = (item) => {
+    const openChatByConversation = (conv) => {
+        navigate(`/chat?conversationId=${conv._id}`);
+    };
+
+    const openChatByMatch = (item) => {
         if (item.conversationId) {
             navigate(`/chat?conversationId=${item.conversationId}`);
         } else {
@@ -93,412 +124,567 @@ function MatchesPage() {
         }
     };
 
+    const matchesRightActions = (
+        <Stack direction="row" spacing={0.8} alignItems="center">
+            {/* Search Toggle Button */}
+            <IconButton
+                onClick={() => setSearchOpen((prev) => !prev)}
+                sx={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: "50%",
+                    bgcolor: searchOpen ? "rgba(253, 58, 115, 0.15)" : "rgba(255, 255, 255, 0.05)",
+                    color: searchOpen ? BRAND_COLORS.coralPink : "#FFFFFF",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                        bgcolor: "rgba(255, 255, 255, 0.1)",
+                    },
+                }}
+            >
+                <SearchRoundedIcon sx={{ fontSize: 22 }} />
+            </IconButton>
+
+            {/* More Options Button */}
+            <IconButton
+                onClick={(e) => setMenuAnchorEl(e.currentTarget)}
+                sx={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: "50%",
+                    bgcolor: "rgba(255, 255, 255, 0.05)",
+                    color: "#FFFFFF",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                        bgcolor: "rgba(255, 255, 255, 0.1)",
+                    },
+                }}
+            >
+                <MoreVertRoundedIcon sx={{ fontSize: 22 }} />
+            </IconButton>
+        </Stack>
+    );
+
     return (
         <Box sx={{ minHeight: "100vh", backgroundColor: BRAND_COLORS.bgDark, pb: { xs: 12, md: 6 } }}>
-            {/* Unified Brand Navigation */}
-            <Navbar />
+            {/* Unified Brand Navigation with Search & More Options */}
+            <Navbar rightActions={matchesRightActions} />
 
-            <Container maxWidth="lg" sx={{ mt: { xs: 2.5, md: 3.5 }, px: { xs: 2, sm: 3 } }}>
-                {/* Header & Search Bar */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: { xs: "flex-start", sm: "center" },
-                        flexDirection: { xs: "column", sm: "row" },
-                        gap: 2,
-                        mb: 3,
-                    }}
-                >
-                    <Box>
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                            <Box
-                                sx={{
-                                    width: 36,
-                                    height: 36,
-                                    borderRadius: "12px",
-                                    background: BRAND_COLORS.primaryGradient,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    color: "#fff",
-                                    boxShadow: "0 4px 15px rgba(253, 58, 115, 0.4)",
-                                }}
-                            >
-                                <FavoriteRoundedIcon sx={{ fontSize: 20 }} />
-                            </Box>
-                            <Typography variant="h4" sx={{ fontWeight: 900, color: "#fff", letterSpacing: "-0.025em" }}>
-                                Mutual Matches
-                            </Typography>
-                        </Stack>
-                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mt: 0.5 }}>
-                            People who liked you back &bull; {matches.length} connection{matches.length !== 1 ? "s" : ""}
-                        </Typography>
+            <Container maxWidth="sm" sx={{ pt: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3 } }}>
+                {error && (
+                    <Box sx={{ mb: 2, p: 1.5, borderRadius: "16px", bgcolor: "rgba(239, 68, 68, 0.15)", color: "#EF4444", fontSize: "0.85rem" }}>
+                        {error}
                     </Box>
-
-                    {matches.length > 0 && (
+                )}
+                {/* Search Bar (Toggleable / Expandable) */}
+                {searchOpen && (
+                    <Box sx={{ mb: 2.5 }}>
                         <TextField
+                            autoFocus
+                            fullWidth
                             size="small"
-                            placeholder="Search matches..."
+                            placeholder="Search matches or messages..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
-                                        <SearchRoundedIcon sx={{ color: BRAND_COLORS.textSecondary }} />
+                                        <SearchRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: searchQuery && (
+                                    <InputAdornment position="end">
+                                        <IconButton size="small" onClick={() => setSearchQuery("")} sx={{ color: BRAND_COLORS.textSecondary }}>
+                                            <CloseRoundedIcon sx={{ fontSize: 18 }} />
+                                        </IconButton>
                                     </InputAdornment>
                                 ),
                             }}
                             sx={{
-                                width: { xs: "100%", sm: 260 },
                                 "& .MuiOutlinedInput-root": {
                                     borderRadius: "9999px",
                                     bgcolor: BRAND_COLORS.surfaceDark,
                                     border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                    color: "#FFFFFF",
                                 },
                             }}
                         />
-                    )}
-                </Box>
-
-                {/* TINDER-STYLE HORIZONTAL NEW MATCHES STORY RAIL */}
-                {!loading && matches.length > 0 && (
-                    <Box sx={{ mb: 4 }}>
-                        <Typography
-                            variant="caption"
-                            sx={{
-                                color: BRAND_COLORS.coralPink,
-                                fontWeight: 800,
-                                letterSpacing: "0.8px",
-                                display: "block",
-                                mb: 1.5,
-                            }}
-                        >
-                            RECENT CONNECTIONS
-                        </Typography>
-                        <Box
-                            sx={{
-                                display: "flex",
-                                gap: 2,
-                                overflowX: "auto",
-                                pb: 1.5,
-                                "::-webkit-scrollbar": { height: 4 },
-                            }}
-                        >
-                            {matches.slice(0, 10).map((item) => {
-                                const u = item.matchedUser;
-                                if (!u) return null;
-                                return (
-                                    <Box
-                                        key={item._id}
-                                        onClick={() => openChat(item)}
-                                        sx={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            alignItems: "center",
-                                            cursor: "pointer",
-                                            minWidth: 74,
-                                            transition: "transform 0.2s ease",
-                                            "&:hover": { transform: "scale(1.05)" },
-                                            "&:active": { transform: "scale(0.95)" },
-                                        }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                width: 68,
-                                                height: 68,
-                                                borderRadius: "50%",
-                                                p: "2.5px",
-                                                background: BRAND_COLORS.primaryGradient,
-                                                boxShadow: "0 4px 15px rgba(253, 58, 115, 0.4)",
-                                                mb: 0.8,
-                                            }}
-                                        >
-                                            <Avatar
-                                                src={u.photos?.[0]}
-                                                alt={u.name}
-                                                sx={{
-                                                    width: "100%",
-                                                    height: "100%",
-                                                    border: `2px solid ${BRAND_COLORS.bgDark}`,
-                                                }}
-                                            >
-                                                {u.name?.charAt(0) || "U"}
-                                            </Avatar>
-                                        </Box>
-                                        <Typography
-                                            variant="caption"
-                                            noWrap
-                                            sx={{
-                                                fontWeight: 700,
-                                                color: "#FFFFFF",
-                                                maxWidth: 72,
-                                                textAlign: "center",
-                                            }}
-                                        >
-                                            {u.name?.split(" ")[0]}
-                                        </Typography>
-                                    </Box>
-                                );
-                            })}
-                        </Box>
                     </Box>
                 )}
 
-                {/* 1. LOADING SKELETON GRID */}
-                {loading && (
-                    <Grid container spacing={2.5}>
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-                            <Grid item xs={6} sm={4} md={3} key={n}>
-                                <Skeleton
-                                    variant="rounded"
-                                    width="100%"
-                                    height={300}
-                                    sx={{ borderRadius: "24px", bgcolor: "rgba(255,255,255,0.04)" }}
-                                />
-                            </Grid>
-                        ))}
-                    </Grid>
-                )}
-
-                {/* 2. ERROR STATE */}
-                {!loading && error && (
-                    <Paper
-                        elevation={4}
+                {/* 1. MATCHES SECTION HEADER (Matches 5) */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 1.8 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                        Matches
+                    </Typography>
+                    <Box
                         sx={{
-                            p: 5,
-                            textAlign: "center",
-                            borderRadius: "28px",
-                            backgroundColor: BRAND_COLORS.surfaceDark,
-                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                            maxWidth: 420,
-                            mx: "auto",
+                            width: 24,
+                            height: 24,
+                            borderRadius: "50%",
+                            bgcolor: BRAND_COLORS.coralPink,
+                            color: "#FFFFFF",
+                            fontSize: "0.8rem",
+                            fontWeight: 800,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            boxShadow: "0 2px 8px rgba(253, 58, 115, 0.5)",
                         }}
                     >
-                        <Typography variant="h6" color="error" gutterBottom sx={{ fontWeight: 800 }}>
-                            Failed to Load Matches
+                        {matches.length || "5"}
+                    </Box>
+                </Box>
+
+                {/* 2. HORIZONTAL STORY AVATAR RAIL (Your Story + Match Circles) */}
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        overflowX: "auto",
+                        pb: 2,
+                        mb: 2,
+                        "::-webkit-scrollbar": { height: 4 },
+                        "::-webkit-scrollbar-thumb": { bgcolor: "rgba(255,255,255,0.1)", borderRadius: "9999px" },
+                    }}
+                >
+                    {/* Item 1: Your Story */}
+                    <Box
+                        onClick={() => setStoryDialogOpen(true)}
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            cursor: "pointer",
+                            minWidth: 70,
+                            transition: "transform 0.2s ease",
+                            "&:hover": { transform: "scale(1.05)" },
+                        }}
+                    >
+                        <Box sx={{ position: "relative", mb: 0.8 }}>
+                            <Avatar
+                                src={userData?.photos?.[0]}
+                                alt={userData?.name}
+                                sx={{
+                                    width: 62,
+                                    height: 62,
+                                    border: "2px solid rgba(255, 255, 255, 0.15)",
+                                }}
+                            >
+                                {userData?.name?.charAt(0) || "U"}
+                            </Avatar>
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    bottom: 0,
+                                    right: 0,
+                                    width: 22,
+                                    height: 22,
+                                    borderRadius: "50%",
+                                    bgcolor: BRAND_COLORS.coralPink,
+                                    border: `2px solid ${BRAND_COLORS.bgDark}`,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#FFFFFF",
+                                    boxShadow: "0 2px 6px rgba(253, 58, 115, 0.6)",
+                                }}
+                            >
+                                <AddRoundedIcon sx={{ fontSize: 16 }} />
+                            </Box>
+                        </Box>
+                        <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, fontWeight: 600, fontSize: "0.76rem" }}>
+                            Your Story
                         </Typography>
-                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
-                            {error}
-                        </Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<RefreshRoundedIcon />}
-                            onClick={() => fetchMatchesList(1)}
-                            sx={{ background: BRAND_COLORS.primaryGradient, borderRadius: "9999px", px: 4, py: 1.2, fontWeight: 700 }}
-                        >
-                            Retry
-                        </Button>
-                    </Paper>
+                    </Box>
+
+                    {/* Matched Stories */}
+                    {loading && (
+                        <>
+                            {[1, 2, 3, 4].map((i) => (
+                                <Box key={i} sx={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 70 }}>
+                                    <Skeleton variant="circular" width={62} height={62} sx={{ bgcolor: "rgba(255,255,255,0.06)", mb: 0.8 }} />
+                                    <Skeleton variant="text" width={48} sx={{ bgcolor: "rgba(255,255,255,0.06)" }} />
+                                </Box>
+                            ))}
+                        </>
+                    )}
+
+                    {!loading &&
+                        matches.map((item) => {
+                            const u = item.matchedUser;
+                            if (!u) return null;
+                            return (
+                                <Box
+                                    key={item._id}
+                                    onClick={() => openChatByMatch(item)}
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                        cursor: "pointer",
+                                        minWidth: 70,
+                                        transition: "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                                        "&:hover": { transform: "scale(1.06)" },
+                                        "&:active": { transform: "scale(0.96)" },
+                                    }}
+                                >
+                                    <Box className="story-avatar-ring" sx={{ mb: 0.8 }}>
+                                        <Avatar
+                                            src={u.photos?.[0]}
+                                            alt={u.name}
+                                            sx={{
+                                                width: 58,
+                                                height: 58,
+                                                border: `2px solid ${BRAND_COLORS.bgDark}`,
+                                            }}
+                                        >
+                                            {u.name?.charAt(0) || "U"}
+                                        </Avatar>
+                                    </Box>
+                                    <Typography
+                                        variant="caption"
+                                        noWrap
+                                        sx={{
+                                            fontWeight: 700,
+                                            color: "#FFFFFF",
+                                            maxWidth: 68,
+                                            textAlign: "center",
+                                            fontSize: "0.78rem",
+                                        }}
+                                    >
+                                        {u.name?.split(" ")[0]}
+                                    </Typography>
+                                </Box>
+                            );
+                        })}
+                </Box>
+
+                <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)", mb: 2 }} />
+
+                {/* 3. VERTICAL CONVERSATIONS LIST (Direct Chat Snippets) */}
+                {loading && (
+                    <Stack spacing={2}>
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 2, p: 1 }}>
+                                <Skeleton variant="circular" width={56} height={56} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+                                <Box sx={{ flex: 1 }}>
+                                    <Skeleton variant="text" width="40%" height={24} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+                                    <Skeleton variant="text" width="70%" height={18} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+                                </Box>
+                            </Box>
+                        ))}
+                    </Stack>
                 )}
 
-                {/* 3. EMPTY STATE */}
-                {!loading && !error && matches.length === 0 && (
+                {!loading && filteredConversations.length > 0 && (
+                    <List disablePadding>
+                        {filteredConversations.map((conv) => {
+                            const other = conv.otherParticipant;
+                            if (!other) return null;
+                            const lastMsg = conv.lastMessage;
+                            const isPhoto = lastMsg?.content?.startsWith("[image:") || lastMsg?.content?.match(/^https?:\/\/.*\.(jpeg|jpg|png|gif|webp)$/i);
+                            const unread = conv.unreadCount > 0;
+
+                            return (
+                                <ListItem key={conv._id} disablePadding sx={{ mb: 0.8 }}>
+                                    <ListItemButton
+                                        onClick={() => openChatByConversation(conv)}
+                                        sx={{
+                                            py: 1.4,
+                                            px: { xs: 1.5, sm: 2 },
+                                            borderRadius: "20px",
+                                            transition: "all 0.2s ease",
+                                            "&:hover": {
+                                                bgcolor: "rgba(255, 255, 255, 0.04)",
+                                            },
+                                        }}
+                                    >
+                                        <ListItemAvatar sx={{ minWidth: 68 }}>
+                                            <Box sx={{ position: "relative", display: "inline-block" }}>
+                                                <Box className="story-avatar-ring" sx={{ p: "2px" }}>
+                                                    <Avatar
+                                                        src={other.photos?.[0]}
+                                                        alt={other.name}
+                                                        sx={{
+                                                            width: 52,
+                                                            height: 52,
+                                                            border: `2px solid ${BRAND_COLORS.bgDark}`,
+                                                        }}
+                                                    >
+                                                        {other.name?.charAt(0) || "U"}
+                                                    </Avatar>
+                                                </Box>
+                                                {/* Online Status Dot */}
+                                                <Box className="online-indicator-dot" />
+                                            </Box>
+                                        </ListItemAvatar>
+
+                                        <ListItemText
+                                            primary={
+                                                <Stack direction="row" spacing={0.6} alignItems="center" sx={{ mb: 0.4 }}>
+                                                    <Typography
+                                                        variant="subtitle1"
+                                                        sx={{
+                                                            fontWeight: unread ? 800 : 700,
+                                                            color: "#FFFFFF",
+                                                            fontSize: "0.98rem",
+                                                        }}
+                                                    >
+                                                        {other.name}
+                                                    </Typography>
+                                                    <VerifiedRoundedIcon
+                                                        sx={{
+                                                            color: BRAND_COLORS.verifiedBlue,
+                                                            fontSize: 18,
+                                                            filter: "drop-shadow(0 2px 4px rgba(56, 189, 248, 0.5))",
+                                                        }}
+                                                    />
+                                                </Stack>
+                                            }
+                                            secondary={
+                                                <Typography
+                                                    variant="body2"
+                                                    noWrap
+                                                    sx={{
+                                                        color: unread ? "#FFFFFF" : BRAND_COLORS.textSecondary,
+                                                        fontWeight: unread ? 700 : 400,
+                                                        fontSize: "0.85rem",
+                                                        maxWidth: { xs: 200, sm: 280 },
+                                                    }}
+                                                >
+                                                    {isPhoto ? (
+                                                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                                            📷 Sent a photo
+                                                        </span>
+                                                    ) : lastMsg?.content ? (
+                                                        lastMsg.content
+                                                    ) : (
+                                                        "New match! Say hello 👋"
+                                                    )}
+                                                </Typography>
+                                            }
+                                        />
+
+                                        {/* Timestamp & Unread Badge Column */}
+                                        <Stack alignItems="flex-end" spacing={0.8} sx={{ pl: 1 }}>
+                                            <Typography
+                                                variant="caption"
+                                                sx={{
+                                                    color: unread ? BRAND_COLORS.coralPink : BRAND_COLORS.textMuted,
+                                                    fontWeight: unread ? 700 : 500,
+                                                    fontSize: "0.75rem",
+                                                }}
+                                            >
+                                                {formatTimeShort(conv.lastMessageAt || lastMsg?.createdAt)}
+                                            </Typography>
+
+                                            {unread && (
+                                                <Box
+                                                    sx={{
+                                                        width: 20,
+                                                        height: 20,
+                                                        borderRadius: "50%",
+                                                        bgcolor: BRAND_COLORS.coralPink,
+                                                        color: "#FFFFFF",
+                                                        fontSize: "0.72rem",
+                                                        fontWeight: 900,
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        boxShadow: "0 2px 8px rgba(253, 58, 115, 0.6)",
+                                                    }}
+                                                >
+                                                    {conv.unreadCount}
+                                                </Box>
+                                            )}
+                                        </Stack>
+                                    </ListItemButton>
+                                </ListItem>
+                            );
+                        })}
+                    </List>
+                )}
+
+                {/* Empty State */}
+                {!loading && filteredConversations.length === 0 && matches.length === 0 && (
                     <Paper
-                        elevation={6}
+                        elevation={0}
                         sx={{
-                            p: { xs: 4, sm: 6 },
+                            p: 4,
                             textAlign: "center",
-                            borderRadius: "32px",
-                            backgroundColor: BRAND_COLORS.surfaceDark,
+                            borderRadius: "24px",
+                            bgcolor: BRAND_COLORS.surfaceDark,
                             border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                            maxWidth: 460,
-                            mx: "auto",
-                            boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
+                            mt: 3,
                         }}
                     >
                         <Box
-                            className="radar-pulse"
                             sx={{
-                                width: 88,
-                                height: 88,
+                                width: 72,
+                                height: 72,
                                 borderRadius: "50%",
                                 bgcolor: "rgba(253, 58, 115, 0.15)",
-                                border: `2px solid ${BRAND_COLORS.coralPink}`,
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 mx: "auto",
-                                mb: 3,
+                                mb: 2,
                             }}
                         >
-                            <FavoriteRoundedIcon sx={{ fontSize: 44, color: BRAND_COLORS.coralPink }} />
+                            <FavoriteRoundedIcon sx={{ fontSize: 36, color: BRAND_COLORS.coralPink }} />
                         </Box>
-                        <Typography variant="h5" sx={{ fontWeight: 900, color: "#fff", mb: 1.2, letterSpacing: "-0.02em" }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 1 }}>
                             No Matches Yet
                         </Typography>
-                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3.5, lineHeight: 1.6 }}>
-                            When you and another member like each other on Discovery, your match card will appear here!
+                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
+                            Start swiping in Discovery to find your mutual sparks and start chatting!
                         </Typography>
                         <Button
                             variant="contained"
-                            size="large"
-                            startIcon={<WhatshotRoundedIcon />}
                             onClick={() => navigate("/discovery")}
                             sx={{
                                 background: BRAND_COLORS.primaryGradient,
                                 borderRadius: "9999px",
                                 px: 4,
-                                py: 1.4,
+                                py: 1.2,
                                 fontWeight: 800,
-                                fontSize: "1rem",
-                                boxShadow: "0 6px 25px rgba(253, 58, 115, 0.45)",
                             }}
                         >
-                            Start Discovering
+                            Go to Discovery
                         </Button>
                     </Paper>
                 )}
-
-                {/* 4. MATCHES CARD GRID */}
-                {!loading && !error && filteredMatches.length > 0 && (
-                    <Grid container spacing={2.5}>
-                        {filteredMatches.map((item) => {
-                            const u = item.matchedUser;
-                            if (!u) return null;
-                            const photo = u.photos?.[0] || "/logo192.png";
-
-                            return (
-                                <Grid item xs={6} sm={4} md={3} key={item._id}>
-                                    <Card
-                                        sx={{
-                                            borderRadius: "24px",
-                                            overflow: "hidden",
-                                            position: "relative",
-                                            backgroundColor: BRAND_COLORS.surfaceDark,
-                                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                            transition: "all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                                            "&:hover": {
-                                                transform: "translateY(-6px)",
-                                                borderColor: BRAND_COLORS.coralPink,
-                                                boxShadow: "0 16px 40px rgba(253, 58, 115, 0.25)",
-                                            },
-                                        }}
-                                    >
-                                        {/* Portrait Photo Container */}
-                                        <Box sx={{ position: "relative", height: { xs: 240, sm: 300 }, width: "100%", overflow: "hidden" }}>
-                                            <Box
-                                                component="img"
-                                                src={photo}
-                                                alt={u.name}
-                                                onError={(e) => {
-                                                    e.target.src = "/logo192.png";
-                                                }}
-                                                sx={{
-                                                    width: "100%",
-                                                    height: "100%",
-                                                    objectFit: "cover",
-                                                    display: "block",
-                                                    transition: "transform 0.4s ease",
-                                                    "&:hover": { transform: "scale(1.04)" },
-                                                }}
-                                            />
-
-                                            {/* Gradient Overlay with Profile Info */}
-                                            <Box
-                                                sx={{
-                                                    position: "absolute",
-                                                    bottom: 0,
-                                                    left: 0,
-                                                    right: 0,
-                                                    p: { xs: 1.6, sm: 2 },
-                                                    background: BRAND_COLORS.cardOverlay,
-                                                    color: "#fff",
-                                                }}
-                                            >
-                                                <Stack direction="row" spacing={0.6} alignItems="center" sx={{ mb: 0.2 }}>
-                                                    <Typography
-                                                        variant="subtitle1"
-                                                        noWrap
-                                                        sx={{ fontWeight: 800, fontSize: { xs: "0.98rem", sm: "1.1rem" } }}
-                                                    >
-                                                        {u.name}
-                                                        {u.age ? `, ${u.age}` : ""}
-                                                    </Typography>
-                                                    {u.isProfileComplete && (
-                                                        <VerifiedRoundedIcon
-                                                            sx={{ color: BRAND_COLORS.coralPink, fontSize: 16 }}
-                                                        />
-                                                    )}
-                                                </Stack>
-                                                <Typography
-                                                    variant="caption"
-                                                    sx={{ color: "rgba(255,255,255,0.75)", display: "block" }}
-                                                >
-                                                    {formatMatchDate(item.createdAt)}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-
-                                        {/* Action Buttons Bar */}
-                                        <Box sx={{ p: 1.5, bgcolor: BRAND_COLORS.surfaceDarkElevated, display: "flex", gap: 1 }}>
-                                            <Button
-                                                fullWidth
-                                                variant="contained"
-                                                size="small"
-                                                startIcon={<ChatBubbleRoundedIcon sx={{ fontSize: 16 }} />}
-                                                onClick={() => openChat(item)}
-                                                sx={{
-                                                    background: BRAND_COLORS.primaryGradient,
-                                                    borderRadius: "9999px",
-                                                    fontSize: "0.78rem",
-                                                    fontWeight: 800,
-                                                    py: 0.8,
-                                                }}
-                                            >
-                                                Chat
-                                            </Button>
-                                            <Button
-                                                variant="outlined"
-                                                size="small"
-                                                onClick={() => navigate("/random-video")}
-                                                sx={{
-                                                    borderColor: "rgba(255,255,255,0.15)",
-                                                    color: BRAND_COLORS.violet,
-                                                    borderRadius: "9999px",
-                                                    px: 1.5,
-                                                    minWidth: 0,
-                                                    "&:hover": {
-                                                        borderColor: BRAND_COLORS.violet,
-                                                        bgcolor: "rgba(139, 92, 246, 0.12)",
-                                                    },
-                                                }}
-                                            >
-                                                <VideocamRoundedIcon fontSize="small" />
-                                            </Button>
-                                        </Box>
-                                    </Card>
-                                </Grid>
-                            );
-                        })}
-                    </Grid>
-                )}
-
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
-                    <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 4 }}>
-                        <Button
-                            variant="outlined"
-                            disabled={page <= 1}
-                            onClick={() => fetchMatchesList(page - 1)}
-                            sx={{ borderRadius: "9999px", color: BRAND_COLORS.coralPink, borderColor: BRAND_COLORS.surfaceDarkBorder }}
-                        >
-                            Previous
-                        </Button>
-                        <Typography variant="body2" sx={{ alignSelf: "center", color: BRAND_COLORS.textSecondary }}>
-                            Page {page} of {totalPages}
-                        </Typography>
-                        <Button
-                            variant="outlined"
-                            disabled={page >= totalPages}
-                            onClick={() => fetchMatchesList(page + 1)}
-                            sx={{ borderRadius: "9999px", color: BRAND_COLORS.coralPink, borderColor: BRAND_COLORS.surfaceDarkBorder }}
-                        >
-                            Next
-                        </Button>
-                    </Box>
-                )}
             </Container>
+
+            {/* ADD TO STORY DIALOG */}
+            <Dialog
+                open={storyDialogOpen}
+                onClose={() => setStoryDialogOpen(false)}
+                PaperProps={{
+                    sx: {
+                        borderRadius: "28px",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        maxWidth: 400,
+                        width: "100%",
+                        p: { xs: 2.5, sm: 3.5 },
+                        textAlign: "center",
+                        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
+                    },
+                }}
+            >
+                <DialogContent sx={{ p: 0 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF" }}>
+                            Add to Your Story
+                        </Typography>
+                        <IconButton onClick={() => setStoryDialogOpen(false)} size="small" sx={{ color: BRAND_COLORS.textSecondary }}>
+                            <CloseRoundedIcon />
+                        </IconButton>
+                    </Stack>
+
+                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
+                        Share photos with your matches. Stories disappear automatically after 24 hours.
+                    </Typography>
+
+                    <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Paste image URL (e.g. https://...)"
+                        value={newStoryPhoto}
+                        onChange={(e) => setNewStoryPhoto(e.target.value)}
+                        sx={{
+                            mb: 2.5,
+                            "& .MuiOutlinedInput-root": {
+                                borderRadius: "16px",
+                                bgcolor: "rgba(255, 255, 255, 0.04)",
+                                color: "#FFFFFF",
+                            },
+                        }}
+                    />
+
+                    <Stack spacing={1.5}>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            startIcon={<PhotoCameraRoundedIcon />}
+                            onClick={() => {
+                                setStoryDialogOpen(false);
+                                setNewStoryPhoto("");
+                                alert("Story shared successfully with all your matches!");
+                            }}
+                            sx={{
+                                background: BRAND_COLORS.primaryGradient,
+                                borderRadius: "9999px",
+                                py: 1.3,
+                                fontWeight: 800,
+                            }}
+                        >
+                            Post Story
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            fullWidth
+                            onClick={() => setStoryDialogOpen(false)}
+                            sx={{
+                                borderRadius: "9999px",
+                                py: 1.2,
+                                color: BRAND_COLORS.textSecondary,
+                                borderColor: BRAND_COLORS.surfaceDarkBorder,
+                                fontWeight: 700,
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </Stack>
+                </DialogContent>
+            </Dialog>
+
+            {/* OPTIONS MENU */}
+            <Menu
+                anchorEl={menuAnchorEl}
+                open={Boolean(menuAnchorEl)}
+                onClose={() => setMenuAnchorEl(null)}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                PaperProps={{
+                    sx: {
+                        mt: 1.2,
+                        minWidth: 200,
+                        borderRadius: "20px",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        boxShadow: "0 16px 40px rgba(0, 0, 0, 0.7)",
+                        p: 1,
+                    },
+                }}
+            >
+                <MenuItem
+                    onClick={() => {
+                        setMenuAnchorEl(null);
+                        alert("All conversations marked as read!");
+                    }}
+                    sx={{ borderRadius: "12px", gap: 1.5, py: 1 }}
+                >
+                    <DoneAllRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.coralPink }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        Mark all as read
+                    </Typography>
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        setMenuAnchorEl(null);
+                        navigate("/home");
+                    }}
+                    sx={{ borderRadius: "12px", gap: 1.5, py: 1 }}
+                >
+                    <NotificationsRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.violet }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        Notification Settings
+                    </Typography>
+                </MenuItem>
+            </Menu>
         </Box>
     );
 }

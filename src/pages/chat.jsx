@@ -12,7 +12,11 @@ import {
     Badge,
     Box,
     Button,
+    Chip,
     CircularProgress,
+    Dialog,
+    DialogContent,
+    DialogTitle,
     IconButton,
     InputAdornment,
     List,
@@ -20,6 +24,8 @@ import {
     ListItemAvatar,
     ListItemButton,
     ListItemText,
+    Menu,
+    MenuItem,
     Paper,
     Skeleton,
     Stack,
@@ -32,6 +38,7 @@ import {
 import SendIcon from "@mui/icons-material/Send";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import DoneIcon from "@mui/icons-material/Done";
@@ -39,6 +46,66 @@ import WifiOffIcon from "@mui/icons-material/WifiOff";
 import SearchIcon from "@mui/icons-material/Search";
 import ForumIcon from "@mui/icons-material/Forum";
 import SparklesIcon from "@mui/icons-material/AutoAwesome";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import AddIcon from "@mui/icons-material/Add";
+import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
+import CloseIcon from "@mui/icons-material/Close";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import SchoolIcon from "@mui/icons-material/School";
+import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+
+// Quick photo presets for engaging conversation
+const PHOTO_PRESETS = [
+    {
+        title: "Coffee Date ☕",
+        url: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=700&auto=format&fit=crop&q=80",
+    },
+    {
+        title: "Sunset Beach 🌅",
+        url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&auto=format&fit=crop&q=80",
+    },
+    {
+        title: "City Lights 🌃",
+        url: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=700&auto=format&fit=crop&q=80",
+    },
+    {
+        title: "Cozy Books & Tea 📖",
+        url: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=700&auto=format&fit=crop&q=80",
+    },
+];
+
+const QUICK_EMOJIS = ["❤️", "🔥", "😍", "✨", "👋", "🥂", "☕", "🎉", "💃", "🥳", "💖", "🌸"];
+
+const ICEBREAKERS = [
+    "What's your go-to comfort food on a rainy evening? 🌧️🍜",
+    "If you could teleport to any city right now, where would you go? ✈️",
+    "Two truths and a lie: what are yours? 😉",
+    "Mountains or beach vacation? 🏔️🏖️",
+];
+
+function isImageContent(text) {
+    if (!text || typeof text !== "string") return false;
+    if (text.startsWith("[image:")) return true;
+    if (
+        (text.startsWith("http://") || text.startsWith("https://")) &&
+        (text.match(/\.(jpeg|jpg|gif|png|webp)/i) ||
+            text.includes("images.unsplash.com") ||
+            text.includes("res.cloudinary.com"))
+    ) {
+        return true;
+    }
+    return false;
+}
+
+function extractImageUrl(text) {
+    if (!text) return "";
+    if (text.startsWith("[image:") && text.endsWith("]")) {
+        return text.slice(7, -1).trim();
+    }
+    return text.trim();
+}
 
 function ChatPage() {
     const navigate = useNavigate();
@@ -69,6 +136,16 @@ function ChatPage() {
     const [sending, setSending] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [mobileShowChat, setMobileShowChat] = useState(false);
+
+    // Interactive Extras
+    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [showVideoModal, setShowVideoModal] = useState(false);
+    const [showMediaModal, setShowMediaModal] = useState(false);
+    const [customImageUrl, setCustomImageUrl] = useState("");
+    const [previewImage, setPreviewImage] = useState(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [messageReactions, setMessageReactions] = useState({});
 
     // Refs
     const socketRef = useRef(null);
@@ -315,14 +392,15 @@ function ChatPage() {
     }, [activeConversation?._id, getConversationMessages, markConversationRead]);
 
     // 4. Send Message Handler
-    const handleSendMessage = async (e) => {
-        if (e) e.preventDefault();
-        const trimmed = inputText.trim();
+    const handleSendMessage = async (textToSend) => {
+        const text = typeof textToSend === "string" ? textToSend : inputText;
+        const trimmed = text.trim();
         if (!trimmed || !activeConversation || sending) return;
 
         const convId = activeConversation._id;
         const clientTempId = `temp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         setInputText("");
+        setShowEmojiPicker(false);
         setSending(true);
 
         const optimisticMessage = {
@@ -381,6 +459,21 @@ function ChatPage() {
         }
     };
 
+    const handleSendPhoto = (photoUrl) => {
+        if (!photoUrl) return;
+        const formatted = `[image:${photoUrl}]`;
+        handleSendMessage(formatted);
+        setShowMediaModal(false);
+        setCustomImageUrl("");
+    };
+
+    const toggleHeartReaction = (msgId) => {
+        setMessageReactions((prev) => ({
+            ...prev,
+            [msgId]: !prev[msgId],
+        }));
+    };
+
     const otherUser = activeConversation?.otherParticipant;
 
     const formatTime = (isoString) => {
@@ -398,6 +491,14 @@ function ChatPage() {
         return name.includes(term) || username.includes(term);
     });
 
+    const handleOpenMenu = (event) => {
+        setMenuAnchorEl(event.currentTarget);
+    };
+
+    const handleCloseMenu = () => {
+        setMenuAnchorEl(null);
+    };
+
     return (
         <Box
             sx={{
@@ -408,8 +509,8 @@ function ChatPage() {
                 overflow: "hidden",
             }}
         >
-            {/* Unified Brand Navigation */}
-            <Navbar hideBottomNav={isMobile && mobileShowChat} />
+            {/* Unified Brand Navigation - Hidden on mobile if actively in 1-on-1 chat to ensure edge-to-edge view */}
+            <Navbar hideBottomNav={isMobile && mobileShowChat} hideTopNav={isMobile && mobileShowChat} />
 
             {/* Offline warning banner */}
             {!isConnected && (
@@ -423,6 +524,7 @@ function ChatPage() {
                         alignItems: "center",
                         justifyContent: "center",
                         gap: 1,
+                        zIndex: 10,
                     }}
                 >
                     <WifiOffIcon sx={{ fontSize: 16, color: "#F59E0B" }} />
@@ -553,7 +655,7 @@ function ChatPage() {
                                     <Box key={n} sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
                                         <Skeleton variant="circular" width={52} height={52} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
                                         <Box sx={{ flex: 1 }}>
-                                            <Skeleton variant="text" width="60%" height={24} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
+                                             <Skeleton variant="text" width="60%" height={24} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
                                             <Skeleton variant="text" width="85%" height={18} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
                                         </Box>
                                     </Box>
@@ -611,6 +713,10 @@ function ChatPage() {
                                     if (!other) return null;
                                     const isSelected = activeConversation?._id === conv._id;
                                     const hasUnread = (conv.unreadCount || 0) > 0;
+                                    const lastMsgContent = conv.lastMessage?.content || "";
+                                    const snippet = isImageContent(lastMsgContent)
+                                        ? "📷 Sent a photo"
+                                        : lastMsgContent || "Say hello! 👋";
 
                                     return (
                                         <ListItem key={conv._id} disablePadding>
@@ -637,7 +743,7 @@ function ChatPage() {
                                                     },
                                                 }}
                                             >
-                                                <ListItemAvatar>
+                                                <ListItemAvatar sx={{ position: "relative" }}>
                                                     <Badge
                                                         badgeContent={conv.unreadCount || 0}
                                                         color="error"
@@ -663,20 +769,24 @@ function ChatPage() {
                                                             }}
                                                         />
                                                     </Badge>
+                                                    <Box className="online-indicator-dot" />
                                                 </ListItemAvatar>
                                                 <ListItemText
                                                     primary={
                                                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.3 }}>
-                                                            <Typography
-                                                                variant="subtitle2"
-                                                                sx={{
-                                                                    fontWeight: hasUnread ? 800 : 600,
-                                                                    color: isSelected ? "#FFFFFF" : hasUnread ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                                                                    fontSize: "0.95rem",
-                                                                }}
-                                                            >
-                                                                {other.name}
-                                                            </Typography>
+                                                            <Stack direction="row" spacing={0.5} alignItems="center">
+                                                                <Typography
+                                                                    variant="subtitle2"
+                                                                    sx={{
+                                                                        fontWeight: hasUnread ? 800 : 600,
+                                                                        color: isSelected ? "#FFFFFF" : hasUnread ? "#FFFFFF" : BRAND_COLORS.textSecondary,
+                                                                        fontSize: "0.95rem",
+                                                                    }}
+                                                                >
+                                                                    {other.name}
+                                                                </Typography>
+                                                                <CheckCircleIcon sx={{ fontSize: 14, color: BRAND_COLORS.verifiedBlue }} />
+                                                            </Stack>
                                                             <Typography
                                                                 variant="caption"
                                                                 sx={{
@@ -699,7 +809,7 @@ function ChatPage() {
                                                                 fontSize: "0.84rem",
                                                             }}
                                                         >
-                                                            {conv.lastMessage?.content || "Say hello! 👋"}
+                                                            {snippet}
                                                         </Typography>
                                                     }
                                                 />
@@ -712,7 +822,7 @@ function ChatPage() {
                     </Box>
                 </Box>
 
-                {/* RIGHT COLUMN: Active Chat Panel */}
+                {/* RIGHT COLUMN: Active Chat Panel (Screen 4 Tinder-Style) */}
                 <Box
                     sx={{
                         flex: 1,
@@ -727,74 +837,131 @@ function ChatPage() {
                 >
                     {activeConversation && otherUser ? (
                         <>
-                            {/* Chat Header */}
+                            {/* Screen 4 Top Header */}
                             <Box
                                 sx={{
-                                    p: 1.8,
+                                    p: 1.6,
                                     px: { xs: 2, md: 3 },
                                     borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "space-between",
                                     bgcolor: BRAND_COLORS.surfaceDark,
+                                    zIndex: 2,
                                 }}
                             >
-                                <Stack direction="row" spacing={{ xs: 1, sm: 1.8 }} alignItems="center" sx={{ minWidth: 0, flex: 1, mr: 1 }}>
+                                <Stack direction="row" spacing={{ xs: 1.2, sm: 1.8 }} alignItems="center" sx={{ minWidth: 0, flex: 1, mr: 1 }}>
                                     {isMobile && (
                                         <IconButton
                                             edge="start"
                                             onClick={() => setMobileShowChat(false)}
-                                            sx={{ color: "#FFFFFF", p: { xs: 0.5, sm: 1 } }}
+                                            sx={{
+                                                color: "#FFFFFF",
+                                                p: 0.8,
+                                                bgcolor: "rgba(255, 255, 255, 0.05)",
+                                                "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
+                                            }}
                                         >
                                             <ArrowBackIcon fontSize="small" />
                                         </IconButton>
                                     )}
-                                    <Avatar
-                                        src={otherUser.photos?.[0]}
-                                        alt={otherUser.name}
-                                        sx={{
-                                            width: { xs: 38, sm: 46 },
-                                            height: { xs: 38, sm: 46 },
-                                            border: `2px solid ${BRAND_COLORS.coralPink}`,
-                                        }}
-                                    />
-                                    <Box sx={{ minWidth: 0, flex: 1 }}>
-                                        <Typography
-                                            variant="subtitle1"
-                                            noWrap
+
+                                    {/* Partner Avatar with Online Indicator */}
+                                    <Box
+                                        onClick={() => setShowProfileModal(true)}
+                                        sx={{ position: "relative", cursor: "pointer" }}
+                                    >
+                                        <Avatar
+                                            src={otherUser.photos?.[0]}
+                                            alt={otherUser.name}
                                             sx={{
-                                                fontWeight: 800,
-                                                color: "#FFFFFF",
-                                                lineHeight: 1.2,
-                                                fontSize: { xs: "0.9rem", sm: "1rem" },
-                                                maxWidth: { xs: 140, sm: 240, md: 360 },
+                                                width: { xs: 44, sm: 48 },
+                                                height: { xs: 44, sm: 48 },
+                                                border: `2px solid ${BRAND_COLORS.coralPink}`,
+                                                boxShadow: "0 0 12px rgba(253, 58, 115, 0.35)",
                                             }}
-                                        >
-                                            {otherUser.name}
-                                            {otherUser.age ? `, ${otherUser.age}` : ""}
-                                        </Typography>
-                                        <Typography variant="caption" noWrap sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>
-                                            @{otherUser.username}
-                                        </Typography>
+                                        />
+                                        <Box className="online-indicator-dot" />
+                                    </Box>
+
+                                    {/* Partner Name, Verified Badge & Online Status */}
+                                    <Box
+                                        onClick={() => setShowProfileModal(true)}
+                                        sx={{ minWidth: 0, flex: 1, cursor: "pointer" }}
+                                    >
+                                        <Stack direction="row" spacing={0.6} alignItems="center">
+                                            <Typography
+                                                variant="subtitle1"
+                                                noWrap
+                                                sx={{
+                                                    fontWeight: 800,
+                                                    color: "#FFFFFF",
+                                                    lineHeight: 1.2,
+                                                    fontSize: { xs: "0.96rem", sm: "1.08rem" },
+                                                    maxWidth: { xs: 160, sm: 280, md: 400 },
+                                                }}
+                                            >
+                                                {otherUser.name}{otherUser.age ? `, ${otherUser.age}` : ""}
+                                            </Typography>
+                                            <CheckCircleIcon sx={{ fontSize: 16, color: BRAND_COLORS.verifiedBlue }} />
+                                        </Stack>
+                                        <Stack direction="row" spacing={0.6} alignItems="center" sx={{ mt: 0.2 }}>
+                                            <Box
+                                                sx={{
+                                                    width: 7,
+                                                    height: 7,
+                                                    borderRadius: "50%",
+                                                    bgcolor: BRAND_COLORS.emerald,
+                                                }}
+                                            />
+                                            <Typography
+                                                variant="caption"
+                                                sx={{
+                                                    color: BRAND_COLORS.emerald,
+                                                    fontWeight: 600,
+                                                    fontSize: "0.74rem",
+                                                }}
+                                            >
+                                                Online
+                                            </Typography>
+                                        </Stack>
                                     </Box>
                                 </Stack>
 
-                                <Stack direction="row" spacing={1}>
-                                    <Tooltip title="Start Random Video Match">
+                                {/* Screen 4 Top Header Actions (Video Call + Options) */}
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Tooltip title={`Start Video Call with ${otherUser.name}`}>
                                         <IconButton
-                                            onClick={() => navigate("/random-video")}
+                                            onClick={() => setShowVideoModal(true)}
                                             sx={{
+                                                width: 40,
+                                                height: 40,
                                                 bgcolor: "rgba(139, 92, 246, 0.15)",
-                                                border: "1px solid rgba(139, 92, 246, 0.3)",
-                                                color: BRAND_COLORS.violet,
+                                                border: "1px solid rgba(139, 92, 246, 0.35)",
+                                                color: "#C4B5FD",
+                                                transition: "all 0.2s ease",
                                                 "&:hover": {
-                                                    bgcolor: "rgba(139, 92, 246, 0.25)",
+                                                    bgcolor: "rgba(139, 92, 246, 0.28)",
+                                                    transform: "scale(1.05)",
                                                 },
                                             }}
                                         >
                                             <VideocamIcon fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
+
+                                    <IconButton
+                                        onClick={handleOpenMenu}
+                                        sx={{
+                                            width: 40,
+                                            height: 40,
+                                            color: "rgba(255, 255, 255, 0.7)",
+                                            bgcolor: "rgba(255, 255, 255, 0.05)",
+                                            "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)", color: "#FFFFFF" },
+                                        }}
+                                    >
+                                        <MoreVertIcon fontSize="small" />
+                                    </IconButton>
                                 </Stack>
                             </Box>
 
@@ -807,7 +974,7 @@ function ChatPage() {
                                     bgcolor: "#0A0C16",
                                     display: "flex",
                                     flexDirection: "column",
-                                    gap: 1.5,
+                                    gap: 1.6,
                                     "&::-webkit-scrollbar": { width: 6 },
                                     "&::-webkit-scrollbar-thumb": {
                                         bgcolor: "rgba(255, 255, 255, 0.1)",
@@ -815,6 +982,26 @@ function ChatPage() {
                                     },
                                 }}
                             >
+                                {/* Centered Date Chip Pill */}
+                                <Box sx={{ display: "flex", justifyContent: "center", my: 1 }}>
+                                    <Box
+                                        sx={{
+                                            px: 2,
+                                            py: 0.5,
+                                            borderRadius: "9999px",
+                                            bgcolor: "rgba(255, 255, 255, 0.08)",
+                                            border: "1px solid rgba(255, 255, 255, 0.06)",
+                                            color: "rgba(255, 255, 255, 0.75)",
+                                            fontSize: "0.75rem",
+                                            fontWeight: 700,
+                                            letterSpacing: "0.04em",
+                                            textTransform: "uppercase",
+                                        }}
+                                    >
+                                        Today
+                                    </Box>
+                                </Box>
+
                                 {loadingMessages && (
                                     <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
                                         <CircularProgress size={32} sx={{ color: BRAND_COLORS.coralPink }} />
@@ -826,7 +1013,7 @@ function ChatPage() {
                                         sx={{
                                             m: "auto",
                                             textAlign: "center",
-                                            p: 4,
+                                            p: 3.5,
                                             maxWidth: 380,
                                             bgcolor: BRAND_COLORS.surfaceDark,
                                             border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
@@ -837,36 +1024,44 @@ function ChatPage() {
                                         <Avatar
                                             src={otherUser.photos?.[0]}
                                             sx={{
-                                                width: 80,
-                                                height: 80,
+                                                width: 82,
+                                                height: 82,
                                                 mx: "auto",
                                                 mb: 2,
                                                 border: `3px solid ${BRAND_COLORS.coralPink}`,
-                                                boxShadow: "0 0 25px rgba(253, 58, 115, 0.3)",
+                                                boxShadow: "0 0 25px rgba(253, 58, 115, 0.35)",
                                             }}
                                         />
                                         <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF" }}>
-                                            You and {otherUser.name} matched!
+                                            You and {otherUser.name} matched! 🎉
                                         </Typography>
                                         <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mt: 1, mb: 3 }}>
-                                            Don't wait for the right moment. Break the ice and send the first message!
+                                            Say something nice or send an icebreaker to spark the connection.
                                         </Typography>
-                                        <Button
-                                            variant="outlined"
-                                            size="medium"
-                                            onClick={() => setInputText("Hey! How's your week going? 👋")}
-                                            sx={{
-                                                borderRadius: "9999px",
-                                                color: BRAND_COLORS.coralPink,
-                                                borderColor: BRAND_COLORS.coralPink,
-                                                "&:hover": {
-                                                    borderColor: BRAND_COLORS.sunsetOrange,
-                                                    bgcolor: "rgba(253, 58, 115, 0.08)",
-                                                },
-                                            }}
-                                        >
-                                            "Hey! How's your week going? 👋"
-                                        </Button>
+                                        <Stack spacing={1}>
+                                            {ICEBREAKERS.slice(0, 2).map((ib, i) => (
+                                                <Button
+                                                    key={i}
+                                                    variant="outlined"
+                                                    size="small"
+                                                    onClick={() => handleSendMessage(ib)}
+                                                    sx={{
+                                                        borderRadius: "9999px",
+                                                        color: "#FFFFFF",
+                                                        borderColor: "rgba(253, 58, 115, 0.4)",
+                                                        textTransform: "none",
+                                                        fontSize: "0.82rem",
+                                                        py: 0.8,
+                                                        "&:hover": {
+                                                            borderColor: BRAND_COLORS.coralPink,
+                                                            bgcolor: "rgba(253, 58, 115, 0.1)",
+                                                        },
+                                                    }}
+                                                >
+                                                    {ib}
+                                                </Button>
+                                            ))}
+                                        </Stack>
                                     </Box>
                                 )}
 
@@ -875,6 +1070,9 @@ function ChatPage() {
                                         const senderId = msg.sender?._id || msg.sender;
                                         const isMine = senderId === userData?._id;
                                         const isRead = msg.readBy && msg.readBy.length > 1;
+                                        const isImg = isImageContent(msg.content);
+                                        const imgUrl = isImg ? extractImageUrl(msg.content) : null;
+                                        const isHearted = messageReactions[msg._id];
 
                                         return (
                                             <Box
@@ -886,36 +1084,127 @@ function ChatPage() {
                                                     maxWidth: "100%",
                                                 }}
                                             >
-                                                <Paper
-                                                    elevation={2}
-                                                    sx={{
-                                                        p: 1.6,
-                                                        px: 2.2,
-                                                        borderRadius: "20px",
-                                                        maxWidth: { xs: "84%", sm: "68%" },
-                                                        background: isMine
-                                                            ? BRAND_COLORS.primaryGradient
-                                                            : BRAND_COLORS.surfaceDarkCard,
-                                                        color: "#FFFFFF",
-                                                        borderTopRightRadius: isMine ? "4px" : "20px",
-                                                        borderTopLeftRadius: !isMine ? "4px" : "20px",
-                                                        border: isMine ? "none" : `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                                        wordBreak: "break-word",
-                                                        boxShadow: isMine
-                                                            ? "0 4px 15px rgba(253, 58, 115, 0.25)"
-                                                            : "0 4px 12px rgba(0,0,0,0.2)",
-                                                    }}
-                                                >
-                                                    <Typography variant="body1" sx={{ fontSize: "0.95rem", lineHeight: 1.45, fontWeight: 400 }}>
-                                                        {msg.content}
-                                                    </Typography>
-                                                </Paper>
+                                                {isImg ? (
+                                                    /* Photo Card Message (Screen 4 style) */
+                                                    <Box
+                                                        sx={{
+                                                            position: "relative",
+                                                            borderRadius: "18px",
+                                                            overflow: "hidden",
+                                                            border: "1px solid rgba(255, 255, 255, 0.12)",
+                                                            maxWidth: { xs: 240, sm: 290 },
+                                                            boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                                                            cursor: "pointer",
+                                                        }}
+                                                        onClick={() => setPreviewImage(imgUrl)}
+                                                    >
+                                                        <Box
+                                                            component="img"
+                                                            src={imgUrl}
+                                                            alt="Shared in chat"
+                                                            sx={{
+                                                                width: "100%",
+                                                                maxHeight: 280,
+                                                                objectFit: "cover",
+                                                                display: "block",
+                                                                borderRadius: "18px",
+                                                            }}
+                                                        />
+                                                        {/* Heart Reaction Badge */}
+                                                        <Box
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleHeartReaction(msg._id);
+                                                            }}
+                                                            sx={{
+                                                                position: "absolute",
+                                                                bottom: 8,
+                                                                right: 8,
+                                                                width: 32,
+                                                                height: 32,
+                                                                borderRadius: "50%",
+                                                                bgcolor: "rgba(11, 13, 23, 0.8)",
+                                                                backdropFilter: "blur(6px)",
+                                                                border: "1px solid rgba(255, 255, 255, 0.2)",
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                justifyContent: "center",
+                                                                transition: "transform 0.15s ease",
+                                                                "&:hover": { transform: "scale(1.15)" },
+                                                            }}
+                                                        >
+                                                            <span style={{ fontSize: "16px" }}>❤️</span>
+                                                        </Box>
+                                                    </Box>
+                                                ) : (
+                                                    /* Text Message Bubble (Screen 4 style) */
+                                                    <Box
+                                                        sx={{
+                                                            position: "relative",
+                                                            maxWidth: { xs: "84%", sm: "68%" },
+                                                        }}
+                                                    >
+                                                        <Paper
+                                                            elevation={2}
+                                                            onDoubleClick={() => toggleHeartReaction(msg._id)}
+                                                            sx={{
+                                                                p: 1.6,
+                                                                px: 2.2,
+                                                                borderRadius: "20px",
+                                                                background: isMine
+                                                                    ? BRAND_COLORS.chatBubbleSent
+                                                                    : BRAND_COLORS.chatBubbleReceived,
+                                                                color: "#FFFFFF",
+                                                                borderTopRightRadius: isMine ? "4px" : "20px",
+                                                                borderTopLeftRadius: !isMine ? "4px" : "20px",
+                                                                border: isMine ? "none" : `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                                                wordBreak: "break-word",
+                                                                boxShadow: isMine
+                                                                    ? "0 4px 16px rgba(253, 58, 115, 0.3)"
+                                                                    : "0 4px 12px rgba(0,0,0,0.25)",
+                                                            }}
+                                                        >
+                                                            <Typography variant="body1" sx={{ fontSize: "0.95rem", lineHeight: 1.45, fontWeight: 400 }}>
+                                                                {msg.content}
+                                                            </Typography>
+                                                        </Paper>
 
+                                                        {/* Heart Reaction pill if reacted */}
+                                                        {isHearted && (
+                                                            <Box
+                                                                onClick={() => toggleHeartReaction(msg._id)}
+                                                                sx={{
+                                                                    position: "absolute",
+                                                                    bottom: -10,
+                                                                    right: isMine ? 4 : "auto",
+                                                                    left: !isMine ? 4 : "auto",
+                                                                    px: 0.8,
+                                                                    py: 0.2,
+                                                                    borderRadius: "9999px",
+                                                                    bgcolor: "#1E202C",
+                                                                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                                                                    fontSize: "0.75rem",
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    gap: 0.3,
+                                                                    cursor: "pointer",
+                                                                    boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                                                                    zIndex: 1,
+                                                                }}
+                                                            >
+                                                                <span>❤️</span>
+                                                                <span style={{ fontSize: "0.68rem", color: "#FFFFFF", fontWeight: 700 }}>1</span>
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                )}
+
+                                                {/* Timestamp & Status Icon */}
                                                 <Stack
                                                     direction="row"
                                                     spacing={0.5}
                                                     alignItems="center"
-                                                    sx={{ mt: 0.4, px: 0.6 }}
+                                                    sx={{ mt: isHearted ? 1.2 : 0.4, px: 0.6 }}
                                                 >
                                                     <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "0.72rem" }}>
                                                         {formatTime(msg.createdAt)}
@@ -924,7 +1213,7 @@ function ChatPage() {
                                                         isRead ? (
                                                             <DoneAllIcon sx={{ fontSize: 14, color: "#60A5FA" }} />
                                                         ) : (
-                                                            <DoneIcon sx={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }} />
+                                                            <DoneIcon sx={{ fontSize: 14, color: "rgba(255,255,255,0.5)" }} />
                                                         )
                                                     )}
                                                 </Stack>
@@ -934,26 +1223,104 @@ function ChatPage() {
                                 <div ref={messagesEndRef} />
                             </Box>
 
-                            {/* Message Composer Input Area */}
+                            {/* Emoji Quick Tray (collapsible) */}
+                            {showEmojiPicker && (
+                                <Box
+                                    sx={{
+                                        px: 2,
+                                        py: 1,
+                                        bgcolor: BRAND_COLORS.surfaceDark,
+                                        borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1.2,
+                                        overflowX: "auto",
+                                    }}
+                                >
+                                    {QUICK_EMOJIS.map((emoji) => (
+                                        <Box
+                                            key={emoji}
+                                            onClick={() => setInputText((prev) => prev + emoji)}
+                                            sx={{
+                                                fontSize: "1.35rem",
+                                                cursor: "pointer",
+                                                px: 0.8,
+                                                py: 0.4,
+                                                borderRadius: "10px",
+                                                transition: "all 0.15s ease",
+                                                "&:hover": {
+                                                    bgcolor: "rgba(255, 255, 255, 0.1)",
+                                                    transform: "scale(1.2)",
+                                                },
+                                            }}
+                                        >
+                                            {emoji}
+                                        </Box>
+                                    ))}
+                                </Box>
+                            )}
+
+                            {/* Screen 4 Bottom Input Dock */}
                             <Box
                                 component="form"
-                                onSubmit={handleSendMessage}
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    handleSendMessage();
+                                }}
                                 sx={{
-                                    p: { xs: 1.2, sm: 2 },
+                                    p: { xs: 1.2, sm: 1.8 },
                                     borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                     bgcolor: BRAND_COLORS.surfaceDark,
                                     display: "flex",
                                     alignItems: "center",
-                                    gap: { xs: 1, sm: 1.5 },
+                                    gap: { xs: 0.8, sm: 1.2 },
                                 }}
                             >
+                                {/* Plus (+) Attachment Button */}
+                                <IconButton
+                                    onClick={() => setShowMediaModal(true)}
+                                    sx={{
+                                        width: 42,
+                                        height: 42,
+                                        borderRadius: "50%",
+                                        bgcolor: "rgba(255, 255, 255, 0.06)",
+                                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                                        color: "#FFFFFF",
+                                        transition: "all 0.2s ease",
+                                        "&:hover": {
+                                            bgcolor: "rgba(255, 255, 255, 0.12)",
+                                            transform: "rotate(90deg)",
+                                        },
+                                    }}
+                                >
+                                    <AddIcon fontSize="small" />
+                                </IconButton>
+
+                                {/* Message Input Pill */}
                                 <TextField
                                     fullWidth
                                     size="small"
-                                    placeholder={`Message ${otherUser.name}...`}
+                                    placeholder="Type a message..."
                                     value={inputText}
                                     onChange={(e) => setInputText(e.target.value)}
                                     inputProps={{ maxLength: 2000 }}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => setShowEmojiPicker((prev) => !prev)}
+                                                    sx={{
+                                                        color: showEmojiPicker ? BRAND_COLORS.coralPink : "rgba(255, 255, 255, 0.5)",
+                                                        transition: "color 0.2s ease",
+                                                        "&:hover": { color: "#FFFFFF" },
+                                                    }}
+                                                >
+                                                    <SentimentSatisfiedAltIcon fontSize="small" />
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
                                     onKeyPress={(e) => {
                                         if (e.key === "Enter" && !e.shiftKey) {
                                             e.preventDefault();
@@ -964,28 +1331,34 @@ function ChatPage() {
                                         "& .MuiOutlinedInput-root": {
                                             borderRadius: "9999px",
                                             bgcolor: "rgba(255, 255, 255, 0.05)",
-                                            fontSize: "0.92rem",
+                                            fontSize: "0.94rem",
                                             "& fieldset": { borderColor: BRAND_COLORS.surfaceDarkBorder },
                                             "&:hover fieldset": { borderColor: "rgba(255, 255, 255, 0.2)" },
+                                            "&.Mui-focused fieldset": { borderColor: BRAND_COLORS.coralPink },
                                         },
                                     }}
                                 />
+
+                                {/* Circular Pink Send Button */}
                                 <IconButton
                                     type="submit"
                                     disabled={!inputText.trim() || sending}
                                     sx={{
+                                        width: 44,
+                                        height: 44,
                                         background: BRAND_COLORS.primaryGradient,
                                         color: "#ffffff",
+                                        boxShadow: "0 4px 16px rgba(253, 58, 115, 0.4)",
+                                        transition: "all 0.2s ease",
                                         "&:hover": {
-                                            opacity: 0.9,
+                                            opacity: 0.92,
+                                            transform: "scale(1.06)",
                                         },
                                         "&.Mui-disabled": {
                                             bgcolor: "rgba(255, 255, 255, 0.06)",
                                             color: "rgba(255, 255, 255, 0.2)",
+                                            boxShadow: "none",
                                         },
-                                        width: 44,
-                                        height: 44,
-                                        boxShadow: "0 4px 15px rgba(253, 58, 115, 0.3)",
                                     }}
                                 >
                                     {sending ? <CircularProgress size={20} color="inherit" /> : <SendIcon fontSize="small" />}
@@ -993,6 +1366,7 @@ function ChatPage() {
                             </Box>
                         </>
                     ) : (
+                        /* Empty state when no conversation is selected on desktop */
                         <Box
                             sx={{
                                 flex: 1,
@@ -1029,6 +1403,414 @@ function ChatPage() {
                     )}
                 </Box>
             </Box>
+
+            {/* More Options Popover Menu */}
+            <Menu
+                anchorEl={menuAnchorEl}
+                open={Boolean(menuAnchorEl)}
+                onClose={handleCloseMenu}
+                PaperProps={{
+                    sx: {
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        borderRadius: "16px",
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                        mt: 1,
+                    },
+                }}
+            >
+                <MenuItem
+                    onClick={() => {
+                        handleCloseMenu();
+                        setShowProfileModal(true);
+                    }}
+                    sx={{ gap: 1.5, py: 1.2, color: "#FFFFFF", "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" } }}
+                >
+                    <FavoriteBorderIcon fontSize="small" sx={{ color: BRAND_COLORS.coralPink }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>View Full Profile</Typography>
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleCloseMenu();
+                        setShowVideoModal(true);
+                    }}
+                    sx={{ gap: 1.5, py: 1.2, color: "#FFFFFF", "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" } }}
+                >
+                    <VideocamIcon fontSize="small" sx={{ color: BRAND_COLORS.violet }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Start Video Call</Typography>
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleCloseMenu();
+                        setShowMediaModal(true);
+                    }}
+                    sx={{ gap: 1.5, py: 1.2, color: "#FFFFFF", "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" } }}
+                >
+                    <PhotoCameraIcon fontSize="small" sx={{ color: "#38BDF8" }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Share Photo</Typography>
+                </MenuItem>
+            </Menu>
+
+            {/* Video Call Initiation Modal */}
+            <Dialog
+                open={showVideoModal}
+                onClose={() => setShowVideoModal(false)}
+                PaperProps={{
+                    sx: {
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        borderRadius: "24px",
+                        p: 1.5,
+                        maxWidth: 420,
+                    },
+                }}
+            >
+                <DialogTitle sx={{ textAlign: "center", pb: 1 }}>
+                    <Box
+                        sx={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: "50%",
+                            bgcolor: "rgba(139, 92, 246, 0.15)",
+                            border: "1px solid rgba(139, 92, 246, 0.35)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            mx: "auto",
+                            mb: 1.5,
+                        }}
+                    >
+                        <VideocamIcon sx={{ fontSize: 32, color: BRAND_COLORS.violet }} />
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF" }}>
+                        Video Call with {otherUser?.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                        Select your preferred video calling mode
+                    </Typography>
+                </DialogTitle>
+                <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 1 }}>
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        size="large"
+                        onClick={() => {
+                            setShowVideoModal(false);
+                            if (activeConversation?._id) {
+                                navigate(`/${activeConversation._id}`);
+                            }
+                        }}
+                        startIcon={<VideocamIcon />}
+                        sx={{
+                            background: BRAND_COLORS.primaryGradient,
+                            borderRadius: "14px",
+                            py: 1.3,
+                            fontWeight: 700,
+                            boxShadow: "0 6px 20px rgba(253, 58, 115, 0.35)",
+                        }}
+                    >
+                        Join 1-on-1 Video Room
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        fullWidth
+                        size="large"
+                        onClick={() => {
+                            setShowVideoModal(false);
+                            navigate("/random-video");
+                        }}
+                        startIcon={<SparklesIcon />}
+                        sx={{
+                            borderRadius: "14px",
+                            borderColor: "rgba(139, 92, 246, 0.5)",
+                            color: "#C4B5FD",
+                            py: 1.3,
+                            fontWeight: 700,
+                            "&:hover": {
+                                borderColor: BRAND_COLORS.violet,
+                                bgcolor: "rgba(139, 92, 246, 0.1)",
+                            },
+                        }}
+                    >
+                        Explore Random Match Pool
+                    </Button>
+                    <Button
+                        onClick={() => setShowVideoModal(false)}
+                        sx={{ color: BRAND_COLORS.textSecondary, textTransform: "none" }}
+                    >
+                        Cancel
+                    </Button>
+                </DialogContent>
+            </Dialog>
+
+            {/* Quick Media Attachment Dialog */}
+            <Dialog
+                open={showMediaModal}
+                onClose={() => setShowMediaModal(false)}
+                PaperProps={{
+                    sx: {
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        borderRadius: "24px",
+                        p: 1.5,
+                        maxWidth: 440,
+                    },
+                }}
+            >
+                <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF" }}>
+                        Share a Photo 📷
+                    </Typography>
+                    <IconButton size="small" onClick={() => setShowMediaModal(false)} sx={{ color: "rgba(255,255,255,0.6)" }}>
+                        <CloseIcon fontSize="small" />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                        Select from cute presets or paste an image link to send directly in chat.
+                    </Typography>
+
+                    {/* Presets Grid */}
+                    <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.2 }}>
+                        {PHOTO_PRESETS.map((item, idx) => (
+                            <Box
+                                key={idx}
+                                onClick={() => handleSendPhoto(item.url)}
+                                sx={{
+                                    borderRadius: "14px",
+                                    overflow: "hidden",
+                                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                                    cursor: "pointer",
+                                    position: "relative",
+                                    transition: "all 0.2s ease",
+                                    "&:hover": {
+                                        transform: "scale(1.03)",
+                                        borderColor: BRAND_COLORS.coralPink,
+                                    },
+                                }}
+                            >
+                                <Box
+                                    component="img"
+                                    src={item.url}
+                                    alt={item.title}
+                                    sx={{ width: "100%", height: 100, objectFit: "cover", display: "block" }}
+                                />
+                                <Box
+                                    sx={{
+                                        position: "absolute",
+                                        bottom: 0,
+                                        left: 0,
+                                        right: 0,
+                                        p: 0.6,
+                                        bgcolor: "rgba(0,0,0,0.65)",
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    <Typography variant="caption" sx={{ color: "#FFFFFF", fontWeight: 700, fontSize: "0.72rem" }}>
+                                        {item.title}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        ))}
+                    </Box>
+
+                    {/* Custom URL Input */}
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                        <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Or paste image URL here..."
+                            value={customImageUrl}
+                            onChange={(e) => setCustomImageUrl(e.target.value)}
+                            sx={{
+                                "& .MuiOutlinedInput-root": {
+                                    borderRadius: "12px",
+                                    bgcolor: "rgba(255, 255, 255, 0.05)",
+                                    fontSize: "0.86rem",
+                                    "& fieldset": { borderColor: BRAND_COLORS.surfaceDarkBorder },
+                                },
+                            }}
+                        />
+                        <Button
+                            variant="contained"
+                            disabled={!customImageUrl.trim()}
+                            onClick={() => handleSendPhoto(customImageUrl.trim())}
+                            sx={{
+                                background: BRAND_COLORS.primaryGradient,
+                                borderRadius: "12px",
+                                px: 2.5,
+                                fontWeight: 700,
+                            }}
+                        >
+                            Send
+                        </Button>
+                    </Box>
+                </DialogContent>
+            </Dialog>
+
+            {/* Fullscreen Photo Lightbox Modal */}
+            <Dialog
+                open={Boolean(previewImage)}
+                onClose={() => setPreviewImage(null)}
+                maxWidth="md"
+                PaperProps={{
+                    sx: {
+                        bgcolor: "transparent",
+                        boxShadow: "none",
+                        overflow: "hidden",
+                    },
+                }}
+            >
+                <Box sx={{ position: "relative", p: 1 }}>
+                    <IconButton
+                        onClick={() => setPreviewImage(null)}
+                        sx={{
+                            position: "absolute",
+                            top: 16,
+                            right: 16,
+                            bgcolor: "rgba(0,0,0,0.7)",
+                            color: "#FFFFFF",
+                            "&:hover": { bgcolor: "rgba(0,0,0,0.9)" },
+                            zIndex: 2,
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                    <Box
+                        component="img"
+                        src={previewImage || ""}
+                        alt="Preview"
+                        sx={{
+                            maxWidth: "90vw",
+                            maxHeight: "85vh",
+                            borderRadius: "20px",
+                            display: "block",
+                            objectFit: "contain",
+                            border: "1px solid rgba(255, 255, 255, 0.2)",
+                        }}
+                    />
+                </Box>
+            </Dialog>
+
+            {/* Partner Profile Modal */}
+            <Dialog
+                open={showProfileModal}
+                onClose={() => setShowProfileModal(false)}
+                PaperProps={{
+                    sx: {
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        borderRadius: "24px",
+                        maxWidth: 420,
+                        overflow: "hidden",
+                        p: 0,
+                    },
+                }}
+            >
+                {otherUser && (
+                    <Box>
+                        <Box sx={{ position: "relative" }}>
+                            <Box
+                                component="img"
+                                src={otherUser.photos?.[0]}
+                                alt={otherUser.name}
+                                sx={{
+                                    width: "100%",
+                                    height: 320,
+                                    objectFit: "cover",
+                                    display: "block",
+                                }}
+                            />
+                            <IconButton
+                                onClick={() => setShowProfileModal(false)}
+                                sx={{
+                                    position: "absolute",
+                                    top: 12,
+                                    right: 12,
+                                    bgcolor: "rgba(0,0,0,0.6)",
+                                    color: "#FFFFFF",
+                                    "&:hover": { bgcolor: "rgba(0,0,0,0.85)" },
+                                }}
+                            >
+                                <CloseIcon fontSize="small" />
+                            </IconButton>
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    p: 2,
+                                    background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(11, 13, 23, 0.95) 100%)",
+                                }}
+                            >
+                                <Stack direction="row" spacing={0.8} alignItems="center">
+                                    <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF" }}>
+                                        {otherUser.name}{otherUser.age ? `, ${otherUser.age}` : ""}
+                                    </Typography>
+                                    <CheckCircleIcon sx={{ fontSize: 20, color: BRAND_COLORS.verifiedBlue }} />
+                                </Stack>
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    @{otherUser.username}
+                                </Typography>
+                            </Box>
+                        </Box>
+
+                        <Box sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
+                            {otherUser.location?.city && (
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <LocationOnIcon sx={{ fontSize: 18, color: BRAND_COLORS.coralPink }} />
+                                    <Typography variant="body2" sx={{ color: "#FFFFFF" }}>
+                                        {otherUser.location.city}, {otherUser.location.country || "India"}
+                                    </Typography>
+                                </Stack>
+                            )}
+
+                            {otherUser.occupation && (
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <WorkOutlineIcon sx={{ fontSize: 18, color: BRAND_COLORS.coralPink }} />
+                                    <Typography variant="body2" sx={{ color: "#FFFFFF" }}>
+                                        {otherUser.occupation}
+                                    </Typography>
+                                </Stack>
+                            )}
+
+                            {otherUser.education && (
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <SchoolIcon sx={{ fontSize: 18, color: BRAND_COLORS.coralPink }} />
+                                    <Typography variant="body2" sx={{ color: "#FFFFFF" }}>
+                                        {otherUser.education}
+                                    </Typography>
+                                </Stack>
+                            )}
+
+                            {otherUser.bio && (
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.5, mt: 0.5 }}>
+                                    {otherUser.bio}
+                                </Typography>
+                            )}
+
+                            {otherUser.interests && otherUser.interests.length > 0 && (
+                                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8, mt: 1 }}>
+                                    {otherUser.interests.map((int, i) => (
+                                        <Chip
+                                            key={i}
+                                            label={int}
+                                            size="small"
+                                            sx={{
+                                                bgcolor: "rgba(255, 255, 255, 0.08)",
+                                                color: "#FFFFFF",
+                                                borderRadius: "9999px",
+                                                fontSize: "0.78rem",
+                                            }}
+                                        />
+                                    ))}
+                                </Box>
+                            )}
+                        </Box>
+                    </Box>
+                )}
+            </Dialog>
         </Box>
     );
 }

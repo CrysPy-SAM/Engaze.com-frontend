@@ -11,342 +11,590 @@ import {
     Button,
     Card,
     Container,
-    Grid,
+    Dialog,
+    DialogContent,
+    Divider,
+    IconButton,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemButton,
+    ListItemText,
     Paper,
     Stack,
-    TextField,
+    Switch,
     Typography,
 } from "@mui/material";
-import WhatshotIcon from "@mui/icons-material/Whatshot";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import ChatIcon from "@mui/icons-material/Chat";
-import VideocamIcon from "@mui/icons-material/Videocam";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import VideoCallIcon from "@mui/icons-material/VideoCall";
+import WhatshotRoundedIcon from "@mui/icons-material/WhatshotRounded";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
+import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
+import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
+import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
+import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
+import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
+import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 
 function HomeComponent() {
     const navigate = useNavigate();
-    const { userData, addToUserHistory } = useContext(AuthContext);
-    const [meetingCode, setMeetingCode] = useState("");
+    const { userData, handleLogout } = useContext(AuthContext);
 
-    const handleJoinVideoCall = async () => {
-        if (!meetingCode.trim()) return;
-        try {
-            await addToUserHistory(meetingCode);
-        } catch (e) {
-            console.error("Failed to add to history:", e);
-        }
-        navigate(`/${meetingCode.trim()}`);
-    };
+    // Dialog states
+    const [plusModalOpen, setPlusModalOpen] = useState(false);
+    const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+    const [supportModalOpen, setSupportModalOpen] = useState(false);
+
+    // Settings local state
+    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+    const [readReceiptsEnabled, setReadReceiptsEnabled] = useState(true);
+    const [incognitoMode, setIncognitoMode] = useState(false);
+
+    const menuItems = [
+        {
+            id: "discover",
+            title: "Discover",
+            subtitle: "Find new people",
+            icon: <WhatshotRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 24 }} />,
+            onClick: () => navigate("/discovery"),
+        },
+        {
+            id: "matches",
+            title: "Matches",
+            subtitle: "Your connections",
+            icon: <FavoriteRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 24 }} />,
+            badge: "5",
+            onClick: () => navigate("/matches"),
+        },
+        {
+            id: "messages",
+            title: "Messages",
+            subtitle: "Chat with your matches",
+            icon: <ChatBubbleRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 24 }} />,
+            onClick: () => navigate("/chat"),
+        },
+        {
+            id: "random-video",
+            title: "Random Video",
+            subtitle: "Meet new people",
+            icon: <VideocamRoundedIcon sx={{ color: BRAND_COLORS.violet, fontSize: 24 }} />,
+            onClick: () => navigate("/random-video"),
+        },
+        {
+            id: "profile",
+            title: "Profile",
+            subtitle: "View and edit profile",
+            icon: <PersonRoundedIcon sx={{ color: "#9CA3AF", fontSize: 24 }} />,
+            onClick: () => navigate("/profile"),
+        },
+        {
+            id: "settings",
+            title: "Settings",
+            subtitle: "Account and preferences",
+            icon: <SettingsRoundedIcon sx={{ color: "#9CA3AF", fontSize: 24 }} />,
+            onClick: () => setSettingsModalOpen(true),
+        },
+        {
+            id: "support",
+            title: "Help & Support",
+            subtitle: "Get help or contact us",
+            icon: <HelpOutlineRoundedIcon sx={{ color: "#9CA3AF", fontSize: 24 }} />,
+            onClick: () => setSupportModalOpen(true),
+        },
+    ];
+
+    const plusPerks = [
+        "Unlimited Likes & Swipes",
+        "Rewind Your Last Swipe Anytime",
+        "5 Free Super Likes Every Day",
+        "1 Free Profile Boost per Month",
+        "See Who Liked You Before Swiping",
+        "Control Who Sees Your Profile",
+    ];
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: BRAND_COLORS.bgDark, pb: { xs: 10, md: 6 } }}>
-            {/* Unified Brand Navigation */}
-            <Navbar />
+        <Box sx={{ minHeight: "100vh", backgroundColor: BRAND_COLORS.bgDark, pb: { xs: 12, md: 6 } }}>
+            {/* Unified Bottom Navigation Dock */}
+            <Navbar hideTopNav={true} />
 
-            <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 5 }, px: { xs: 1.5, sm: 3 } }}>
-                {/* User Welcome Banner */}
-                <Paper
-                    elevation={4}
+            <Container maxWidth="sm" sx={{ pt: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+                {/* 1. TOP USER PROFILE HEADER */}
+                <Box
                     sx={{
-                        p: { xs: 2.2, sm: 4 },
-                        borderRadius: "28px",
-                        backgroundColor: BRAND_COLORS.surfaceDark,
-                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        mb: 3,
+                        cursor: "pointer",
+                    }}
+                    onClick={() => navigate("/profile")}
+                >
+                    <Avatar
+                        src={userData?.photos?.[0]}
+                        alt={userData?.name}
+                        sx={{
+                            width: 68,
+                            height: 68,
+                            border: `2.5px solid ${BRAND_COLORS.coralPink}`,
+                            boxShadow: "0 4px 18px rgba(253, 58, 115, 0.4)",
+                        }}
+                    >
+                        {userData?.name?.charAt(0) || "U"}
+                    </Avatar>
+
+                    <Box sx={{ flex: 1 }}>
+                        <Stack direction="row" spacing={0.8} alignItems="center">
+                            <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                                {userData?.name || "Member"}
+                            </Typography>
+                            <VerifiedRoundedIcon
+                                sx={{
+                                    color: BRAND_COLORS.verifiedBlue,
+                                    fontSize: 22,
+                                    filter: "drop-shadow(0 2px 6px rgba(56, 189, 248, 0.6))",
+                                }}
+                            />
+                        </Stack>
+
+                        <Stack
+                            direction="row"
+                            spacing={0.5}
+                            alignItems="center"
+                            sx={{
+                                color: BRAND_COLORS.textSecondary,
+                                transition: "color 0.2s ease",
+                                "&:hover": { color: "#FFFFFF" },
+                            }}
+                        >
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                Edit Profile
+                            </Typography>
+                            <ArrowForwardIosRoundedIcon sx={{ fontSize: 13 }} />
+                        </Stack>
+                    </Box>
+                </Box>
+
+                {/* 2. ENGAZE PLUS GRADIENT HERO BANNER */}
+                <Paper
+                    elevation={6}
+                    onClick={() => setPlusModalOpen(true)}
+                    sx={{
+                        p: { xs: 2.2, sm: 2.8 },
+                        borderRadius: "24px",
+                        background: BRAND_COLORS.engazePlusGradient,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        flexWrap: "wrap",
-                        gap: 2.5,
-                        mb: 5,
-                        background: "linear-gradient(135deg, rgba(19, 22, 37, 0.9) 0%, rgba(30, 25, 48, 0.95) 100%)",
+                        gap: 2,
+                        mb: 3,
+                        cursor: "pointer",
+                        boxShadow: "0 12px 35px rgba(253, 58, 115, 0.4)",
+                        transition: "all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                        "&:hover": {
+                            transform: "translateY(-3px) scale(1.01)",
+                            boxShadow: "0 16px 45px rgba(253, 58, 115, 0.55)",
+                        },
+                        "&:active": {
+                            transform: "scale(0.98)",
+                        },
                     }}
                 >
-                    <Stack direction="row" spacing={2.5} alignItems="center">
-                        <Avatar
-                            src={userData?.photos?.[0]}
-                            alt={userData?.name}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.8 }}>
+                        <Box
                             sx={{
-                                width: { xs: 58, sm: 72 },
-                                height: { xs: 58, sm: 72 },
-                                border: `3px solid ${BRAND_COLORS.coralPink}`,
-                                boxShadow: "0 4px 20px rgba(253, 58, 115, 0.4)",
+                                width: 44,
+                                height: 44,
+                                borderRadius: "50%",
+                                bgcolor: "rgba(255, 255, 255, 0.2)",
+                                backdropFilter: "blur(10px)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
                             }}
                         >
-                            {userData?.name?.charAt(0) || "U"}
-                        </Avatar>
+                            <WorkspacePremiumRoundedIcon sx={{ color: "#FFFFFF", fontSize: 28 }} />
+                        </Box>
                         <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 800, color: "#fff" }}>
-                                Welcome back, {userData?.name?.split(" ")[0] || "Member"}!
+                            <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF", lineHeight: 1.2 }}>
+                                Engaze Plus
                             </Typography>
-                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                Your profile is {userData?.isProfileComplete ? "complete and active" : "incomplete"}. Ready to make new connections?
+                            <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "0.8rem", fontWeight: 500 }}>
+                                Get more matches and premium features
                             </Typography>
+                        </Box>
+                    </Box>
+
+                    <ArrowForwardIosRoundedIcon sx={{ color: "#FFFFFF", fontSize: 18, mr: 0.5 }} />
+                </Paper>
+
+                {/* 3. VERTICAL MENU NAVIGATION LIST */}
+                <Card
+                    elevation={0}
+                    sx={{
+                        borderRadius: "24px",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        overflow: "hidden",
+                        mb: 3,
+                    }}
+                >
+                    <List disablePadding>
+                        {menuItems.map((item, idx) => (
+                            <React.Fragment key={item.id}>
+                                <ListItem disablePadding>
+                                    <ListItemButton
+                                        onClick={item.onClick}
+                                        sx={{
+                                            py: 1.6,
+                                            px: { xs: 2, sm: 2.5 },
+                                            transition: "all 0.2s ease",
+                                            "&:hover": {
+                                                bgcolor: "rgba(255, 255, 255, 0.04)",
+                                            },
+                                        }}
+                                    >
+                                        <ListItemAvatar sx={{ minWidth: 46 }}>
+                                            <Box
+                                                sx={{
+                                                    width: 36,
+                                                    height: 36,
+                                                    borderRadius: "50%",
+                                                    bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                }}
+                                            >
+                                                {item.icon}
+                                            </Box>
+                                        </ListItemAvatar>
+
+                                        <ListItemText
+                                            primary={
+                                                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#FFFFFF", fontSize: "0.98rem" }}>
+                                                    {item.title}
+                                                </Typography>
+                                            }
+                                            secondary={
+                                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "0.8rem" }}>
+                                                    {item.subtitle}
+                                                </Typography>
+                                            }
+                                        />
+
+                                        <Stack direction="row" spacing={1.2} alignItems="center">
+                                            {item.badge && (
+                                                <Box
+                                                    sx={{
+                                                        px: 1,
+                                                        py: 0.2,
+                                                        borderRadius: "9999px",
+                                                        bgcolor: BRAND_COLORS.coralPink,
+                                                        color: "#FFFFFF",
+                                                        fontSize: "0.75rem",
+                                                        fontWeight: 800,
+                                                        boxShadow: "0 2px 8px rgba(253, 58, 115, 0.5)",
+                                                    }}
+                                                >
+                                                    {item.badge}
+                                                </Box>
+                                            )}
+                                            <ArrowForwardIosRoundedIcon sx={{ fontSize: 14, color: BRAND_COLORS.textSecondary }} />
+                                        </Stack>
+                                    </ListItemButton>
+                                </ListItem>
+                                {idx < menuItems.length - 1 && (
+                                    <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.04)", mx: 2 }} />
+                                )}
+                            </React.Fragment>
+                        ))}
+                    </List>
+                </Card>
+
+                {/* 4. BOTTOM ACTION CARD: UPGRADE TO ENGAZE PLUS */}
+                <Paper
+                    elevation={0}
+                    onClick={() => setPlusModalOpen(true)}
+                    sx={{
+                        p: 2,
+                        borderRadius: "20px",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: "1px solid rgba(245, 158, 11, 0.35)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                            bgcolor: "rgba(245, 158, 11, 0.08)",
+                            borderColor: BRAND_COLORS.gold,
+                        },
+                    }}
+                >
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                        <WorkspacePremiumRoundedIcon sx={{ color: BRAND_COLORS.gold, fontSize: 24 }} />
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF" }}>
+                            Upgrade to Engaze Plus
+                        </Typography>
+                    </Stack>
+                    <ArrowForwardIosRoundedIcon sx={{ fontSize: 14, color: BRAND_COLORS.textSecondary }} />
+                </Paper>
+            </Container>
+
+            {/* ENGAZE PLUS SUBSCRIPTION DIALOG */}
+            <Dialog
+                open={plusModalOpen}
+                onClose={() => setPlusModalOpen(false)}
+                PaperProps={{
+                    sx: {
+                        borderRadius: "28px",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        maxWidth: 440,
+                        width: "100%",
+                        p: { xs: 2.5, sm: 3.5 },
+                        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
+                    },
+                }}
+            >
+                <DialogContent sx={{ p: 0 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <WorkspacePremiumRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 32 }} />
+                            <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF" }}>
+                                Engaze Plus
+                            </Typography>
+                        </Stack>
+                        <IconButton onClick={() => setPlusModalOpen(false)} size="small" sx={{ color: BRAND_COLORS.textSecondary }}>
+                            <CloseRoundedIcon />
+                        </IconButton>
+                    </Stack>
+
+                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
+                        Unlock the ultimate dating experience with unlimited connections and premium superpowers.
+                    </Typography>
+
+                    <Stack spacing={1.8} sx={{ mb: 4 }}>
+                        {plusPerks.map((perk, i) => (
+                            <Stack key={i} direction="row" spacing={1.5} alignItems="center">
+                                <CheckCircleRoundedIcon sx={{ color: BRAND_COLORS.emerald, fontSize: 20 }} />
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: "#FFFFFF" }}>
+                                    {perk}
+                                </Typography>
+                            </Stack>
+                        ))}
+                    </Stack>
+
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={() => {
+                            setPlusModalOpen(false);
+                            alert("Engaze Plus perks unlocked for this demo session!");
+                        }}
+                        sx={{
+                            background: BRAND_COLORS.primaryGradient,
+                            borderRadius: "9999px",
+                            py: 1.5,
+                            fontWeight: 800,
+                            fontSize: "1rem",
+                            boxShadow: "0 8px 25px rgba(253, 58, 115, 0.5)",
+                            mb: 1.5,
+                        }}
+                    >
+                        Get Engaze Plus &bull; ₹499 / mo
+                    </Button>
+
+                    <Button
+                        variant="text"
+                        fullWidth
+                        onClick={() => setPlusModalOpen(false)}
+                        sx={{ color: BRAND_COLORS.textSecondary, fontWeight: 700 }}
+                    >
+                        No thanks, maybe later
+                    </Button>
+                </DialogContent>
+            </Dialog>
+
+            {/* SETTINGS DIALOG */}
+            <Dialog
+                open={settingsModalOpen}
+                onClose={() => setSettingsModalOpen(false)}
+                PaperProps={{
+                    sx: {
+                        borderRadius: "28px",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        maxWidth: 440,
+                        width: "100%",
+                        p: { xs: 2.5, sm: 3.5 },
+                        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
+                    },
+                }}
+            >
+                <DialogContent sx={{ p: 0 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF" }}>
+                            Account Settings
+                        </Typography>
+                        <IconButton onClick={() => setSettingsModalOpen(false)} size="small" sx={{ color: BRAND_COLORS.textSecondary }}>
+                            <CloseRoundedIcon />
+                        </IconButton>
+                    </Stack>
+
+                    <Stack spacing={2.5} sx={{ mb: 4 }}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <Box>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                    Push Notifications
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    Get alerts for new matches and messages
+                                </Typography>
+                            </Box>
+                            <Switch
+                                checked={notificationsEnabled}
+                                onChange={(e) => setNotificationsEnabled(e.target.checked)}
+                                sx={{
+                                    "& .MuiSwitch-switchBase.Mui-checked": { color: BRAND_COLORS.coralPink },
+                                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: BRAND_COLORS.coralPink },
+                                }}
+                            />
+                        </Box>
+
+                        <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)" }} />
+
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <Box>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                    Read Receipts
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    Show double checkmarks when messages are viewed
+                                </Typography>
+                            </Box>
+                            <Switch
+                                checked={readReceiptsEnabled}
+                                onChange={(e) => setReadReceiptsEnabled(e.target.checked)}
+                                sx={{
+                                    "& .MuiSwitch-switchBase.Mui-checked": { color: BRAND_COLORS.coralPink },
+                                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: BRAND_COLORS.coralPink },
+                                }}
+                            />
+                        </Box>
+
+                        <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)" }} />
+
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <Box>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                    Incognito Discovery
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    Only be visible to profiles you have already liked
+                                </Typography>
+                            </Box>
+                            <Switch
+                                checked={incognitoMode}
+                                onChange={(e) => setIncognitoMode(e.target.checked)}
+                                sx={{
+                                    "& .MuiSwitch-switchBase.Mui-checked": { color: BRAND_COLORS.coralPink },
+                                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: BRAND_COLORS.coralPink },
+                                }}
+                            />
                         </Box>
                     </Stack>
 
                     <Button
                         variant="outlined"
-                        onClick={() => navigate("/profile")}
+                        fullWidth
+                        startIcon={<LogoutRoundedIcon />}
+                        onClick={() => {
+                            setSettingsModalOpen(false);
+                            handleLogout();
+                        }}
                         sx={{
-                            borderColor: "rgba(255,255,255,0.2)",
-                            color: "#fff",
-                            borderRadius: 9999,
-                            px: 3,
-                            "&:hover": { borderColor: BRAND_COLORS.coralPink, bgcolor: "rgba(253, 58, 115, 0.1)" },
+                            borderRadius: "9999px",
+                            py: 1.2,
+                            color: "#EF4444",
+                            borderColor: "rgba(239, 68, 68, 0.3)",
+                            fontWeight: 700,
+                            "&:hover": {
+                                bgcolor: "rgba(239, 68, 68, 0.1)",
+                                borderColor: "#EF4444",
+                            },
                         }}
                     >
-                        Edit Profile
+                        Log Out of Engaze
                     </Button>
-                </Paper>
+                </DialogContent>
+            </Dialog>
 
-                {/* Main Feature Cards Grid */}
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, color: "#FFFFFF" }}>
-                    Explore Engaze
-                </Typography>
-
-                <Grid container spacing={3.5} sx={{ mb: 6 }}>
-                    {/* 1. Dating Discovery */}
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Card
-                            sx={{
-                                height: "100%",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between",
-                                p: 3,
-                                borderRadius: "24px",
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                transition: "all 0.25s ease",
-                                "&:hover": {
-                                    transform: "translateY(-4px)",
-                                    borderColor: "rgba(253, 58, 115, 0.5)",
-                                    boxShadow: "0 12px 30px rgba(253, 58, 115, 0.2)",
-                                },
-                            }}
-                        >
-                            <Box>
-                                <Box sx={{ width: 52, height: 52, borderRadius: "16px", background: BRAND_COLORS.primaryGradient, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", mb: 2.5, boxShadow: "0 4px 15px rgba(253, 58, 115, 0.4)" }}>
-                                    <WhatshotIcon sx={{ fontSize: 28 }} />
-                                </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", mb: 1 }}>
-                                    Discovery
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3, lineHeight: 1.5 }}>
-                                    Explore curated dating cards matching your age and gender preferences.
-                                </Typography>
-                            </Box>
-                            <Button
-                                variant="contained"
-                                endIcon={<ArrowForwardIcon />}
-                                onClick={() => navigate("/discovery")}
-                                sx={{
-                                    background: BRAND_COLORS.primaryGradient,
-                                    borderRadius: 9999,
-                                    fontWeight: 700,
-                                }}
-                            >
-                                Start Swiping
-                            </Button>
-                        </Card>
-                    </Grid>
-
-                    {/* 2. 1-to-1 Video Match */}
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Card
-                            sx={{
-                                height: "100%",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between",
-                                p: 3,
-                                borderRadius: "24px",
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                transition: "all 0.25s ease",
-                                "&:hover": {
-                                    transform: "translateY(-4px)",
-                                    borderColor: "rgba(139, 92, 246, 0.5)",
-                                    boxShadow: "0 12px 30px rgba(139, 92, 246, 0.2)",
-                                },
-                            }}
-                        >
-                            <Box>
-                                <Box sx={{ width: 52, height: 52, borderRadius: "16px", background: BRAND_COLORS.secondaryGradient, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", mb: 2.5, boxShadow: "0 4px 15px rgba(139, 92, 246, 0.4)" }}>
-                                    <VideocamIcon sx={{ fontSize: 28 }} />
-                                </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", mb: 1 }}>
-                                    Video Match
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3, lineHeight: 1.5 }}>
-                                    Meet available members face-to-face via 1-to-1 speed video matchmaking.
-                                </Typography>
-                            </Box>
-                            <Button
-                                variant="contained"
-                                endIcon={<ArrowForwardIcon />}
-                                onClick={() => navigate("/random-video")}
-                                sx={{
-                                    background: BRAND_COLORS.secondaryGradient,
-                                    borderRadius: 9999,
-                                    fontWeight: 700,
-                                }}
-                            >
-                                Find Match
-                            </Button>
-                        </Card>
-                    </Grid>
-
-                    {/* 3. Mutual Matches */}
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Card
-                            sx={{
-                                height: "100%",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between",
-                                p: 3,
-                                borderRadius: "24px",
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                transition: "all 0.25s ease",
-                                "&:hover": {
-                                    transform: "translateY(-4px)",
-                                    borderColor: "rgba(253, 58, 115, 0.4)",
-                                    boxShadow: "0 12px 30px rgba(253, 58, 115, 0.15)",
-                                },
-                            }}
-                        >
-                            <Box>
-                                <Box sx={{ width: 52, height: 52, borderRadius: "16px", bgcolor: "rgba(253, 58, 115, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: BRAND_COLORS.coralPink, mb: 2.5 }}>
-                                    <FavoriteIcon sx={{ fontSize: 28 }} />
-                                </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", mb: 1 }}>
-                                    My Matches
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3, lineHeight: 1.5 }}>
-                                    See all the profiles that mutually liked you back and start dating.
-                                </Typography>
-                            </Box>
-                            <Button
-                                variant="outlined"
-                                endIcon={<ArrowForwardIcon />}
-                                onClick={() => navigate("/matches")}
-                                sx={{
-                                    borderColor: "rgba(255,255,255,0.2)",
-                                    color: "#fff",
-                                    borderRadius: 9999,
-                                    fontWeight: 700,
-                                    "&:hover": { borderColor: BRAND_COLORS.coralPink, bgcolor: "rgba(253, 58, 115, 0.1)" },
-                                }}
-                            >
-                                View Matches
-                            </Button>
-                        </Card>
-                    </Grid>
-
-                    {/* 4. Messages */}
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Card
-                            sx={{
-                                height: "100%",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between",
-                                p: 3,
-                                borderRadius: "24px",
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                transition: "all 0.25s ease",
-                                "&:hover": {
-                                    transform: "translateY(-4px)",
-                                    borderColor: "rgba(16, 185, 129, 0.4)",
-                                    boxShadow: "0 12px 30px rgba(16, 185, 129, 0.15)",
-                                },
-                            }}
-                        >
-                            <Box>
-                                <Box sx={{ width: 52, height: 52, borderRadius: "16px", bgcolor: "rgba(16, 185, 129, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: BRAND_COLORS.emerald, mb: 2.5 }}>
-                                    <ChatIcon sx={{ fontSize: 28 }} />
-                                </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", mb: 1 }}>
-                                    Private Chat
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3, lineHeight: 1.5 }}>
-                                    Jump back into your conversations with read receipts and live messaging.
-                                </Typography>
-                            </Box>
-                            <Button
-                                variant="outlined"
-                                endIcon={<ArrowForwardIcon />}
-                                onClick={() => navigate("/chat")}
-                                sx={{
-                                    borderColor: "rgba(255,255,255,0.2)",
-                                    color: "#fff",
-                                    borderRadius: 9999,
-                                    fontWeight: 700,
-                                    "&:hover": { borderColor: BRAND_COLORS.emerald, bgcolor: "rgba(16, 185, 129, 0.1)" },
-                                }}
-                            >
-                                Open Chats
-                            </Button>
-                        </Card>
-                    </Grid>
-                </Grid>
-
-                {/* Legacy Meeting Room Joiner (Preserved & Styled) */}
-                <Paper
-                    elevation={2}
-                    sx={{
-                        p: { xs: 3, sm: 4 },
-                        borderRadius: "24px",
-                        backgroundColor: "rgba(255, 255, 255, 0.02)",
+            {/* SUPPORT DIALOG */}
+            <Dialog
+                open={supportModalOpen}
+                onClose={() => setSupportModalOpen(false)}
+                PaperProps={{
+                    sx: {
+                        borderRadius: "28px",
+                        bgcolor: BRAND_COLORS.surfaceDark,
                         border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                        display: "flex",
-                        flexDirection: { xs: "column", md: "row" },
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 3,
-                    }}
-                >
-                    <Box sx={{ maxWidth: 520 }}>
-                        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
-                            <VideoCallIcon sx={{ color: BRAND_COLORS.violet, fontSize: 28 }} />
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: "#fff" }}>
-                                Private Meeting Room
-                            </Typography>
-                        </Stack>
-                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.5 }}>
-                            Have a specific room code? Enter it below to join a direct peer-to-peer room.
+                        maxWidth: 400,
+                        width: "100%",
+                        p: { xs: 2.5, sm: 3.5 },
+                        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
+                    },
+                }}
+            >
+                <DialogContent sx={{ p: 0 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF" }}>
+                            Help & Support
                         </Typography>
-                    </Box>
+                        <IconButton onClick={() => setSupportModalOpen(false)} size="small" sx={{ color: BRAND_COLORS.textSecondary }}>
+                            <CloseRoundedIcon />
+                        </IconButton>
+                    </Stack>
 
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ width: { xs: "100%", md: "auto" } }}>
-                        <TextField
-                            size="small"
-                            placeholder="Enter Meeting Code"
-                            value={meetingCode}
-                            onChange={(e) => setMeetingCode(e.target.value)}
-                            onKeyPress={(e) => e.key === "Enter" && handleJoinVideoCall()}
-                            sx={{ minWidth: { sm: 240 } }}
-                        />
+                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
+                        Need help with your account, reporting safety concerns, or video meet? Our support team is here 24/7.
+                    </Typography>
+
+                    <Stack spacing={1.5}>
+                        <Button
+                            variant="outlined"
+                            fullWidth
+                            onClick={() => window.open("mailto:support@engaze.com", "_blank")}
+                            sx={{
+                                borderRadius: "9999px",
+                                py: 1.2,
+                                color: "#FFFFFF",
+                                borderColor: BRAND_COLORS.surfaceDarkBorder,
+                                fontWeight: 700,
+                            }}
+                        >
+                            Email Support: support@engaze.com
+                        </Button>
                         <Button
                             variant="contained"
-                            disabled={!meetingCode.trim()}
-                            onClick={handleJoinVideoCall}
+                            fullWidth
+                            onClick={() => setSupportModalOpen(false)}
                             sx={{
-                                bgcolor: BRAND_COLORS.violet,
-                                borderRadius: 9999,
-                                px: 3,
-                                "&:hover": { bgcolor: "#7C3AED" },
+                                background: BRAND_COLORS.primaryGradient,
+                                borderRadius: "9999px",
+                                py: 1.2,
+                                fontWeight: 700,
                             }}
                         >
-                            Join Room
+                            Close
                         </Button>
                     </Stack>
-                </Paper>
-            </Container>
+                </DialogContent>
+            </Dialog>
         </Box>
     );
 }

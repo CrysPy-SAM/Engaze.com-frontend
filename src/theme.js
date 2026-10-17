@@ -13,9 +13,11 @@ export const BRAND_COLORS = {
     secondaryGradient: "linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)",
     superLikeGradient: "linear-gradient(135deg, #00D2FF 0%, #0078FF 100%)",
     goldGradient: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
+    engazePlusGradient: "linear-gradient(135deg, #FD3A73 0%, #8B5CF6 100%)",
     darkGradient: "linear-gradient(180deg, rgba(11, 13, 23, 0.95) 0%, rgba(19, 22, 37, 0.98) 100%)",
     cardOverlay: "linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(11, 13, 23, 0.5) 60%, rgba(11, 13, 23, 0.92) 85%, #0B0D17 100%)",
     cardStackOverlay: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(11, 13, 23, 0.8) 100%)",
+    chatBubbleSent: "linear-gradient(135deg, #FD3A73 0%, #FF5E7E 100%)",
 
     // Solid Accents
     coralPink: "#FD3A73",
@@ -25,6 +27,7 @@ export const BRAND_COLORS = {
     gold: "#F59E0B",
     crimson: "#EF4444",
     superLike: "#00D2FF",
+    verifiedBlue: "#38BDF8",
 
     // Backgrounds & Surfaces (Dark & Light)
     bgDark: "#0B0D17",
@@ -33,6 +36,7 @@ export const BRAND_COLORS = {
     surfaceDarkElevated: "#1C2035",
     surfaceDarkCard: "#1C2035",
     surfaceDarkBorder: "rgba(255, 255, 255, 0.08)",
+    chatBubbleReceived: "#1E202C",
 
     // Neutral Text
     textPrimary: "#FFFFFF",

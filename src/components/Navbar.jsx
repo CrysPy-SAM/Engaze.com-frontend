@@ -29,7 +29,7 @@ import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 
-export default function Navbar({ hideBottomNav = false }) {
+export default function Navbar({ hideBottomNav = false, hideTopNav = false, rightActions = null }) {
     const navigate = useNavigate();
     const location = useLocation();
     const theme = useTheme();
@@ -51,17 +51,16 @@ export default function Navbar({ hideBottomNav = false }) {
 
     const navItems = [
         { label: "Discover", path: "/discovery", icon: <WhatshotRoundedIcon fontSize="small" /> },
-        { label: "Matches", path: "/matches", icon: <FavoriteRoundedIcon fontSize="small" /> },
-        { label: "Messages", path: "/chat", icon: <ChatBubbleRoundedIcon fontSize="small" /> },
-        {
-            label: "Video Match",
-            path: "/random-video",
-            icon: <VideocamRoundedIcon fontSize="small" />,
-            badge: "LIVE",
-        },
+        { label: "Matches", path: "/matches", icon: <FavoriteRoundedIcon fontSize="small" />, badge: "5" },
+        { label: "Chat", path: "/chat", icon: <ChatBubbleRoundedIcon fontSize="small" /> },
+        { label: "Video", path: "/random-video", icon: <VideocamRoundedIcon fontSize="small" /> },
+        { label: "Profile", path: "/home", icon: <PersonRoundedIcon fontSize="small" /> },
     ];
 
     const isActive = (path) => {
+        if (path === "/home") {
+            return currentPath === "/home" || currentPath === "/profile";
+        }
         if (path === "/chat") {
             return currentPath.startsWith("/chat");
         }
@@ -74,68 +73,60 @@ export default function Navbar({ hideBottomNav = false }) {
     return (
         <>
             {/* Top Desktop & Mobile Header */}
-            <AppBar
-                position="sticky"
-                elevation={0}
-                sx={{
-                    backgroundColor: "rgba(9, 10, 16, 0.88)",
-                    backdropFilter: "blur(20px)",
-                    WebkitBackdropFilter: "blur(20px)",
-                    borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                    zIndex: 1100,
-                }}
-            >
-                <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
-                    <Toolbar
-                        disableGutters
-                        sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            height: { xs: 58, sm: 66 },
-                        }}
-                    >
-                        {/* Brand Logo with Flame Badge */}
-                        <Box
-                            onClick={() => navigate("/discovery")}
+            {!hideTopNav && (
+                <AppBar
+                    position="sticky"
+                    elevation={0}
+                    sx={{
+                        backgroundColor: "rgba(9, 10, 16, 0.88)",
+                        backdropFilter: "blur(20px)",
+                        WebkitBackdropFilter: "blur(20px)",
+                        borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        zIndex: 1100,
+                    }}
+                >
+                    <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
+                        <Toolbar
+                            disableGutters
                             sx={{
                                 display: "flex",
-                                alignItems: "center",
-                                gap: 1.2,
-                                cursor: "pointer",
-                                userSelect: "none",
-                                transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                                "&:hover": { transform: "scale(1.02)" },
-                                "&:active": { transform: "scale(0.98)" },
+                                justifyContent: "space-between",
+                                height: { xs: 58, sm: 66 },
                             }}
                         >
+                            {/* Brand Logo with Heart Flame Badge */}
                             <Box
+                                onClick={() => navigate("/discovery")}
                                 sx={{
-                                    width: { xs: 34, sm: 38 },
-                                    height: { xs: 34, sm: 38 },
-                                    borderRadius: "12px",
-                                    background: BRAND_COLORS.primaryGradient,
                                     display: "flex",
                                     alignItems: "center",
-                                    justifyContent: "center",
-                                    boxShadow: "0 4px 18px rgba(253, 58, 115, 0.45)",
+                                    gap: 1.2,
+                                    cursor: "pointer",
+                                    userSelect: "none",
+                                    transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                                    "&:hover": { transform: "scale(1.02)" },
+                                    "&:active": { transform: "scale(0.98)" },
                                 }}
                             >
-                                <WhatshotRoundedIcon sx={{ color: "#fff", fontSize: { xs: 20, sm: 24 } }} />
+                                <FavoriteRoundedIcon
+                                    sx={{
+                                        color: BRAND_COLORS.coralPink,
+                                        fontSize: { xs: 26, sm: 30 },
+                                        filter: "drop-shadow(0 2px 8px rgba(253, 58, 115, 0.6))",
+                                    }}
+                                />
+                                <Typography
+                                    variant="h6"
+                                    sx={{
+                                        fontWeight: 800,
+                                        letterSpacing: "-0.02em",
+                                        fontSize: { xs: "1.25rem", sm: "1.4rem" },
+                                        color: "#FFFFFF",
+                                    }}
+                                >
+                                    Engaze
+                                </Typography>
                             </Box>
-                            <Typography
-                                variant="h6"
-                                sx={{
-                                    fontWeight: 900,
-                                    letterSpacing: "-0.03em",
-                                    fontSize: { xs: "1.2rem", sm: "1.4rem" },
-                                    color: "#FFFFFF",
-                                    display: "flex",
-                                    alignItems: "center",
-                                }}
-                            >
-                                engaze<span style={{ color: BRAND_COLORS.coralPink }}>.</span>
-                            </Typography>
-                        </Box>
 
                         {/* Desktop Navigation Centered Pill Container */}
                         {!isMobile && (
@@ -202,8 +193,11 @@ export default function Navbar({ hideBottomNav = false }) {
 
                         {/* Right Section: User Profile & Quick Menu */}
                         <Stack direction="row" spacing={1} alignItems="center">
-                            <Box
-                                onClick={handleProfileMenuOpen}
+                            {isMobile && rightActions ? (
+                                rightActions
+                            ) : (
+                                <Box
+                                    onClick={handleProfileMenuOpen}
                                 sx={{
                                     display: "flex",
                                     alignItems: "center",
@@ -279,8 +273,9 @@ export default function Navbar({ hideBottomNav = false }) {
                                     </>
                                 )}
                             </Box>
+                        )}
 
-                            {/* Dropdown Profile Menu */}
+                        {/* Dropdown Profile Menu */}
                             <Menu
                                 anchorEl={profileAnchorEl}
                                 open={isMenuOpen}
@@ -366,6 +361,7 @@ export default function Navbar({ hideBottomNav = false }) {
                     </Toolbar>
                 </Container>
             </AppBar>
+        )}
 
             {/* Mobile Bottom Navigation Bar (True Native iOS/Android Dating App Style) */}
             {isMobile && !hideBottomNav && (
@@ -422,19 +418,28 @@ export default function Navbar({ hideBottomNav = false }) {
                                             filter: active ? "drop-shadow(0 2px 8px rgba(253, 58, 115, 0.6))" : "none",
                                         },
                                     })}
-                                    {item.badge && !active && (
+                                    {item.badge && (
                                         <Box
                                             sx={{
                                                 position: "absolute",
-                                                top: -3,
-                                                right: -6,
-                                                width: 8,
-                                                height: 8,
-                                                borderRadius: "50%",
-                                                bgcolor: BRAND_COLORS.violet,
-                                                boxShadow: "0 0 6px #8B5CF6",
+                                                top: -4,
+                                                right: -8,
+                                                minWidth: 16,
+                                                height: 16,
+                                                borderRadius: "9999px",
+                                                bgcolor: BRAND_COLORS.coralPink,
+                                                color: "#fff",
+                                                fontSize: "0.62rem",
+                                                fontWeight: 800,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                px: 0.4,
+                                                boxShadow: "0 2px 6px rgba(253, 58, 115, 0.6)",
                                             }}
-                                        />
+                                        >
+                                            {item.badge}
+                                        </Box>
                                     )}
                                 </Box>
                                 <Typography
@@ -464,61 +469,6 @@ export default function Navbar({ hideBottomNav = false }) {
                             </IconButton>
                         );
                     })}
-
-                    {/* Profile Destination */}
-                    <IconButton
-                        onClick={() => navigate("/profile")}
-                        sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: 0.3,
-                            py: 0.6,
-                            px: 1.4,
-                            borderRadius: "16px",
-                            color: isActive("/profile") ? BRAND_COLORS.coralPink : BRAND_COLORS.textSecondary,
-                            transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                            "&:active": {
-                                transform: "scale(0.92)",
-                            },
-                        }}
-                    >
-                        <Avatar
-                            src={userData?.photos?.[0]}
-                            sx={{
-                                width: 24,
-                                height: 24,
-                                border: `1.5px solid ${isActive("/profile") ? BRAND_COLORS.coralPink : "rgba(255,255,255,0.3)"}`,
-                                boxShadow: isActive("/profile") ? "0 0 8px rgba(253, 58, 115, 0.5)" : "none",
-                            }}
-                        >
-                            <PersonRoundedIcon sx={{ fontSize: 16 }} />
-                        </Avatar>
-                        <Typography
-                            variant="caption"
-                            sx={{
-                                fontSize: "0.68rem",
-                                fontWeight: isActive("/profile") ? 800 : 500,
-                                color: isActive("/profile") ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                                letterSpacing: "0.2px",
-                            }}
-                        >
-                            Profile
-                        </Typography>
-                        {isActive("/profile") && (
-                            <Box
-                                sx={{
-                                    width: 4,
-                                    height: 4,
-                                    borderRadius: "50%",
-                                    background: BRAND_COLORS.primaryGradient,
-                                    boxShadow: "0 0 6px rgba(253, 58, 115, 0.8)",
-                                    mt: 0.2,
-                                }}
-                            />
-                        )}
-                    </IconButton>
                 </Paper>
             )}
         </>

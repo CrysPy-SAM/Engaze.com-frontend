@@ -237,6 +237,64 @@ body {
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
 }
 
+/* Multi-layer Card Stack for Visible Tinder Depth */
+.card-stack-layer-back {
+  position: absolute;
+  top: -10px;
+  left: 8px;
+  right: 8px;
+  bottom: 12px;
+  border-radius: 28px;
+  background-color: #121422;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transform: rotate(-3deg) scale(0.93);
+  z-index: 0;
+  pointer-events: none;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);
+}
+
+.card-stack-layer-middle {
+  position: absolute;
+  top: -5px;
+  left: 4px;
+  right: 4px;
+  bottom: 6px;
+  border-radius: 28px;
+  background-color: #16192B;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transform: rotate(2deg) scale(0.97);
+  z-index: 1;
+  pointer-events: none;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+}
+
+/* Story Avatar Glow Ring */
+.story-avatar-ring {
+  padding: 2.5px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FD3A73 0%, #FF7A00 50%, #8B5CF6 100%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.story-avatar-ring:hover {
+  transform: scale(1.06);
+}
+
+/* Online Status Dot Indicator */
+.online-indicator-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background-color: #10B981;
+  border: 2px solid #0B0D17;
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
+}
+
 /* Mobile Safe-Area Utilities */
 .mobile-safe-bottom {
   padding-bottom: max(16px, env(safe-area-inset-bottom));

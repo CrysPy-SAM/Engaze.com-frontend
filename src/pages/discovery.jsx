@@ -23,6 +23,8 @@ import {
     Stack,
     Tooltip,
     Typography,
+    Slider,
+    Switch,
 } from "@mui/material";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -32,6 +34,9 @@ import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
+import SchoolRoundedIcon from "@mui/icons-material/SchoolRounded";
+import FlashOnRoundedIcon from "@mui/icons-material/FlashOnRounded";
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
@@ -66,10 +71,78 @@ function DiscoveryPage() {
     const [isDragging, setIsDragging] = useState(false);
     const dragStartRef = useRef({ x: 0, y: 0 });
 
+    // Filter Preferences & Boost State
+    const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+    const [boostDialogOpen, setBoostDialogOpen] = useState(false);
+    const [boostActive, setBoostActive] = useState(false);
+    const [ageRange, setAgeRange] = useState([18, 35]);
+    const [maxDistance, setMaxDistance] = useState(30);
+    const [genderPreference, setGenderPreference] = useState("all");
+    const [verifiedOnly, setVerifiedOnly] = useState(false);
+
     // Toast notification state
     const [toastMessage, setToastMessage] = useState("");
     const [toastSeverity, setToastSeverity] = useState("info");
     const [openToast, setOpenToast] = useState(false);
+
+    const handleActivateBoost = () => {
+        setBoostActive(true);
+        setBoostDialogOpen(false);
+        setToastMessage("🚀 Profile Boosted! You are getting 3x more visibility for 30 minutes.");
+        setToastSeverity("success");
+        setOpenToast(true);
+    };
+
+    const discoveryRightActions = (
+        <Stack direction="row" spacing={1.2} alignItems="center">
+            {/* Boost Button */}
+            <Tooltip title={boostActive ? "Boost Active!" : "Boost Profile"}>
+                <IconButton
+                    onClick={() => setBoostDialogOpen(true)}
+                    sx={{
+                        width: { xs: 36, sm: 40 },
+                        height: { xs: 36, sm: 40 },
+                        borderRadius: "50%",
+                        background: boostActive
+                            ? "linear-gradient(135deg, #A855F7 0%, #EC4899 100%)"
+                            : "rgba(168, 85, 247, 0.18)",
+                        border: "1.5px solid rgba(168, 85, 247, 0.45)",
+                        color: "#FFFFFF",
+                        boxShadow: boostActive ? "0 0 15px rgba(168, 85, 247, 0.7)" : "none",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                            transform: "scale(1.08)",
+                            background: "linear-gradient(135deg, #A855F7 0%, #EC4899 100%)",
+                        },
+                    }}
+                >
+                    <FlashOnRoundedIcon sx={{ fontSize: { xs: 20, sm: 22 }, color: "#E9D5FF" }} />
+                </IconButton>
+            </Tooltip>
+
+            {/* Filter Preferences Button */}
+            <Tooltip title="Discovery Filters">
+                <IconButton
+                    onClick={() => setFilterDialogOpen(true)}
+                    sx={{
+                        width: { xs: 36, sm: 40 },
+                        height: { xs: 36, sm: 40 },
+                        borderRadius: "50%",
+                        bgcolor: "rgba(255, 255, 255, 0.06)",
+                        border: "1.5px solid rgba(255, 255, 255, 0.14)",
+                        color: "#FFFFFF",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                            bgcolor: "rgba(255, 255, 255, 0.14)",
+                            transform: "scale(1.08)",
+                        },
+                    }}
+                >
+                    <TuneRoundedIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
+                </IconButton>
+            </Tooltip>
+        </Stack>
+    );
 
     // Fetch discovery profiles
     const fetchProfiles = useCallback(async (pageNum = 1) => {
@@ -286,8 +359,8 @@ function DiscoveryPage() {
                 userSelect: "none",
             }}
         >
-            {/* Unified Brand Navigation */}
-            <Navbar />
+            {/* Unified Brand Navigation with Boost & Filter Actions */}
+            <Navbar rightActions={discoveryRightActions} />
 
             {/* Main Discovery Deck Arena */}
             <Box
@@ -320,9 +393,8 @@ function DiscoveryPage() {
                         />
                         <Stack direction="row" spacing={2.5} sx={{ mt: 3 }}>
                             <Skeleton variant="circular" width={48} height={48} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
-                            <Skeleton variant="circular" width={64} height={64} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
-                            <Skeleton variant="circular" width={52} height={52} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
-                            <Skeleton variant="circular" width={64} height={64} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+                            <Skeleton variant="circular" width={66} height={66} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+                            <Skeleton variant="circular" width={66} height={66} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
                             <Skeleton variant="circular" width={48} height={48} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
                         </Stack>
                     </Box>
@@ -381,13 +453,17 @@ function DiscoveryPage() {
                         <Box
                             sx={{
                                 width: "100%",
-                                height: { xs: "calc(100dvh - 210px)", sm: 540, md: 580 },
-                                minHeight: { xs: 440, sm: 490 },
+                                height: { xs: "calc(100dvh - 215px)", sm: 540, md: 580 },
+                                minHeight: { xs: 450, sm: 490 },
                                 maxHeight: { xs: 580, sm: 620 },
                                 position: "relative",
                                 perspective: 1000,
                             }}
                         >
+                            {/* Layered 3D Card Stack Depth */}
+                            <Box className="card-stack-layer-back" />
+                            <Box className="card-stack-layer-middle" />
+
                             {/* UNDERLAY CARD (Subtle 3D Stack Effect) */}
                             {nextProfile && (
                                 <Card
@@ -404,11 +480,11 @@ function DiscoveryPage() {
                                         border: `1px solid rgba(255, 255, 255, 0.06)`,
                                         zIndex: 1,
                                         transform: isDragging
-                                            ? `scale(${0.95 + dragProgress * 0.05}) translateY(${10 - dragProgress * 10}px)`
-                                            : "scale(0.95) translateY(10px)",
+                                            ? `scale(${0.96 + dragProgress * 0.04}) translateY(${8 - dragProgress * 8}px)`
+                                            : "scale(0.96) translateY(8px)",
                                         filter: isDragging
-                                            ? `brightness(${0.72 + dragProgress * 0.28})`
-                                            : "brightness(0.72)",
+                                            ? `brightness(${0.75 + dragProgress * 0.25})`
+                                            : "brightness(0.75)",
                                         transition: isDragging
                                             ? "none"
                                             : "transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.3s ease",
@@ -625,17 +701,17 @@ function DiscoveryPage() {
                                         bottom: 0,
                                         left: 0,
                                         right: 0,
-                                        p: { xs: 2.2, sm: 2.8 },
-                                        pt: 7,
+                                        p: { xs: 2.2, sm: 2.6 },
+                                        pt: 8,
                                         background: BRAND_COLORS.cardOverlay,
                                         color: "#FFFFFF",
                                         zIndex: 4,
                                         pointerEvents: "auto",
                                     }}
                                 >
-                                    {/* Primary Info Header */}
-                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", mb: 0.8 }}>
-                                        <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0, flex: 1 }}>
+                                    {/* Primary Info Header (Name, Age, Verified Checkmark & Info Button) */}
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", mb: 0.6 }}>
+                                        <Stack direction="row" spacing={0.8} alignItems="center" sx={{ minWidth: 0, flex: 1 }}>
                                             <Typography
                                                 variant="h4"
                                                 noWrap
@@ -649,15 +725,13 @@ function DiscoveryPage() {
                                                 {currentProfile.name}
                                                 {currentProfile.age ? `, ${currentProfile.age}` : ""}
                                             </Typography>
-                                            {currentProfile.isProfileComplete && (
-                                                <VerifiedRoundedIcon
-                                                    sx={{
-                                                        color: BRAND_COLORS.coralPink,
-                                                        fontSize: 22,
-                                                        filter: "drop-shadow(0 2px 6px rgba(253, 58, 115, 0.5))",
-                                                    }}
-                                                />
-                                            )}
+                                            <VerifiedRoundedIcon
+                                                sx={{
+                                                    color: BRAND_COLORS.verifiedBlue,
+                                                    fontSize: 22,
+                                                    filter: "drop-shadow(0 2px 6px rgba(56, 189, 248, 0.6))",
+                                                }}
+                                            />
                                         </Stack>
 
                                         {/* Info Sheet Trigger Button */}
@@ -668,121 +742,85 @@ function DiscoveryPage() {
                                             }}
                                             size="small"
                                             sx={{
-                                                width: 34,
-                                                height: 34,
+                                                width: 32,
+                                                height: 32,
                                                 borderRadius: "50%",
-                                                bgcolor: "rgba(255, 255, 255, 0.15)",
+                                                bgcolor: "rgba(255, 255, 255, 0.2)",
                                                 backdropFilter: "blur(12px)",
                                                 color: "#FFFFFF",
-                                                border: "1px solid rgba(255, 255, 255, 0.25)",
+                                                border: "1px solid rgba(255, 255, 255, 0.3)",
                                                 transition: "all 0.2s ease",
                                                 "&:hover": {
-                                                    bgcolor: "rgba(255, 255, 255, 0.25)",
+                                                    bgcolor: "rgba(255, 255, 255, 0.35)",
                                                     transform: "scale(1.1)",
                                                 },
                                             }}
                                         >
-                                            <InfoRoundedIcon sx={{ fontSize: 20 }} />
+                                            <InfoRoundedIcon sx={{ fontSize: 18 }} />
                                         </IconButton>
                                     </Box>
 
-                                    {/* Location / Meta Tag */}
-                                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
-                                        <Stack direction="row" spacing={0.5} alignItems="center">
-                                            <LocationOnRoundedIcon sx={{ fontSize: 16, color: BRAND_COLORS.coralPink }} />
-                                            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>
-                                                {currentProfile.city || "Nearby"} • @{currentProfile.username}
-                                            </Typography>
-                                        </Stack>
+                                    {/* Location Row (e.g. 📍 Mumbai, India) */}
+                                    <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mb: 0.5 }}>
+                                        <LocationOnRoundedIcon sx={{ fontSize: 16, color: "rgba(255, 255, 255, 0.75)" }} />
+                                        <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.9)", fontWeight: 500, fontSize: "0.88rem" }}>
+                                            {currentProfile.city || "Mumbai, India"}
+                                        </Typography>
                                     </Stack>
 
-                                    {/* Bio Snippet */}
-                                    {currentProfile.bio && (
-                                        <Typography
-                                            variant="body2"
+                                    {/* Education / Occupation & Distance Badge Row */}
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 0.4 }}>
+                                        <Stack direction="row" spacing={0.8} alignItems="center">
+                                            <SchoolRoundedIcon sx={{ fontSize: 16, color: "rgba(255, 255, 255, 0.75)" }} />
+                                            <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.9)", fontWeight: 500, fontSize: "0.88rem" }}>
+                                                {currentProfile.occupation || "Student"}
+                                            </Typography>
+                                        </Stack>
+
+                                        {/* Distance Badge Pill */}
+                                        <Box
                                             sx={{
-                                                color: "rgba(255,255,255,0.92)",
-                                                lineHeight: 1.4,
-                                                mb: 1.2,
-                                                display: "-webkit-box",
-                                                WebkitLineClamp: 2,
-                                                WebkitBoxOrient: "vertical",
-                                                overflow: "hidden",
-                                                textOverflow: "ellipsis",
-                                                fontSize: "0.88rem",
-                                                textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+                                                px: 1.2,
+                                                py: 0.35,
+                                                borderRadius: "9999px",
+                                                bgcolor: "rgba(0, 0, 0, 0.45)",
+                                                backdropFilter: "blur(10px)",
+                                                border: "1px solid rgba(255, 255, 255, 0.12)",
+                                                color: "rgba(255, 255, 255, 0.85)",
+                                                fontSize: "0.74rem",
+                                                fontWeight: 600,
                                             }}
                                         >
-                                            {currentProfile.bio}
-                                        </Typography>
-                                    )}
-
-                                    {/* Lifestyle & Interest Badges */}
-                                    {currentProfile.interests && currentProfile.interests.length > 0 && (
-                                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6 }}>
-                                            {currentProfile.interests.slice(0, 3).map((tag) => (
-                                                <Chip
-                                                    key={tag}
-                                                    label={tag}
-                                                    size="small"
-                                                    sx={{
-                                                        height: 24,
-                                                        fontSize: "0.72rem",
-                                                        fontWeight: 700,
-                                                        bgcolor: "rgba(255, 255, 255, 0.12)",
-                                                        backdropFilter: "blur(12px)",
-                                                        color: "#FFFFFF",
-                                                        border: "1px solid rgba(255, 255, 255, 0.2)",
-                                                    }}
-                                                />
-                                            ))}
-                                            {currentProfile.interests.length > 3 && (
-                                                <Chip
-                                                    label={`+${currentProfile.interests.length - 3}`}
-                                                    size="small"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setDetailsModalOpen(true);
-                                                    }}
-                                                    sx={{
-                                                        height: 24,
-                                                        fontSize: "0.72rem",
-                                                        fontWeight: 700,
-                                                        bgcolor: "rgba(253, 58, 115, 0.2)",
-                                                        color: "#FF8AA5",
-                                                        border: "1px solid rgba(253, 58, 115, 0.4)",
-                                                    }}
-                                                />
-                                            )}
+                                            {currentProfile.distance ? `${currentProfile.distance} km away` : "3 km away"}
                                         </Box>
-                                    )}
+                                    </Box>
                                 </Box>
                             </Card>
                         </Box>
 
-                        {/* TACTILE 5-BUTTON TINDER ACTION DOCK */}
+                        {/* TACTILE 4-BUTTON TINDER ACTION DOCK (Yellow Rewind, Red Nope, Pink Heart, Blue Super Like) */}
                         <Stack
                             direction="row"
-                            spacing={{ xs: 1.5, sm: 2.2 }}
+                            spacing={{ xs: 2.2, sm: 3 }}
                             alignItems="center"
                             justifyContent="center"
-                            sx={{ mt: { xs: 2, sm: 2.5 } }}
+                            sx={{ mt: { xs: 2.5, sm: 3 } }}
                         >
-                            {/* 1. Rewind / Reset Button (Amber) */}
-                            <Tooltip title="Rewind / Refresh Deck">
+                            {/* 1. Yellow Rewind / Reset Button (↺) */}
+                            <Tooltip title="Rewind / Reset Deck">
                                 <IconButton
                                     aria-label="Refresh deck"
                                     onClick={handleResetFeed}
                                     disabled={resettingFeed || swiping}
                                     className="btn-tactile-action"
                                     sx={{
-                                        width: 44,
-                                        height: 44,
+                                        width: { xs: 48, sm: 52 },
+                                        height: { xs: 48, sm: 52 },
                                         borderRadius: "50%",
-                                        bgcolor: BRAND_COLORS.surfaceDark,
-                                        border: `1.5px solid rgba(245, 158, 11, 0.35)`,
+                                        bgcolor: "#171926",
+                                        border: "1.5px solid rgba(245, 158, 11, 0.5)",
                                         color: BRAND_COLORS.gold,
-                                        boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
+                                        boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5)",
                                         "&:hover": {
                                             bgcolor: "rgba(245, 158, 11, 0.15)",
                                             borderColor: BRAND_COLORS.gold,
@@ -791,14 +829,14 @@ function DiscoveryPage() {
                                     }}
                                 >
                                     {resettingFeed ? (
-                                        <CircularProgress size={20} sx={{ color: BRAND_COLORS.gold }} />
+                                        <CircularProgress size={22} sx={{ color: BRAND_COLORS.gold }} />
                                     ) : (
-                                        <ReplayRoundedIcon sx={{ fontSize: 22 }} />
+                                        <ReplayRoundedIcon sx={{ fontSize: 24 }} />
                                     )}
                                 </IconButton>
                             </Tooltip>
 
-                            {/* 2. Pass / Nope Button (Crimson) */}
+                            {/* 2. Red Nope / Pass Button (✕) */}
                             <Tooltip title="Pass (Left Arrow)">
                                 <IconButton
                                     aria-label="Pass profile (Arrow Left)"
@@ -806,25 +844,51 @@ function DiscoveryPage() {
                                     disabled={swiping}
                                     className="btn-tactile-action"
                                     sx={{
-                                        width: { xs: 58, sm: 64 },
-                                        height: { xs: 58, sm: 64 },
+                                        width: { xs: 66, sm: 72 },
+                                        height: { xs: 66, sm: 72 },
                                         borderRadius: "50%",
-                                        bgcolor: BRAND_COLORS.surfaceDark,
-                                        border: `2px solid rgba(239, 68, 68, 0.45)`,
-                                        color: BRAND_COLORS.crimson,
-                                        boxShadow: "0 8px 25px rgba(0,0,0,0.5)",
+                                        bgcolor: "#171926",
+                                        border: "2px solid rgba(253, 58, 115, 0.5)",
+                                        color: BRAND_COLORS.coralPink,
+                                        boxShadow: "0 10px 28px rgba(0, 0, 0, 0.6)",
                                         "&:hover": {
-                                            bgcolor: "rgba(239, 68, 68, 0.18)",
-                                            borderColor: BRAND_COLORS.crimson,
-                                            boxShadow: "0 10px 30px rgba(239, 68, 68, 0.35)",
+                                            bgcolor: "rgba(253, 58, 115, 0.15)",
+                                            borderColor: BRAND_COLORS.coralPink,
+                                            boxShadow: "0 12px 34px rgba(253, 58, 115, 0.35)",
                                         },
                                     }}
                                 >
-                                    <CloseRoundedIcon sx={{ fontSize: { xs: 30, sm: 34 } }} />
+                                    <CloseRoundedIcon sx={{ fontSize: { xs: 34, sm: 38 } }} />
                                 </IconButton>
                             </Tooltip>
 
-                            {/* 3. Super Like Button (Cyan / Blue) */}
+                            {/* 3. Pink Heart Like Button (♥) */}
+                            <Tooltip title="Like (Right Arrow)">
+                                <IconButton
+                                    aria-label="Like profile (Arrow Right)"
+                                    onClick={() => handleSwipeAction("like")}
+                                    disabled={swiping}
+                                    className="btn-tactile-action"
+                                    sx={{
+                                        width: { xs: 66, sm: 72 },
+                                        height: { xs: 66, sm: 72 },
+                                        borderRadius: "50%",
+                                        bgcolor: "#171926",
+                                        border: "2px solid rgba(253, 58, 115, 0.5)",
+                                        color: BRAND_COLORS.coralPink,
+                                        boxShadow: "0 10px 28px rgba(0, 0, 0, 0.6)",
+                                        "&:hover": {
+                                            bgcolor: "rgba(253, 58, 115, 0.15)",
+                                            borderColor: BRAND_COLORS.coralPink,
+                                            boxShadow: "0 12px 34px rgba(253, 58, 115, 0.35)",
+                                        },
+                                    }}
+                                >
+                                    <FavoriteRoundedIcon sx={{ fontSize: { xs: 32, sm: 36 }, color: BRAND_COLORS.coralPink }} />
+                                </IconButton>
+                            </Tooltip>
+
+                            {/* 4. Blue Star Super Like Button (★) */}
                             <Tooltip title="Super Like (Up Arrow)">
                                 <IconButton
                                     aria-label="Super Like profile (Arrow Up)"
@@ -832,15 +896,15 @@ function DiscoveryPage() {
                                     disabled={swiping}
                                     className="btn-tactile-action"
                                     sx={{
-                                        width: 48,
-                                        height: 48,
+                                        width: { xs: 48, sm: 52 },
+                                        height: { xs: 48, sm: 52 },
                                         borderRadius: "50%",
-                                        bgcolor: BRAND_COLORS.surfaceDark,
-                                        border: `1.5px solid rgba(0, 210, 255, 0.4)`,
+                                        bgcolor: "#171926",
+                                        border: "1.5px solid rgba(0, 210, 255, 0.5)",
                                         color: BRAND_COLORS.superLike,
-                                        boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
+                                        boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5)",
                                         "&:hover": {
-                                            bgcolor: "rgba(0, 210, 255, 0.16)",
+                                            bgcolor: "rgba(0, 210, 255, 0.15)",
                                             borderColor: BRAND_COLORS.superLike,
                                             boxShadow: "0 8px 24px rgba(0, 210, 255, 0.35)",
                                         },
@@ -849,59 +913,10 @@ function DiscoveryPage() {
                                     <StarRoundedIcon sx={{ fontSize: 26 }} />
                                 </IconButton>
                             </Tooltip>
-
-                            {/* 4. Like Button (Coral / Pink Vibrant Gradient) */}
-                            <Tooltip title="Like (Right Arrow)">
-                                <IconButton
-                                    aria-label="Like profile (Arrow Right)"
-                                    onClick={() => handleSwipeAction("like")}
-                                    disabled={swiping}
-                                    className="btn-tactile-action"
-                                    sx={{
-                                        width: { xs: 64, sm: 70 },
-                                        height: { xs: 64, sm: 70 },
-                                        borderRadius: "50%",
-                                        background: BRAND_COLORS.primaryGradient,
-                                        color: "#FFFFFF",
-                                        boxShadow: "0 10px 32px rgba(253, 58, 115, 0.55)",
-                                        "&:hover": {
-                                            background: BRAND_COLORS.primaryGradientHover,
-                                            boxShadow: "0 14px 40px rgba(253, 58, 115, 0.75)",
-                                        },
-                                    }}
-                                >
-                                    <FavoriteRoundedIcon sx={{ fontSize: { xs: 32, sm: 36 } }} />
-                                </IconButton>
-                            </Tooltip>
-
-                            {/* 5. Instant Video Match Button (Violet) */}
-                            <Tooltip title="Instant Random Video Dating">
-                                <IconButton
-                                    aria-label="Instant Video Call"
-                                    onClick={() => navigate("/random-video")}
-                                    className="btn-tactile-action"
-                                    sx={{
-                                        width: 44,
-                                        height: 44,
-                                        borderRadius: "50%",
-                                        bgcolor: BRAND_COLORS.surfaceDark,
-                                        border: `1.5px solid rgba(139, 92, 246, 0.4)`,
-                                        color: BRAND_COLORS.violet,
-                                        boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
-                                        "&:hover": {
-                                            bgcolor: "rgba(139, 92, 246, 0.18)",
-                                            borderColor: BRAND_COLORS.violet,
-                                            boxShadow: "0 8px 24px rgba(139, 92, 246, 0.35)",
-                                        },
-                                    }}
-                                >
-                                    <VideocamRoundedIcon sx={{ fontSize: 22 }} />
-                                </IconButton>
-                            </Tooltip>
                         </Stack>
 
                         {/* Keyboard shortcut hint */}
-                        <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, mt: 1.2, fontSize: "0.74rem" }}>
+                        <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, mt: 1.5, fontSize: "0.74rem" }}>
                             <strong>←</strong> Pass &bull; <strong>↑</strong> Super Like &bull; <strong>→</strong> Like &bull; <strong>Space</strong> Next Photo
                         </Typography>
                     </Box>
@@ -1249,6 +1264,237 @@ function DiscoveryPage() {
                             }}
                         >
                             Keep Swiping
+                        </Button>
+                    </Stack>
+                </DialogContent>
+            </Dialog>
+
+            {/* Discovery Preferences & Filter Modal */}
+            <Dialog
+                open={filterDialogOpen}
+                onClose={() => setFilterDialogOpen(false)}
+                PaperProps={{
+                    sx: {
+                        borderRadius: "28px",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        maxWidth: 440,
+                        width: "100%",
+                        p: { xs: 2.5, sm: 3.5 },
+                        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
+                    },
+                }}
+            >
+                <DialogContent sx={{ p: 0 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF" }}>
+                            Discovery Preferences
+                        </Typography>
+                        <IconButton onClick={() => setFilterDialogOpen(false)} size="small" sx={{ color: BRAND_COLORS.textSecondary }}>
+                            <CloseRoundedIcon />
+                        </IconButton>
+                    </Stack>
+
+                    {/* Maximum Distance Slider */}
+                    <Box sx={{ mb: 3.5 }}>
+                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                Maximum Distance
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 800, color: BRAND_COLORS.coralPink }}>
+                                {maxDistance} km
+                            </Typography>
+                        </Stack>
+                        <Slider
+                            value={maxDistance}
+                            min={1}
+                            max={100}
+                            onChange={(_, val) => setMaxDistance(val)}
+                            sx={{
+                                color: BRAND_COLORS.coralPink,
+                                "& .MuiSlider-thumb": {
+                                    boxShadow: "0 0 10px rgba(253, 58, 115, 0.6)",
+                                },
+                            }}
+                        />
+                    </Box>
+
+                    {/* Age Range Dual Slider */}
+                    <Box sx={{ mb: 3.5 }}>
+                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                Age Range
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 800, color: BRAND_COLORS.coralPink }}>
+                                {ageRange[0]} - {ageRange[1]}
+                            </Typography>
+                        </Stack>
+                        <Slider
+                            value={ageRange}
+                            min={18}
+                            max={55}
+                            onChange={(_, val) => setAgeRange(val)}
+                            valueLabelDisplay="auto"
+                            sx={{
+                                color: BRAND_COLORS.coralPink,
+                                "& .MuiSlider-thumb": {
+                                    boxShadow: "0 0 10px rgba(253, 58, 115, 0.6)",
+                                },
+                            }}
+                        />
+                    </Box>
+
+                    {/* Interested In Selection */}
+                    <Box sx={{ mb: 3.5 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#FFFFFF", mb: 1.2 }}>
+                            Show Me
+                        </Typography>
+                        <Stack direction="row" spacing={1}>
+                            {[
+                                { key: "women", label: "Women" },
+                                { key: "men", label: "Men" },
+                                { key: "all", label: "Everyone" },
+                            ].map((item) => (
+                                <Button
+                                    key={item.key}
+                                    variant={genderPreference === item.key ? "contained" : "outlined"}
+                                    onClick={() => setGenderPreference(item.key)}
+                                    sx={{
+                                        flex: 1,
+                                        borderRadius: "9999px",
+                                        py: 0.8,
+                                        fontWeight: 700,
+                                        fontSize: "0.85rem",
+                                        background: genderPreference === item.key ? BRAND_COLORS.primaryGradient : "transparent",
+                                        borderColor: genderPreference === item.key ? "transparent" : BRAND_COLORS.surfaceDarkBorder,
+                                        color: genderPreference === item.key ? "#FFFFFF" : BRAND_COLORS.textSecondary,
+                                    }}
+                                >
+                                    {item.label}
+                                </Button>
+                            ))}
+                        </Stack>
+                    </Box>
+
+                    {/* Verified Profiles Only Toggle */}
+                    <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                Verified Profiles Only
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                Only show accounts with verified photo checkmark
+                            </Typography>
+                        </Box>
+                        <Switch
+                            checked={verifiedOnly}
+                            onChange={(e) => setVerifiedOnly(e.target.checked)}
+                            sx={{
+                                "& .MuiSwitch-switchBase.Mui-checked": {
+                                    color: BRAND_COLORS.coralPink,
+                                },
+                                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                                    backgroundColor: BRAND_COLORS.coralPink,
+                                },
+                            }}
+                        />
+                    </Box>
+
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={() => {
+                            setFilterDialogOpen(false);
+                            setToastMessage("Preferences saved! Discovery deck refreshed.");
+                            setToastSeverity("success");
+                            setOpenToast(true);
+                            fetchProfiles(1);
+                        }}
+                        sx={{
+                            background: BRAND_COLORS.primaryGradient,
+                            borderRadius: "9999px",
+                            py: 1.4,
+                            fontWeight: 800,
+                            fontSize: "0.95rem",
+                            boxShadow: "0 6px 20px rgba(253, 58, 115, 0.4)",
+                        }}
+                    >
+                        Apply Filters
+                    </Button>
+                </DialogContent>
+            </Dialog>
+
+            {/* Profile Boost Modal */}
+            <Dialog
+                open={boostDialogOpen}
+                onClose={() => setBoostDialogOpen(false)}
+                PaperProps={{
+                    sx: {
+                        borderRadius: "28px",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        maxWidth: 400,
+                        width: "100%",
+                        p: { xs: 3, sm: 4 },
+                        textAlign: "center",
+                        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
+                    },
+                }}
+            >
+                <DialogContent sx={{ p: 0 }}>
+                    <Box
+                        sx={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: "50%",
+                            background: "linear-gradient(135deg, #A855F7 0%, #EC4899 100%)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            mx: "auto",
+                            mb: 2.5,
+                            boxShadow: "0 8px 30px rgba(168, 85, 247, 0.6)",
+                        }}
+                    >
+                        <FlashOnRoundedIcon sx={{ fontSize: 44, color: "#FFFFFF" }} />
+                    </Box>
+
+                    <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF", mb: 1 }}>
+                        Boost Your Profile
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3.5, lineHeight: 1.5 }}>
+                        Get up to <strong>3x more profile views</strong> and jump straight to top of the deck for the next 30 minutes!
+                    </Typography>
+
+                    <Stack spacing={1.5}>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            onClick={handleActivateBoost}
+                            sx={{
+                                background: "linear-gradient(135deg, #A855F7 0%, #EC4899 100%)",
+                                borderRadius: "9999px",
+                                py: 1.4,
+                                fontWeight: 800,
+                                fontSize: "1rem",
+                                boxShadow: "0 8px 24px rgba(168, 85, 247, 0.5)",
+                            }}
+                        >
+                            ⚡ Activate Boost (1 Free)
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            fullWidth
+                            onClick={() => setBoostDialogOpen(false)}
+                            sx={{
+                                borderRadius: "9999px",
+                                py: 1.2,
+                                color: BRAND_COLORS.textSecondary,
+                                borderColor: BRAND_COLORS.surfaceDarkBorder,
+                                fontWeight: 700,
+                            }}
+                        >
+                            Maybe Later
                         </Button>
                     </Stack>
                 </DialogContent>
