@@ -243,6 +243,17 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    // 9b. RESET PASSED SWIPES (RE-EXPLORE FEED)
+    const resetDiscoveryFeed = useCallback(async () => {
+        try {
+            const response = await api.post("/discovery/reset");
+            return response.data;
+        } catch (e) {
+            console.error("Reset discovery error:", e);
+            throw new Error(e.response?.data?.message || "Failed to reset discovery feed");
+        }
+    }, []);
+
     // 10. GET MUTUAL MATCHES
     const getMatches = useCallback(async (page = 1, limit = 20) => {
         try {
@@ -330,6 +341,7 @@ export const AuthProvider = ({ children }) => {
         getHistoryOfUser,
         getDiscovery,
         sendSwipe,
+        resetDiscoveryFeed,
         getMatches,
         getConversations,
         getOrCreateConversationByMatch,
@@ -349,6 +361,7 @@ export const AuthProvider = ({ children }) => {
         getHistoryOfUser,
         getDiscovery,
         sendSwipe,
+        resetDiscoveryFeed,
         getMatches,
         getConversations,
         getOrCreateConversationByMatch,

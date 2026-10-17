@@ -11,6 +11,7 @@ import {
     Button,
     Card,
     Chip,
+    CircularProgress,
     Container,
     Dialog,
     DialogContent,
@@ -37,12 +38,13 @@ import TuneIcon from "@mui/icons-material/Tune";
 
 function DiscoveryPage() {
     const navigate = useNavigate();
-    const { userData, getDiscovery, sendSwipe } = useContext(AuthContext);
+    const { userData, getDiscovery, sendSwipe, resetDiscoveryFeed } = useContext(AuthContext);
 
     const [profiles, setProfiles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [resettingFeed, setResettingFeed] = useState(false);
     const [swiping, setSwiping] = useState(false);
     const [swipeAnimation, setSwipeAnimation] = useState(""); // 'swipe-left-exit' | 'swipe-right-exit'
     const [page, setPage] = useState(1);
@@ -82,6 +84,25 @@ function DiscoveryPage() {
             setLoading(false);
         }
     }, [getDiscovery]);
+
+    // Reset passed swipes and reload deck
+    const handleResetFeed = useCallback(async () => {
+        setResettingFeed(true);
+        try {
+            const res = await resetDiscoveryFeed();
+            setToastMessage(res?.message || "Deck refreshed! You can now explore all profiles again.");
+            setToastSeverity("success");
+            setOpenToast(true);
+            await fetchProfiles(1);
+        } catch (err) {
+            console.error("Reset feed error:", err);
+            setToastMessage(err.message || "Failed to reset discovery feed. Please retry.");
+            setToastSeverity("error");
+            setOpenToast(true);
+        } finally {
+            setResettingFeed(false);
+        }
+    }, [resetDiscoveryFeed, fetchProfiles]);
 
     useEffect(() => {
         fetchProfiles(1);
@@ -232,6 +253,24 @@ function DiscoveryPage() {
                 {/* 3. DATING DISCOVERY PROFILE CARD */}
                 {!loading && !error && currentProfile && currentIndex < profiles.length && (
                     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", position: "relative" }}>
+                        {/* Deck Counter & Status Badge */}
+                        <Box sx={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.2, px: 1 }}>
+                            <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, fontWeight: 700, letterSpacing: "0.5px" }}>
+                                PROFILE {currentIndex + 1} OF {profiles.length}
+                            </Typography>
+                            <Chip
+                                size="small"
+                                label={`${profiles.length - currentIndex} remaining`}
+                                sx={{
+                                    height: 22,
+                                    fontSize: "0.72rem",
+                                    bgcolor: "rgba(255, 255, 255, 0.08)",
+                                    color: BRAND_COLORS.textSecondary,
+                                    border: "1px solid rgba(255, 255, 255, 0.12)",
+                                }}
+                            />
+                        </Box>
+
                         <Card
                             className={swipeAnimation}
                             sx={{
@@ -583,8 +622,9 @@ function DiscoveryPage() {
                             <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center">
                                 <Button
                                     variant="contained"
-                                    startIcon={<RefreshIcon />}
-                                    onClick={() => fetchProfiles(1)}
+                                    startIcon={resettingFeed ? <CircularProgress size={18} color="inherit" /> : <RefreshIcon />}
+                                    onClick={handleResetFeed}
+                                    disabled={resettingFeed}
                                     sx={{
                                         background: BRAND_COLORS.primaryGradient,
                                         borderRadius: 9999,
@@ -592,7 +632,7 @@ function DiscoveryPage() {
                                         px: 3.5,
                                     }}
                                 >
-                                    Refresh Deck
+                                    {resettingFeed ? "Resetting..." : "Explore Passed Profiles Again"}
                                 </Button>
                                 <Button
                                     variant="outlined"
