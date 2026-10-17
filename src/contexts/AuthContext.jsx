@@ -45,10 +45,16 @@ export const AuthProvider = ({ children }) => {
                 setToken(savedToken);
             }
         } catch (err) {
-            console.warn("Stored token is invalid or expired, resetting session.");
-            localStorage.removeItem("token");
-            setUserData(null);
-            setToken(null);
+            // Only clear token if server explicitly rejected auth with 401 or 403
+            if (err.response && (err.response.status === httpStatus.UNAUTHORIZED || err.response.status === httpStatus.FORBIDDEN)) {
+                console.warn("Stored token is invalid or expired, resetting session.");
+                localStorage.removeItem("token");
+                setUserData(null);
+                setToken(null);
+            } else {
+                console.warn("Could not reach profile endpoint, retaining existing session token.");
+                setToken(savedToken);
+            }
         } finally {
             setLoading(false);
         }
@@ -99,6 +105,7 @@ export const AuthProvider = ({ children }) => {
                     localStorage.setItem("token", newToken);
                     setToken(newToken);
                     setUserData(response.data.user);
+                    router("/home");
                 }
                 return response.data.message || "Registration successful!";
             } else {
@@ -117,7 +124,7 @@ export const AuthProvider = ({ children }) => {
             }
             throw new Error(msg);
         }
-    }, []);
+    }, [router]);
 
     // 2. LOGIN
     const handleLogin = useCallback(async (username, password) => {
@@ -149,6 +156,44 @@ export const AuthProvider = ({ children }) => {
                 (!err.response && (err.message === "Network Error" || err.message?.includes("timeout")))
             ) {
                 msg = "Backend server is waking up (Render free tier cold-start). Please wait 10-20 seconds and try again.";
+            } else if (!err.response) {
+                msg = "Unable to connect to server. Please check your internet connection.";
+            }
+            throw new Error(msg);
+        }
+    }, [router]);
+
+    // 2b. GOOGLE LOGIN / SIGNUP
+    const handleGoogleLogin = useCallback(async (idToken) => {
+        try {
+            if (!idToken) {
+                throw new Error("Google ID token is required");
+            }
+
+            const response = await api.post("/users/google-login", {
+                idToken,
+            });
+
+            if (response.status === httpStatus.OK || response.status === httpStatus.CREATED) {
+                const newToken = response.data.token;
+                if (newToken) {
+                    localStorage.setItem("token", newToken);
+                    setToken(newToken);
+                    setUserData(response.data.user);
+                    router("/home");
+                }
+                return response.data;
+            } else {
+                throw new Error(response.data?.message || "Google authentication failed");
+            }
+        } catch (err) {
+            console.error("Google authentication error:", err);
+            let msg = err.response?.data?.message || err.message;
+            if (
+                err.code === "ECONNABORTED" ||
+                (!err.response && (err.message === "Network Error" || err.message?.includes("timeout")))
+            ) {
+                msg = "Backend server is waking up. Please wait a moment and try again.";
             } else if (!err.response) {
                 msg = "Unable to connect to server. Please check your internet connection.";
             }
@@ -334,6 +379,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: Boolean(token),
         handleRegister,
         handleLogin,
+        handleGoogleLogin,
         handleLogout,
         getProfile,
         updateProfile,
@@ -354,6 +400,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         handleRegister,
         handleLogin,
+        handleGoogleLogin,
         handleLogout,
         getProfile,
         updateProfile,
