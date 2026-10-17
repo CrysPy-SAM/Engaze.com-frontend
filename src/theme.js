@@ -8,11 +8,14 @@ import { createTheme } from "@mui/material/styles";
 
 export const BRAND_COLORS = {
     // Brand Gradients
-    primaryGradient: "linear-gradient(135deg, #FD3A73 0%, #FF7A00 100%)",
-    primaryGradientHover: "linear-gradient(135deg, #E62A62 0%, #E66800 100%)",
+    primaryGradient: "linear-gradient(135deg, #FD3A73 0%, #FF655B 50%, #FF7A00 100%)",
+    primaryGradientHover: "linear-gradient(135deg, #E62A62 0%, #F5554B 50%, #E66800 100%)",
     secondaryGradient: "linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)",
+    superLikeGradient: "linear-gradient(135deg, #00D2FF 0%, #0078FF 100%)",
+    goldGradient: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
     darkGradient: "linear-gradient(180deg, rgba(11, 13, 23, 0.95) 0%, rgba(19, 22, 37, 0.98) 100%)",
-    cardOverlay: "linear-gradient(180deg, transparent 40%, rgba(11, 13, 23, 0.88) 75%, #0B0D17 100%)",
+    cardOverlay: "linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(11, 13, 23, 0.5) 60%, rgba(11, 13, 23, 0.92) 85%, #0B0D17 100%)",
+    cardStackOverlay: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(11, 13, 23, 0.8) 100%)",
 
     // Solid Accents
     coralPink: "#FD3A73",
@@ -21,6 +24,7 @@ export const BRAND_COLORS = {
     emerald: "#10B981",
     gold: "#F59E0B",
     crimson: "#EF4444",
+    superLike: "#00D2FF",
 
     // Backgrounds & Surfaces (Dark & Light)
     bgDark: "#0B0D17",
