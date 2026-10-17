@@ -193,13 +193,6 @@ function ChatPage() {
 
     // 2. Load conversations and handle query params (e.g. ?matchId=...)
     const loadConversations = useCallback(async () => {
-        // If the conversation specified in the query parameter is already active, don't re-trigger loading
-        const queryParams = new URLSearchParams(location.search);
-        const convIdParam = queryParams.get("conversationId") || paramConvId;
-        if (convIdParam && activeConvRef.current?._id?.toString() === convIdParam.toString()) {
-            return;
-        }
-
         setLoadingConversations(true);
         setConversationsError(null);
         try {
@@ -626,7 +619,6 @@ function ChatPage() {
                                                 onClick={() => {
                                                     setActiveConversation(conv);
                                                     setMobileShowChat(true);
-                                                    navigate(`/chat?conversationId=${conv._id}`, { replace: true });
                                                 }}
                                                 sx={{
                                                     p: 1.5,
@@ -751,10 +743,7 @@ function ChatPage() {
                                     {isMobile && (
                                         <IconButton
                                             edge="start"
-                                            onClick={() => {
-                                                setMobileShowChat(false);
-                                                navigate("/chat", { replace: true });
-                                            }}
+                                            onClick={() => setMobileShowChat(false)}
                                             sx={{ color: "#FFFFFF", p: { xs: 0.5, sm: 1 } }}
                                         >
                                             <ArrowBackIcon fontSize="small" />
