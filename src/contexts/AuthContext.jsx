@@ -417,6 +417,38 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    // Fetch secure STUN/TURN ICE server configuration from authenticated backend
+    const getIceServers = useCallback(async () => {
+        try {
+            const response = await api.get("/webrtc/ice-servers");
+            return response.data;
+        } catch (err) {
+            console.warn("Failed to fetch ICE servers from backend, falling back to STUN defaults:", err?.message);
+            return {
+                success: false,
+                iceServers: [
+                    { urls: "stun:stun.l.google.com:19302" },
+                    { urls: "stun:stun1.l.google.com:19302" },
+                    { urls: "stun:stun2.l.google.com:19302" },
+                ],
+                iceTransportPolicy: "all",
+                hasTurn: false,
+            };
+        }
+    }, []);
+
+    // Submit privacy-sanitized WebRTC connection diagnostics
+    const sendWebRTCDiagnostics = useCallback(async (diagnosticPayload) => {
+        try {
+            const response = await api.post("/webrtc/diagnostics", diagnosticPayload);
+            return response.data;
+        } catch (err) {
+            // Diagnostic reporting failure must never disrupt real-time communication
+            console.debug("WebRTC diagnostics submission skipped:", err?.message);
+            return null;
+        }
+    }, []);
+
     const value = useMemo(() => ({
         userData,
         setUserData,
@@ -443,6 +475,8 @@ export const AuthProvider = ({ children }) => {
         getBlockedUsers,
         reportUser,
         unmatchUser,
+        getIceServers,
+        sendWebRTCDiagnostics,
     }), [
         userData,
         token,
@@ -467,6 +501,8 @@ export const AuthProvider = ({ children }) => {
         getBlockedUsers,
         reportUser,
         unmatchUser,
+        getIceServers,
+        sendWebRTCDiagnostics,
     ]);
 
     return (

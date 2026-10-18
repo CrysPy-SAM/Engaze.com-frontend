@@ -39,20 +39,35 @@ import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import SafetyActionModal from "../components/SafetyActionModal";
+import {
+    createCallDiagnostics,
+    recordConnectionState,
+    recordIceConnectionState,
+    extractSafeCandidatePair,
+    buildSanitizedTelemetryPayload,
+} from "../utils/webrtcDiagnostics";
 
-const ICE_SERVERS = {
+const DEFAULT_ICE_CONFIG = {
     iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
         { urls: "stun:stun1.l.google.com:19302" },
         { urls: "stun:stun2.l.google.com:19302" },
     ],
+    iceTransportPolicy: "all",
 };
 
 function RandomVideoPage() {
     const navigate = useNavigate();
-    const { userData, token, blockUser, reportUser } = useContext(AuthContext);
+    const {
+        userData,
+        token,
+        blockUser,
+        reportUser,
+        getIceServers,
+        sendWebRTCDiagnostics,
+    } = useContext(AuthContext);
 
-    // Call state: 'idle' | 'searching' | 'consent_pending' | 'waiting_for_partner_consent' | 'media_requesting' | 'waiting_for_partner_media' | 'connecting' | 'connected' | 'ended'
+    // Call state: 'idle' | 'searching' | 'consent_pending' | 'waiting_for_partner_consent' | 'media_requesting' | 'waiting_for_partner_media' | 'connecting' | 'reconnecting' | 'connected' | 'failed' | 'ended'
     const [callState, setCallState] = useState("idle");
     const [partner, setPartner] = useState(null);
     const [lastPartner, setLastPartner] = useState(null);
@@ -90,6 +105,13 @@ function RandomVideoPage() {
     const activeCallIdRef = useRef(null);
     const mediaSessionTokenRef = useRef(0);
     const timerRef = useRef(null);
+
+    // WebRTC Reliability, Diagnostics & TURN refs
+    const iceConfigRef = useRef(DEFAULT_ICE_CONFIG);
+    const diagnosticsRef = useRef(null);
+    const iceRestartAttemptedRef = useRef(false);
+    const connectionTimeoutRef = useRef(null);
+    const statsIntervalRef = useRef(null);
 
     const showToast = useCallback((msg, severity = "info") => {
         setToastMessage(msg);
@@ -254,12 +276,87 @@ function RandomVideoPage() {
         }
     }, [showToast]);
 
-    // Cleanup WebRTC connection
+    // Bounded ICE Restart / Recovery Attempt
+    const attemptIceRestart = useCallback(async (targetCallId) => {
+        const pc = pcRef.current;
+        if (!pc || activeCallIdRef.current !== targetCallId) return;
+        if (iceRestartAttemptedRef.current) {
+            console.log("[WebRTC] ICE restart already attempted for call:", targetCallId);
+            return;
+        }
+        iceRestartAttemptedRef.current = true;
+
+        if (diagnosticsRef.current) {
+            diagnosticsRef.current.iceRestartAttempts = (diagnosticsRef.current.iceRestartAttempts || 0) + 1;
+        }
+
+        console.log("[WebRTC] Attempting bounded ICE restart for call:", targetCallId);
+        setCallState("reconnecting");
+        showToast("Reconnecting video connection...", "info");
+
+        try {
+            if (typeof pc.restartIce === "function") {
+                pc.restartIce();
+            }
+
+            if (isInitiatorRef.current) {
+                const offer = await pc.createOffer({ iceRestart: true });
+                await pc.setLocalDescription(offer);
+
+                if (socketRef.current && activeCallIdRef.current === targetCallId) {
+                    socketRef.current.emit("random:signal", {
+                        callId: targetCallId,
+                        signalData: {
+                            type: "offer",
+                            sdp: offer,
+                            iceRestart: true,
+                        },
+                    });
+                }
+            }
+
+            // Bounded 10s recovery timeout for restart attempt
+            if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
+            connectionTimeoutRef.current = setTimeout(() => {
+                if (activeCallIdRef.current === targetCallId && pcRef.current && pcRef.current.connectionState !== "connected") {
+                    console.warn("[WebRTC] ICE restart recovery timed out.");
+                    setCallState("failed");
+                    setEndReasonNotice("Video connection could not be restored.");
+                    showToast("Connection recovery timed out.", "warning");
+                }
+            }, 10000);
+        } catch (err) {
+            console.warn("[WebRTC] ICE restart offer failed:", err);
+        }
+    }, [showToast]);
+
+    // Cleanup WebRTC connection & Flush Safe Diagnostics
     const cleanupPeerConnection = useCallback(() => {
+        if (connectionTimeoutRef.current) {
+            clearTimeout(connectionTimeoutRef.current);
+            connectionTimeoutRef.current = null;
+        }
+        if (statsIntervalRef.current) {
+            clearInterval(statsIntervalRef.current);
+            statsIntervalRef.current = null;
+        }
+
+        // Finalize and submit privacy-sanitized diagnostics
+        if (diagnosticsRef.current && diagnosticsRef.current.callId) {
+            diagnosticsRef.current.endTime = Date.now();
+            const payload = buildSanitizedTelemetryPayload(diagnosticsRef.current);
+            if (payload && typeof sendWebRTCDiagnostics === "function") {
+                sendWebRTCDiagnostics(payload).catch(() => {});
+            }
+            diagnosticsRef.current = null;
+        }
+        iceRestartAttemptedRef.current = false;
+
         if (pcRef.current) {
             pcRef.current.ontrack = null;
             pcRef.current.onicecandidate = null;
             pcRef.current.onconnectionstatechange = null;
+            pcRef.current.oniceconnectionstatechange = null;
             try {
                 pcRef.current.close();
             } catch (e) {
@@ -284,7 +381,7 @@ function RandomVideoPage() {
         pendingSignalsRef.current = [];
         isInitiatorRef.current = false;
         activeCallIdRef.current = null;
-    }, []);
+    }, [sendWebRTCDiagnostics]);
 
     // -------------------------------------------------------------
     // 2. Setup WebRTC PeerConnection for an Active Call
@@ -292,10 +389,15 @@ function RandomVideoPage() {
     const createPeerConnection = useCallback((currentCallId, isInitiator) => {
         cleanupPeerConnection();
 
-        const pc = new RTCPeerConnection(ICE_SERVERS);
+        // Initialize safe call diagnostics
+        diagnosticsRef.current = createCallDiagnostics(currentCallId, isInitiator);
+
+        const currentIceConfig = iceConfigRef.current || DEFAULT_ICE_CONFIG;
+        const pc = new RTCPeerConnection(currentIceConfig);
         pcRef.current = pc;
         activeCallIdRef.current = currentCallId;
         isInitiatorRef.current = isInitiator;
+        iceRestartAttemptedRef.current = false;
 
         if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach((track) => {
@@ -362,16 +464,71 @@ function RandomVideoPage() {
         };
 
         pc.onconnectionstatechange = () => {
-            console.log("[WebRTC] connectionState:", pc.connectionState);
-            if (pc.connectionState === "connected") {
+            const state = pc.connectionState;
+            console.log("[WebRTC] connectionState:", state);
+            if (diagnosticsRef.current) {
+                recordConnectionState(diagnosticsRef.current, state);
+            }
+
+            if (state === "connected") {
                 setCallState("connected");
-            } else if (pc.connectionState === "disconnected" || pc.connectionState === "failed") {
-                showToast("Video connection interrupted.", "warning");
+                if (connectionTimeoutRef.current) {
+                    clearTimeout(connectionTimeoutRef.current);
+                    connectionTimeoutRef.current = null;
+                }
+
+                // Poll stats up to 3 times to extract candidate pair metadata safely
+                if (pc.getStats && !statsIntervalRef.current) {
+                    let pollCount = 0;
+                    statsIntervalRef.current = setInterval(async () => {
+                        pollCount += 1;
+                        if (!pcRef.current || pcRef.current.connectionState !== "connected" || pollCount > 3) {
+                            if (statsIntervalRef.current) {
+                                clearInterval(statsIntervalRef.current);
+                                statsIntervalRef.current = null;
+                            }
+                            return;
+                        }
+                        try {
+                            const report = await pcRef.current.getStats();
+                            const pairInfo = extractSafeCandidatePair(report);
+                            if (pairInfo && diagnosticsRef.current) {
+                                diagnosticsRef.current.selectedCandidatePair = pairInfo;
+                                if (statsIntervalRef.current) {
+                                    clearInterval(statsIntervalRef.current);
+                                    statsIntervalRef.current = null;
+                                }
+                            }
+                        } catch {
+                            // Ignored
+                        }
+                    }, 2000);
+                }
+            } else if (state === "failed" || state === "disconnected") {
+                if (!iceRestartAttemptedRef.current && activeCallIdRef.current === currentCallId) {
+                    attemptIceRestart(currentCallId);
+                } else if (state === "failed") {
+                    setCallState("failed");
+                    setEndReasonNotice("Video connection failed. You can find another match or retry.");
+                    showToast("Video connection failed.", "error");
+                }
+            }
+        };
+
+        pc.oniceconnectionstatechange = () => {
+            const iceState = pc.iceConnectionState;
+            console.log("[WebRTC] iceConnectionState:", iceState);
+            if (diagnosticsRef.current) {
+                recordIceConnectionState(diagnosticsRef.current, iceState);
+            }
+
+            if (iceState === "failed" && !iceRestartAttemptedRef.current && activeCallIdRef.current === currentCallId) {
+                attemptIceRestart(currentCallId);
             }
         };
 
         return pc;
-    }, [cleanupPeerConnection, resumeRemoteAudio, showToast]);
+    }, [cleanupPeerConnection, resumeRemoteAudio, attemptIceRestart, showToast]);
 
     // Process incoming WebRTC signals
     const handleRemoteSignal = useCallback(async (signalData, currentCallId) => {
@@ -394,6 +551,13 @@ function RandomVideoPage() {
         try {
             if (signalData.type === "offer") {
                 console.log("[WebRTC] Received offer, setting remote description");
+                if (signalData.iceRestart) {
+                    console.log("[WebRTC] Received peer ICE restart offer for call:", currentCallId);
+                    if (diagnosticsRef.current) {
+                        diagnosticsRef.current.iceRestartAttempts = (diagnosticsRef.current.iceRestartAttempts || 0) + 1;
+                    }
+                    setCallState("reconnecting");
+                }
                 await pc.setRemoteDescription(new RTCSessionDescription(signalData.sdp));
 
                 while (iceCandidateQueue.current.length > 0) {
@@ -446,6 +610,33 @@ function RandomVideoPage() {
             console.error("Error processing WebRTC signal:", err);
         }
     }, []);
+
+    // -------------------------------------------------------------
+    // Dynamic ICE / TURN Configuration Initialization
+    // -------------------------------------------------------------
+    useEffect(() => {
+        let isMounted = true;
+        if (typeof getIceServers === "function") {
+            getIceServers()
+                .then((res) => {
+                    if (isMounted && res?.iceServers?.length) {
+                        iceConfigRef.current = {
+                            iceServers: res.iceServers,
+                            iceTransportPolicy: res.iceTransportPolicy || "all",
+                        };
+                        console.log(
+                            `[WebRTC] Successfully loaded ICE configuration (hasTurn: ${Boolean(res.hasTurn)}, policy: ${res.iceTransportPolicy || "all"})`
+                        );
+                    }
+                })
+                .catch((e) => {
+                    console.warn("[WebRTC] Using fallback STUN configuration:", e?.message);
+                });
+        }
+        return () => {
+            isMounted = false;
+        };
+    }, [getIceServers]);
 
     // -------------------------------------------------------------
     // 3. Socket Connection & Event Listeners
@@ -557,6 +748,21 @@ function RandomVideoPage() {
 
             const pc = createPeerConnection(currentCall, isInitiator);
 
+            // Bounded 15s connection failure timeout
+            if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
+            connectionTimeoutRef.current = setTimeout(() => {
+                if (activeCallIdRef.current === currentCall && pcRef.current && pcRef.current.connectionState !== "connected") {
+                    console.warn("[WebRTC] Peer connection establishment timed out after 15s");
+                    if (!iceRestartAttemptedRef.current) {
+                        attemptIceRestart(currentCall);
+                    } else {
+                        setCallState("failed");
+                        setEndReasonNotice("Video connection timed out. Could not establish peer connection.");
+                        showToast("Connection timed out.", "warning");
+                    }
+                }
+            }, 15000);
+
             // Drain any queued signals that arrived while peer connection initialized
             if (pendingSignalsRef.current.length > 0) {
                 console.log(`[WebRTC] Processing ${pendingSignalsRef.current.length} queued signals`);
@@ -640,7 +846,7 @@ function RandomVideoPage() {
                 socketRef.current.disconnect();
             }
         };
-    }, [token, navigate, initializeMedia, createPeerConnection, handleRemoteSignal, cleanupPeerConnection, stopLocalMedia, showToast]);
+    }, [token, navigate, initializeMedia, createPeerConnection, handleRemoteSignal, attemptIceRestart, cleanupPeerConnection, stopLocalMedia, showToast]);
 
     // Continuously synchronize media streams with video DOM elements whenever callState changes
     useEffect(() => {
@@ -1399,8 +1605,8 @@ function RandomVideoPage() {
                     </Container>
                 )}
 
-                {/* 5. CONNECTING STATE */}
-                {callState === "connecting" && (
+                {/* 5. CONNECTING / RECONNECTING STATE */}
+                {(callState === "connecting" || callState === "reconnecting") && (
                     <Container maxWidth="xs" sx={{ textAlign: "center" }}>
                         <Paper
                             elevation={0}
@@ -1428,10 +1634,10 @@ function RandomVideoPage() {
                                 {partner?.name?.charAt(0) || "P"}
                             </Avatar>
                             <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.5 }}>
-                                Matched with {partner?.name || "a member"}!
+                                {callState === "reconnecting" ? "Reconnecting Video..." : `Matched with ${partner?.name || "a member"}!`}
                             </Typography>
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
-                                Negotiating encrypted video stream...
+                                {callState === "reconnecting" ? "Restoring encrypted WebRTC connection..." : "Negotiating encrypted video stream..."}
                             </Typography>
                             <CircularProgress size={32} sx={{ color: BRAND_COLORS.coralPink }} />
                         </Paper>
@@ -1723,8 +1929,8 @@ function RandomVideoPage() {
                     </Box>
                 )}
 
-                {/* 5. CALL ENDED MODAL / NOTICE */}
-                {callState === "ended" && (
+                {/* 5. CALL ENDED / FAILED NOTICE */}
+                {(callState === "ended" || callState === "failed") && (
                     <Container maxWidth="xs" sx={{ textAlign: "center" }}>
                         <Paper
                             elevation={0}
@@ -1732,7 +1938,7 @@ function RandomVideoPage() {
                                 p: 4.5,
                                 borderRadius: "28px",
                                 backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                border: `1px solid ${callState === "failed" ? "rgba(239, 68, 68, 0.4)" : BRAND_COLORS.surfaceDarkBorder}`,
                                 display: "flex",
                                 flexDirection: "column",
                                 alignItems: "center",
@@ -1754,10 +1960,10 @@ function RandomVideoPage() {
                                 <CallEndIcon sx={{ fontSize: 34, color: "#EF4444" }} />
                             </Box>
                             <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.5 }}>
-                                Call Ended
+                                {callState === "failed" ? "Connection Failed" : "Call Ended"}
                             </Typography>
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3.5 }}>
-                                {endReasonNotice || "The call has ended."}
+                                {endReasonNotice || (callState === "failed" ? "Video connection could not be established." : "The call has ended.")}
                             </Typography>
 
                             <Stack spacing={1.5} sx={{ width: "100%" }}>
