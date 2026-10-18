@@ -36,6 +36,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import SecurityIcon from "@mui/icons-material/Security";
 import SparklesIcon from "@mui/icons-material/AutoAwesome";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import SafetyActionModal from "../components/SafetyActionModal";
 
 const ICE_SERVERS = {
@@ -50,12 +52,13 @@ function RandomVideoPage() {
     const navigate = useNavigate();
     const { userData, token, blockUser, reportUser } = useContext(AuthContext);
 
-    // Call state: 'idle' | 'searching' | 'connecting' | 'connected' | 'ended'
+    // Call state: 'idle' | 'searching' | 'consent_pending' | 'waiting_for_partner_consent' | 'media_requesting' | 'waiting_for_partner_media' | 'connecting' | 'connected' | 'ended'
     const [callState, setCallState] = useState("idle");
     const [partner, setPartner] = useState(null);
     const [lastPartner, setLastPartner] = useState(null);
     const [callId, setCallId] = useState(null);
     const [searchDuration, setSearchDuration] = useState(0);
+    const [partnerConsented, setPartnerConsented] = useState(false);
 
     // Safety action modal
     const [safetyModalOpen, setSafetyModalOpen] = useState(false);
@@ -85,12 +88,32 @@ function RandomVideoPage() {
     const pendingSignalsRef = useRef([]);
     const isInitiatorRef = useRef(false);
     const activeCallIdRef = useRef(null);
+    const mediaSessionTokenRef = useRef(0);
     const timerRef = useRef(null);
 
     const showToast = useCallback((msg, severity = "info") => {
         setToastMessage(msg);
         setToastSeverity(severity);
         setOpenToast(true);
+    }, []);
+
+    // -------------------------------------------------------------
+    // Stop & Release Local Camera/Mic Media Tracks
+    // -------------------------------------------------------------
+    const stopLocalMedia = useCallback(() => {
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach((track) => {
+                try {
+                    track.stop();
+                } catch (e) {
+                    console.warn("[WebRTC] Error stopping local track:", e);
+                }
+            });
+            localStreamRef.current = null;
+        }
+        if (localVideoRef.current) {
+            localVideoRef.current.srcObject = null;
+        }
     }, []);
 
     // -------------------------------------------------------------
@@ -164,11 +187,14 @@ function RandomVideoPage() {
     }, []);
 
     // -------------------------------------------------------------
-    // 1. Initialize Local Media Stream
+    // 1. Initialize Local Media Stream with Race & Staleness Guard
     // -------------------------------------------------------------
-    const initializeMedia = useCallback(async () => {
+    const initializeMedia = useCallback(async (expectedCallId) => {
+        const sessionToken = mediaSessionTokenRef.current;
+        const targetCallId = expectedCallId || activeCallIdRef.current;
+
         try {
-            if (localStreamRef.current) {
+            if (localStreamRef.current && localStreamRef.current.active) {
                 return localStreamRef.current;
             }
 
@@ -181,6 +207,25 @@ function RandomVideoPage() {
                 },
             });
 
+            // Race Condition Guard: If sessionToken changed, call ended, or targetCallId changed while awaiting getUserMedia
+            const isStale = (
+                sessionToken !== mediaSessionTokenRef.current ||
+                !activeCallIdRef.current ||
+                (targetCallId && activeCallIdRef.current !== targetCallId)
+            );
+
+            if (isStale) {
+                console.log(`[WebRTC] Late getUserMedia resolved for stale/abandoned call (${targetCallId}). Stopping tracks immediately.`);
+                if (stream) {
+                    stream.getTracks().forEach((track) => {
+                        try {
+                            track.stop();
+                        } catch (e) {}
+                    });
+                }
+                return null;
+            }
+
             localStreamRef.current = stream;
             if (localVideoRef.current) {
                 localVideoRef.current.srcObject = stream;
@@ -189,6 +234,12 @@ function RandomVideoPage() {
             setMediaError("");
             return stream;
         } catch (err) {
+            // If call session was already cancelled/stale, ignore permission errors
+            if (sessionToken !== mediaSessionTokenRef.current || !activeCallIdRef.current) {
+                console.log("[WebRTC] Discarding media error on stale/cancelled call session");
+                return null;
+            }
+
             console.error("Camera/Mic access error:", err);
             let msg = "Could not access camera or microphone.";
             if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
@@ -217,7 +268,11 @@ function RandomVideoPage() {
             pcRef.current = null;
         }
         if (remoteStreamRef.current) {
-            remoteStreamRef.current.getTracks().forEach((track) => track.stop());
+            remoteStreamRef.current.getTracks().forEach((track) => {
+                try {
+                    track.stop();
+                } catch (e) {}
+            });
             remoteStreamRef.current = null;
         }
         if (remoteVideoRef.current) {
@@ -402,7 +457,7 @@ function RandomVideoPage() {
             return;
         }
 
-        initializeMedia();
+        // Camera and microphone are NOT accessed on page mount to preserve user privacy
 
         const socket = io(server, {
             auth: { token: authToken },
@@ -423,24 +478,92 @@ function RandomVideoPage() {
             showToast("Searching for an available match...", "info");
         });
 
-        socket.on("random:matched", async ({ callId: newCallId, isInitiator, partner: matchedPartner }) => {
+        socket.on("random:matched", ({ callId: newCallId, isInitiator, partner: matchedPartner }) => {
+            // Invalidate any previous in-flight media session and cleanup old tracks/connections
+            mediaSessionTokenRef.current += 1;
+            stopLocalMedia();
+            cleanupPeerConnection();
+
             activeCallIdRef.current = newCallId;
             setCallId(newCallId);
             setPartner(matchedPartner);
             setLastPartner(matchedPartner);
+            isInitiatorRef.current = isInitiator;
+            setPartnerConsented(false);
+            setCallState("consent_pending");
+            showToast(`Match found with ${matchedPartner?.name || "a member"}! Please confirm to start.`, "info");
+        });
+
+        socket.on("random:waiting-for-partner-consent", () => {
+            setCallState("waiting_for_partner_consent");
+        });
+
+        socket.on("random:partner-consented", () => {
+            setPartnerConsented(true);
+            showToast("Partner is ready! Waiting for your consent.", "info");
+        });
+
+        socket.on("random:both-consented", async ({ callId: consentedCallId }) => {
+            if (!consentedCallId || consentedCallId !== activeCallIdRef.current) {
+                console.log("[WebRTC] Discarding both-consented event for stale call:", consentedCallId);
+                return;
+            }
+
+            const currentToken = mediaSessionTokenRef.current;
+            setCallState("media_requesting");
+            showToast("Both agreed! Initializing camera...", "success");
+
+            const stream = await initializeMedia(consentedCallId);
+
+            // Guard: If session token changed, call was declined/ended, or next match was triggered while awaiting media
+            if (currentToken !== mediaSessionTokenRef.current || activeCallIdRef.current !== consentedCallId) {
+                console.log("[WebRTC] Call state changed during media acquisition. Aborting readiness emit.");
+                return;
+            }
+
+            if (!stream) {
+                if (socketRef.current && activeCallIdRef.current === consentedCallId) {
+                    socketRef.current.emit("random:media-failed", {
+                        callId: consentedCallId,
+                        reason: "permission_denied",
+                    });
+                }
+                setCallState("ended");
+                setEndReasonNotice("Camera and microphone permission required to start call.");
+                return;
+            }
+
+            setCallState("waiting_for_partner_media");
+            if (socketRef.current && activeCallIdRef.current === consentedCallId) {
+                socketRef.current.emit("random:media-ready", {
+                    callId: consentedCallId,
+                });
+            }
+        });
+
+        socket.on("random:waiting-for-partner-media", () => {
+            setCallState("waiting_for_partner_media");
+        });
+
+        socket.on("random:media-start", async ({ callId: startCallId, isInitiator }) => {
+            const currentCall = startCallId || activeCallIdRef.current;
+            if (!currentCall || currentCall !== activeCallIdRef.current) {
+                console.log("[WebRTC] Discarding media-start for stale call:", startCallId);
+                return;
+            }
+
             setCallState("connecting");
-            showToast(`Connected with ${matchedPartner?.name || "a member"}! Setting up video...`, "success");
+            showToast("Starting encrypted video stream...", "info");
 
-            await initializeMedia();
-            const pc = createPeerConnection(newCallId, isInitiator);
+            const pc = createPeerConnection(currentCall, isInitiator);
 
-            // Drain any signals that arrived while initializeMedia was executing
+            // Drain any queued signals that arrived while peer connection initialized
             if (pendingSignalsRef.current.length > 0) {
                 console.log(`[WebRTC] Processing ${pendingSignalsRef.current.length} queued signals`);
                 const queued = [...pendingSignalsRef.current];
                 pendingSignalsRef.current = [];
                 for (const item of queued) {
-                    await handleRemoteSignal(item.signalData, item.currentCallId || newCallId);
+                    await handleRemoteSignal(item.signalData, item.currentCallId || currentCall);
                 }
             }
 
@@ -453,7 +576,7 @@ function RandomVideoPage() {
                     await pc.setLocalDescription(offer);
 
                     socket.emit("random:signal", {
-                        callId: newCallId,
+                        callId: currentCall,
                         signalData: {
                             type: "offer",
                             sdp: offer,
@@ -466,14 +589,29 @@ function RandomVideoPage() {
         });
 
         socket.on("random:signal", ({ callId: sigCallId, signalData }) => {
+            if (!sigCallId || sigCallId !== activeCallIdRef.current) {
+                console.log("[WebRTC] Discarding signal for stale call:", sigCallId);
+                return;
+            }
             handleRemoteSignal(signalData, sigCallId);
         });
 
         socket.on("random:call-ended", ({ reason }) => {
+            mediaSessionTokenRef.current += 1;
+            stopLocalMedia();
             cleanupPeerConnection();
             setCallState("ended");
+            setPartnerConsented(false);
             let notice = "Call has ended.";
-            if (reason === "partner_disconnected") {
+            if (reason === "declined_by_partner") {
+                notice = "Your match chose not to connect.";
+            } else if (reason === "declined_by_user") {
+                notice = "You declined the match.";
+            } else if (reason === "partner_media_failed") {
+                notice = "Your match had camera or microphone issues.";
+            } else if (reason === "media_failed") {
+                notice = "Camera or microphone setup failed.";
+            } else if (reason === "partner_disconnected") {
                 notice = "Your partner disconnected.";
             } else if (reason === "ended_by_user" || reason === "ended_by_partner") {
                 notice = "Your partner left the call.";
@@ -485,6 +623,8 @@ function RandomVideoPage() {
         });
 
         socket.on("random:queue-left", () => {
+            mediaSessionTokenRef.current += 1;
+            stopLocalMedia();
             setCallState("idle");
         });
 
@@ -493,16 +633,14 @@ function RandomVideoPage() {
         });
 
         return () => {
+            mediaSessionTokenRef.current += 1;
+            stopLocalMedia();
             cleanupPeerConnection();
             if (socketRef.current) {
                 socketRef.current.disconnect();
             }
-            if (localStreamRef.current) {
-                localStreamRef.current.getTracks().forEach((track) => track.stop());
-                localStreamRef.current = null;
-            }
         };
-    }, [token, navigate, initializeMedia, createPeerConnection, handleRemoteSignal, cleanupPeerConnection, showToast]);
+    }, [token, navigate, initializeMedia, createPeerConnection, handleRemoteSignal, cleanupPeerConnection, stopLocalMedia, showToast]);
 
     // Continuously synchronize media streams with video DOM elements whenever callState changes
     useEffect(() => {
@@ -601,12 +739,15 @@ function RandomVideoPage() {
     // -------------------------------------------------------------
     // 4. User Actions: Start, Cancel, Next, End, Mute, Camera
     // -------------------------------------------------------------
-    const handleStartSearch = async () => {
-        const stream = await initializeMedia();
-        if (!stream) return;
-
+    const handleStartSearch = () => {
+        mediaSessionTokenRef.current += 1;
+        stopLocalMedia();
+        cleanupPeerConnection();
         if (socketRef.current) {
             setCallState("searching");
+            setPartner(null);
+            setCallId(null);
+            setPartnerConsented(false);
             socketRef.current.emit("random:join-queue", {}, (ack) => {
                 if (ack && !ack.success) {
                     showToast(ack.message || "Failed to join queue", "error");
@@ -617,6 +758,9 @@ function RandomVideoPage() {
     };
 
     const handleCancelSearch = () => {
+        mediaSessionTokenRef.current += 1;
+        stopLocalMedia();
+        cleanupPeerConnection();
         if (socketRef.current) {
             socketRef.current.emit("random:leave-queue", {}, () => {
                 setCallState("idle");
@@ -625,12 +769,44 @@ function RandomVideoPage() {
         }
     };
 
+    const handleAcceptConsent = () => {
+        const currentCallId = callId || activeCallIdRef.current;
+        setCallState("waiting_for_partner_consent");
+        if (socketRef.current && currentCallId) {
+            socketRef.current.emit("random:consent", {
+                callId: currentCallId,
+                consent: true,
+            });
+        }
+    };
+
+    const handleDeclineConsent = () => {
+        const currentCallId = callId || activeCallIdRef.current;
+        mediaSessionTokenRef.current += 1;
+        stopLocalMedia();
+        cleanupPeerConnection();
+        setCallState("idle");
+        setPartner(null);
+        setCallId(null);
+        setPartnerConsented(false);
+        if (socketRef.current && currentCallId) {
+            socketRef.current.emit("random:consent", {
+                callId: currentCallId,
+                consent: false,
+            });
+        }
+        showToast("Match declined.", "info");
+    };
+
     const handleNextMatch = () => {
         if (callState === "searching") return;
         const currentCallId = callId || activeCallIdRef.current;
+        mediaSessionTokenRef.current += 1;
+        stopLocalMedia();
         cleanupPeerConnection();
         setPartner(null);
         setCallId(null);
+        setPartnerConsented(false);
         setCallState("searching");
         if (socketRef.current) {
             socketRef.current.emit("random:next", { callId: currentCallId });
@@ -639,10 +815,13 @@ function RandomVideoPage() {
 
     const handleEndCall = () => {
         const currentCallId = callId || activeCallIdRef.current;
+        mediaSessionTokenRef.current += 1;
+        stopLocalMedia();
         cleanupPeerConnection();
         setCallState("idle");
         setPartner(null);
         setCallId(null);
+        setPartnerConsented(false);
         if (socketRef.current) {
             socketRef.current.emit("random:end-call", { callId: currentCallId });
         }
@@ -780,7 +959,7 @@ function RandomVideoPage() {
                                 </Alert>
                             )}
 
-                            {/* Camera Preview Box */}
+                            {/* Camera Standby Box or Active Preview */}
                             <Box
                                 sx={{
                                     width: "100%",
@@ -792,85 +971,124 @@ function RandomVideoPage() {
                                     mb: 3.5,
                                     border: `2px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                     boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
                                 }}
                             >
-                                <video
-                                    ref={(el) => {
-                                        localVideoRef.current = el;
-                                        if (el && localStreamRef.current && el.srcObject !== localStreamRef.current) {
-                                            el.srcObject = localStreamRef.current;
-                                            el.play().catch(() => {});
-                                        }
-                                    }}
-                                    autoPlay
-                                    playsInline
-                                    muted
-                                    style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        objectFit: "cover",
-                                        transform: "scaleX(-1)",
-                                    }}
-                                />
-                                {!videoEnabled && (
+                                {localStreamRef.current ? (
+                                    <>
+                                        <video
+                                            ref={(el) => {
+                                                localVideoRef.current = el;
+                                                if (el && localStreamRef.current && el.srcObject !== localStreamRef.current) {
+                                                    el.srcObject = localStreamRef.current;
+                                                    el.play().catch(() => {});
+                                                }
+                                            }}
+                                            autoPlay
+                                            playsInline
+                                            muted
+                                            style={{
+                                                width: "100%",
+                                                height: "100%",
+                                                objectFit: "cover",
+                                                transform: "scaleX(-1)",
+                                            }}
+                                        />
+                                        {!videoEnabled && (
+                                            <Box
+                                                sx={{
+                                                    position: "absolute",
+                                                    inset: 0,
+                                                    backgroundColor: "rgba(11, 13, 23, 0.95)",
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                }}
+                                            >
+                                                <VideocamOffIcon sx={{ fontSize: 50, color: BRAND_COLORS.textSecondary, mb: 1 }} />
+                                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                                    Camera is turned off
+                                                </Typography>
+                                            </Box>
+                                        )}
+
+                                        {/* Floating Preview Controls */}
+                                        <Stack
+                                            direction="row"
+                                            spacing={1.5}
+                                            sx={{
+                                                position: "absolute",
+                                                bottom: 14,
+                                                left: "50%",
+                                                transform: "translateX(-50%)",
+                                                backgroundColor: "rgba(11, 13, 23, 0.8)",
+                                                backdropFilter: "blur(12px)",
+                                                borderRadius: "9999px",
+                                                px: 2,
+                                                py: 0.8,
+                                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                            }}
+                                        >
+                                            <IconButton
+                                                size="small"
+                                                onClick={toggleAudio}
+                                                sx={{
+                                                    bgcolor: audioEnabled ? "rgba(255,255,255,0.1)" : "#EF4444",
+                                                    color: "#FFFFFF",
+                                                    "&:hover": { bgcolor: audioEnabled ? "rgba(255,255,255,0.2)" : "#DC2626" },
+                                                }}
+                                            >
+                                                {audioEnabled ? <MicIcon fontSize="small" /> : <MicOffIcon fontSize="small" />}
+                                            </IconButton>
+                                            <IconButton
+                                                size="small"
+                                                onClick={toggleVideo}
+                                                sx={{
+                                                    bgcolor: videoEnabled ? "rgba(255,255,255,0.1)" : "#EF4444",
+                                                    color: "#FFFFFF",
+                                                    "&:hover": { bgcolor: videoEnabled ? "rgba(255,255,255,0.2)" : "#DC2626" },
+                                                }}
+                                            >
+                                                {videoEnabled ? <VideocamIcon fontSize="small" /> : <VideocamOffIcon fontSize="small" />}
+                                            </IconButton>
+                                        </Stack>
+                                    </>
+                                ) : (
                                     <Box
                                         sx={{
-                                            position: "absolute",
-                                            inset: 0,
-                                            backgroundColor: "rgba(11, 13, 23, 0.95)",
+                                            p: 3,
+                                            textAlign: "center",
                                             display: "flex",
                                             flexDirection: "column",
                                             alignItems: "center",
-                                            justifyContent: "center",
                                         }}
                                     >
-                                        <VideocamOffIcon sx={{ fontSize: 50, color: BRAND_COLORS.textSecondary, mb: 1 }} />
-                                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                            Camera is turned off
+                                        <Box
+                                            sx={{
+                                                width: 64,
+                                                height: 64,
+                                                borderRadius: "50%",
+                                                bgcolor: "rgba(255, 255, 255, 0.05)",
+                                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                mb: 1.8,
+                                            }}
+                                        >
+                                            <VideocamOffIcon sx={{ fontSize: 32, color: BRAND_COLORS.textSecondary }} />
+                                        </Box>
+                                        <Typography variant="subtitle1" sx={{ color: "#FFFFFF", fontWeight: 700, mb: 0.8 }}>
+                                            Camera & Mic Standby
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, maxWidth: 300, lineHeight: 1.5, display: "block" }}>
+                                            Camera and microphone remain inactive until you and your match both confirm consent to connect.
                                         </Typography>
                                     </Box>
                                 )}
-
-                                {/* Floating Preview Controls */}
-                                <Stack
-                                    direction="row"
-                                    spacing={1.5}
-                                    sx={{
-                                        position: "absolute",
-                                        bottom: 14,
-                                        left: "50%",
-                                        transform: "translateX(-50%)",
-                                        backgroundColor: "rgba(11, 13, 23, 0.8)",
-                                        backdropFilter: "blur(12px)",
-                                        borderRadius: "9999px",
-                                        px: 2,
-                                        py: 0.8,
-                                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                    }}
-                                >
-                                    <IconButton
-                                        size="small"
-                                        onClick={toggleAudio}
-                                        sx={{
-                                            bgcolor: audioEnabled ? "rgba(255,255,255,0.1)" : "#EF4444",
-                                            color: "#FFFFFF",
-                                            "&:hover": { bgcolor: audioEnabled ? "rgba(255,255,255,0.2)" : "#DC2626" },
-                                        }}
-                                    >
-                                        {audioEnabled ? <MicIcon fontSize="small" /> : <MicOffIcon fontSize="small" />}
-                                    </IconButton>
-                                    <IconButton
-                                        size="small"
-                                        onClick={toggleVideo}
-                                        sx={{
-                                            bgcolor: videoEnabled ? "rgba(255,255,255,0.1)" : "#EF4444",
-                                            color: "#FFFFFF",
-                                            "&:hover": { bgcolor: videoEnabled ? "rgba(255,255,255,0.2)" : "#DC2626" },
-                                        }}
-                                    >
-                                        {videoEnabled ? <VideocamIcon fontSize="small" /> : <VideocamOffIcon fontSize="small" />}
-                                    </IconButton>
-                                </Stack>
                             </Box>
 
                             <Button
@@ -989,7 +1207,199 @@ function RandomVideoPage() {
                     </Container>
                 )}
 
-                {/* 3. CONNECTING STATE */}
+                {/* 3. CONSENT CARD: Explicit 2-party opt-in before camera/mic or WebRTC setup */}
+                {(callState === "consent_pending" || callState === "waiting_for_partner_consent") && (
+                    <Container maxWidth="xs" sx={{ textAlign: "center" }}>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: { xs: 3, sm: 4.5 },
+                                borderRadius: "28px",
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                            }}
+                        >
+                            {/* Status Pill */}
+                            <Box
+                                sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                    px: 2,
+                                    py: 0.6,
+                                    borderRadius: "9999px",
+                                    bgcolor: partnerConsented ? "rgba(16, 185, 129, 0.15)" : "rgba(253, 58, 115, 0.15)",
+                                    border: `1px solid ${partnerConsented ? "rgba(16, 185, 129, 0.3)" : "rgba(253, 58, 115, 0.3)"}`,
+                                    mb: 2.5,
+                                }}
+                            >
+                                <SparklesIcon sx={{ fontSize: 16, color: partnerConsented ? "#10B981" : BRAND_COLORS.coralPink }} />
+                                <Typography variant="caption" sx={{ color: partnerConsented ? "#34D399" : "#FCA5A5", fontWeight: 700 }}>
+                                    {partnerConsented ? "PARTNER IS READY" : "MATCH FOUND"}
+                                </Typography>
+                            </Box>
+
+                            <Avatar
+                                src={partner?.photos?.[0]}
+                                sx={{
+                                    width: 96,
+                                    height: 96,
+                                    mb: 2,
+                                    border: `3px solid ${partnerConsented ? "#10B981" : BRAND_COLORS.coralPink}`,
+                                    boxShadow: partnerConsented
+                                        ? "0 0 30px rgba(16, 185, 129, 0.4)"
+                                        : "0 0 30px rgba(253, 58, 115, 0.4)",
+                                }}
+                            >
+                                {partner?.name?.charAt(0) || "P"}
+                            </Avatar>
+
+                            <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.5 }}>
+                                {partner?.name || "New Member"}{partner?.age ? `, ${partner.age}` : ""}
+                            </Typography>
+
+                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 1, textTransform: "capitalize" }}>
+                                {partner?.gender || "Verified Member"}
+                            </Typography>
+
+                            {partner?.bio && (
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        color: BRAND_COLORS.textSecondary,
+                                        mb: 2.5,
+                                        px: 2,
+                                        display: "-webkit-box",
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: "vertical",
+                                        overflow: "hidden",
+                                    }}
+                                >
+                                    "{partner.bio}"
+                                </Typography>
+                            )}
+
+                            <Typography variant="body2" sx={{ color: "#E5E7EB", fontWeight: 600, mb: 0.8, px: 1 }}>
+                                Ready to start a private 1-on-1 video call?
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, mb: 3, px: 2 }}>
+                                🔒 Your camera and microphone will only activate after both of you agree.
+                            </Typography>
+
+                            {callState === "consent_pending" ? (
+                                <Stack direction="column" spacing={1.5} sx={{ width: "100%" }}>
+                                    <Button
+                                        variant="contained"
+                                        size="large"
+                                        startIcon={<CheckCircleIcon />}
+                                        onClick={handleAcceptConsent}
+                                        sx={{
+                                            background: BRAND_COLORS.primaryGradient,
+                                            fontWeight: 800,
+                                            borderRadius: "14px",
+                                            py: 1.4,
+                                            boxShadow: "0 6px 20px rgba(253, 58, 115, 0.4)",
+                                        }}
+                                    >
+                                        Ready to Start
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        size="medium"
+                                        startIcon={<CancelIcon />}
+                                        onClick={handleDeclineConsent}
+                                        sx={{
+                                            borderRadius: "14px",
+                                            py: 1.1,
+                                            borderColor: "rgba(239, 68, 68, 0.4)",
+                                            color: "#EF4444",
+                                            "&:hover": {
+                                                borderColor: "#EF4444",
+                                                bgcolor: "rgba(239, 68, 68, 0.08)",
+                                            },
+                                        }}
+                                    >
+                                        Not Now
+                                    </Button>
+                                </Stack>
+                            ) : (
+                                <Box sx={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                                    <Stack direction="row" spacing={1.5} alignItems="center">
+                                        <CircularProgress size={22} sx={{ color: BRAND_COLORS.coralPink }} />
+                                        <Typography variant="body2" sx={{ color: BRAND_COLORS.coralPink, fontWeight: 700 }}>
+                                            Waiting for {partner?.name || "partner"} to confirm...
+                                        </Typography>
+                                    </Stack>
+                                    <Button
+                                        variant="text"
+                                        size="small"
+                                        onClick={handleDeclineConsent}
+                                        sx={{ color: BRAND_COLORS.textSecondary, mt: 1 }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </Box>
+                            )}
+                        </Paper>
+                    </Container>
+                )}
+
+                {/* 4. MEDIA SETUP STATE: Both consented; initializing camera & mic */}
+                {(callState === "media_requesting" || callState === "waiting_for_partner_media") && (
+                    <Container maxWidth="xs" sx={{ textAlign: "center" }}>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: { xs: 3, sm: 4.5 },
+                                borderRadius: "28px",
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid rgba(139, 92, 246, 0.3)`,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
+                            }}
+                        >
+                            <Avatar
+                                src={partner?.photos?.[0]}
+                                sx={{
+                                    width: 80,
+                                    height: 80,
+                                    mb: 2.5,
+                                    border: `3px solid #10B981`,
+                                    boxShadow: "0 0 25px rgba(16, 185, 129, 0.4)",
+                                }}
+                            >
+                                {partner?.name?.charAt(0) || "P"}
+                            </Avatar>
+                            <CircularProgress size={36} sx={{ color: BRAND_COLORS.violet, mb: 2 }} />
+                            <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.5 }}>
+                                {callState === "media_requesting"
+                                    ? "Setting up camera & mic..."
+                                    : `Waiting for ${partner?.name || "partner"}'s media...`}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 1.5 }}>
+                                {callState === "media_requesting"
+                                    ? "Requesting device permissions..."
+                                    : "Your camera is ready. Waiting for peer..."}
+                            </Typography>
+                            <Button
+                                variant="text"
+                                size="small"
+                                onClick={handleDeclineConsent}
+                                sx={{ color: BRAND_COLORS.textSecondary }}
+                            >
+                                Cancel
+                            </Button>
+                        </Paper>
+                    </Container>
+                )}
+
+                {/* 5. CONNECTING STATE */}
                 {callState === "connecting" && (
                     <Container maxWidth="xs" sx={{ textAlign: "center" }}>
                         <Paper
