@@ -420,20 +420,39 @@ function DiscoveryPage() {
                         <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
                             {error}
                         </Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<ReplayRoundedIcon />}
-                            onClick={() => fetchProfiles(1)}
-                            sx={{
-                                background: BRAND_COLORS.primaryGradient,
-                                borderRadius: "9999px",
-                                px: 4,
-                                py: 1.2,
-                                fontWeight: 700,
-                            }}
-                        >
-                            Retry
-                        </Button>
+                        <Stack spacing={1.5} sx={{ mt: 2 }}>
+                            {(error.toLowerCase().includes("profile") || error.toLowerCase().includes("18") || error.toLowerCase().includes("birth")) && (
+                                <Button
+                                    variant="contained"
+                                    onClick={() => navigate("/profile")}
+                                    sx={{
+                                        background: BRAND_COLORS.primaryGradient,
+                                        borderRadius: "9999px",
+                                        px: 4,
+                                        py: 1.2,
+                                        fontWeight: 700,
+                                    }}
+                                >
+                                    Complete Profile
+                                </Button>
+                            )}
+                            <Button
+                                variant={error.toLowerCase().includes("profile") ? "outlined" : "contained"}
+                                startIcon={<ReplayRoundedIcon />}
+                                onClick={() => fetchProfiles(1)}
+                                sx={{
+                                    background: error.toLowerCase().includes("profile") ? "transparent" : BRAND_COLORS.primaryGradient,
+                                    borderRadius: "9999px",
+                                    px: 4,
+                                    py: 1.2,
+                                    fontWeight: 700,
+                                    color: "#FFFFFF",
+                                    borderColor: BRAND_COLORS.surfaceDarkBorder,
+                                }}
+                            >
+                                Retry
+                            </Button>
+                        </Stack>
                     </Paper>
                 )}
 
