@@ -107,7 +107,6 @@ function MatchesPage() {
         const q = searchQuery.toLowerCase().trim();
         return (
             other.name?.toLowerCase().includes(q) ||
-            other.username?.toLowerCase().includes(q) ||
             conv.lastMessage?.content?.toLowerCase().includes(q)
         );
     });

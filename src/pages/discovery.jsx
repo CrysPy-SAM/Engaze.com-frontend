@@ -1064,8 +1064,8 @@ function DiscoveryPage() {
                                     <VerifiedRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 20 }} />
                                 )}
                             </Stack>
-                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                {currentProfile.gender ? `${currentProfile.gender} • ` : ""}@{currentProfile.username}
+                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, textTransform: "capitalize" }}>
+                                {currentProfile.gender || "Engaze Member"}
                             </Typography>
                         </Box>
 

@@ -486,9 +486,8 @@ function ChatPage() {
     const filteredConversations = conversations.filter((c) => {
         if (!searchTerm) return true;
         const name = c.otherParticipant?.name?.toLowerCase() || "";
-        const username = c.otherParticipant?.username?.toLowerCase() || "";
         const term = searchTerm.toLowerCase();
-        return name.includes(term) || username.includes(term);
+        return name.includes(term);
     });
 
     const handleOpenMenu = (event) => {
@@ -1750,8 +1749,8 @@ function ChatPage() {
                                     </Typography>
                                     <CheckCircleIcon sx={{ fontSize: 20, color: BRAND_COLORS.verifiedBlue }} />
                                 </Stack>
-                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                    @{otherUser.username}
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, textTransform: "capitalize" }}>
+                                    {otherUser.gender ? `${otherUser.gender} • ` : ""}Engaze Match
                                 </Typography>
                             </Box>
                         </Box>

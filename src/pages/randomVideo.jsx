@@ -1113,10 +1113,10 @@ function RandomVideoPage() {
                                 </Avatar>
                                 <Box sx={{ minWidth: 0, flex: 1 }}>
                                     <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800, color: "#FFFFFF", lineHeight: 1.2, fontSize: { xs: "0.82rem", sm: "0.9rem" } }}>
-                                        {partner.name}
+                                        {partner.name}{partner.age ? `, ${partner.age}` : ""}
                                     </Typography>
-                                    <Typography variant="caption" noWrap sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>
-                                        @{partner.username}
+                                    <Typography variant="caption" noWrap sx={{ color: BRAND_COLORS.textSecondary, display: "block", textTransform: "capitalize" }}>
+                                        {partner.gender || "Engaze Member"}
                                     </Typography>
                                 </Box>
                             </Box>
