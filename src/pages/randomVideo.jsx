@@ -404,6 +404,14 @@ function RandomVideoPage() {
         });
         socketRef.current = socket;
 
+        socket.on("connect_error", (err) => {
+            console.error("[RandomVideo] Socket connect_error:", err.message);
+            if (err.message && err.message.toLowerCase().includes("authentication error")) {
+                showToast("Session expired or invalid. Please sign in again.", "error");
+                navigate("/auth");
+            }
+        });
+
         socket.on("random:queue-joined", () => {
             setCallState("searching");
             showToast("Searching for an available match...", "info");
