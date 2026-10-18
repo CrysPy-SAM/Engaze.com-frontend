@@ -311,7 +311,16 @@ export default function VideoMeetComponent() {
     }
 
     const connectToSocketServer = () => {
-        socketRef.current = io.connect(server_url, { secure: false })
+        const token = localStorage.getItem("token") || "";
+        socketRef.current = io(server_url, {
+            auth: { token },
+            secure: false,
+            transports: ["websocket", "polling"],
+        });
+
+        socketRef.current.on('connect_error', (err) => {
+            console.error("Video meeting socket connection error:", err.message);
+        });
 
         socketRef.current.on('signal', gotMessageFromServer)
 

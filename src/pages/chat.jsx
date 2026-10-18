@@ -146,12 +146,15 @@ function ChatPage() {
     const [previewImage, setPreviewImage] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [messageReactions, setMessageReactions] = useState({});
+    const [partnerTyping, setPartnerTyping] = useState(false);
 
     // Refs
     const socketRef = useRef(null);
     const messagesEndRef = useRef(null);
     const activeConvRef = useRef(null);
     const loadConversationsRef = useRef(null);
+    const typingTimeoutRef = useRef(null);
+    const lastTypingEmitRef = useRef(0);
 
     // Keep activeConvRef in sync for socket event handlers
     useEffect(() => {
@@ -256,6 +259,19 @@ function ChatPage() {
             }
         });
 
+        // Real-time partner typing indicator
+        socket.on("chat:typing", ({ conversationId, userId, isTyping }) => {
+            if (activeConvRef.current?._id?.toString() === conversationId?.toString() && userId !== userData?._id) {
+                setPartnerTyping(Boolean(isTyping));
+                if (isTyping) {
+                    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                    typingTimeoutRef.current = setTimeout(() => {
+                        setPartnerTyping(false);
+                    }, 3000);
+                }
+            }
+        });
+
         // Real-time mutual match handler
         socket.on("match:new", () => {
             if (loadConversationsRef.current) {
@@ -264,6 +280,7 @@ function ChatPage() {
         });
 
         return () => {
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
             socket.disconnect();
         };
     }, [token, userData?._id]);
@@ -350,6 +367,7 @@ function ChatPage() {
 
         // Immediately clear previous messages to prevent leakage between conversations
         setMessages([]);
+        setPartnerTyping(false);
 
         // Join room in socket
         if (socketRef.current?.connected) {
@@ -1259,6 +1277,24 @@ function ChatPage() {
                                 </Box>
                             )}
 
+                            {/* Typing Indicator Banner */}
+                            {partnerTyping && (
+                                <Box sx={{ px: 2, py: 0.6, bgcolor: "rgba(255, 255, 255, 0.03)", borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`, display: "flex", alignItems: "center", gap: 1 }}>
+                                    <Box
+                                        sx={{
+                                            width: 8,
+                                            height: 8,
+                                            borderRadius: "50%",
+                                            bgcolor: BRAND_COLORS.coralPink,
+                                            animation: "pulse 1.5s infinite",
+                                        }}
+                                    />
+                                    <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.7)", fontStyle: "italic", fontSize: "0.75rem" }}>
+                                        {activeConversation?.otherParticipant?.name || "Partner"} is typing...
+                                    </Typography>
+                                </Box>
+                            )}
+
                             {/* Screen 4 Bottom Input Dock */}
                             <Box
                                 component="form"
@@ -1301,7 +1337,17 @@ function ChatPage() {
                                     size="small"
                                     placeholder="Type a message..."
                                     value={inputText}
-                                    onChange={(e) => setInputText(e.target.value)}
+                                    onChange={(e) => {
+                                        setInputText(e.target.value);
+                                        const now = Date.now();
+                                        if (socketRef.current?.connected && activeConversation?._id && now - lastTypingEmitRef.current > 1500) {
+                                            lastTypingEmitRef.current = now;
+                                            socketRef.current.emit("chat:typing", {
+                                                conversationId: activeConversation._id,
+                                                isTyping: true,
+                                            });
+                                        }
+                                    }}
                                     inputProps={{ maxLength: 2000 }}
                                     InputProps={{
                                         endAdornment: (
