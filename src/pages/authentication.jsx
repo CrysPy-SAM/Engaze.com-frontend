@@ -16,13 +16,13 @@ import {
     InputAdornment,
     Stack,
 } from "@mui/material";
-import WhatshotIcon from "@mui/icons-material/Whatshot";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import { GoogleLogin } from "@react-oauth/google";
+import EngazeLogo from "../components/EngazeLogo";
 
 export default function Authentication() {
     const navigate = useNavigate();
@@ -171,41 +171,12 @@ export default function Authentication() {
                 />
 
                 {/* Top Brand Logo */}
-                <Box
+                <EngazeLogo
+                    size={36}
+                    fontSize="1.6rem"
                     onClick={() => navigate("/")}
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1.5,
-                        cursor: "pointer",
-                        zIndex: 2,
-                    }}
-                >
-                    <Box
-                        sx={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: "14px",
-                            background: BRAND_COLORS.primaryGradient,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            boxShadow: "0 6px 20px rgba(253, 58, 115, 0.4)",
-                        }}
-                    >
-                        <WhatshotIcon sx={{ color: "#fff", fontSize: 26 }} />
-                    </Box>
-                    <Typography
-                        variant="h5"
-                        sx={{
-                            fontWeight: 900,
-                            letterSpacing: "-0.03em",
-                            color: "#FFFFFF",
-                        }}
-                    >
-                        ENGAZE<span style={{ color: BRAND_COLORS.coralPink }}>.</span>
-                    </Typography>
-                </Box>
+                    sx={{ zIndex: 2 }}
+                />
 
                 {/* Central Value Copy */}
                 <Box sx={{ maxWidth: 540, my: "auto", zIndex: 2 }}>
@@ -333,29 +304,15 @@ export default function Authentication() {
                     <Box
                         sx={{
                             display: { xs: "flex", sm: "none" },
-                            alignItems: "center",
-                            gap: 1.2,
-                            mb: 4,
                             justifyContent: "center",
+                            mb: 4,
                         }}
-                        onClick={() => navigate("/")}
                     >
-                        <Box
-                            sx={{
-                                width: 38,
-                                height: 38,
-                                borderRadius: "12px",
-                                background: BRAND_COLORS.primaryGradient,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                            }}
-                        >
-                            <WhatshotIcon sx={{ color: "#fff", fontSize: 22 }} />
-                        </Box>
-                        <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF" }}>
-                            ENGAZE<span style={{ color: BRAND_COLORS.coralPink }}>.</span>
-                        </Typography>
+                        <EngazeLogo
+                            size={32}
+                            fontSize="1.4rem"
+                            onClick={() => navigate("/")}
+                        />
                     </Box>
 
                     {/* Form Title & Switcher */}

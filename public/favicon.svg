@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="engazeGradient" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FD3A73" />
+      <stop offset="45%" stop-color="#FF5E7E" />
+      <stop offset="100%" stop-color="#FF7A00" />
+    </linearGradient>
+  </defs>
+  <!-- Background rounded squircle (dark midnight) -->
+  <rect width="64" height="64" rx="18" fill="#0B0D17" />
+  <!-- Engaze Modern Heart Mark with subtle inner gaze spark -->
+  <path d="M32 52.5C31.1 52.5 30.2 52.1 29.5 51.4C18.2 40.8 12 33.8 12 24.8C12 17.2 17.8 11.5 25.2 11.5C29.5 11.5 33.6 13.5 36 16.8C38.4 13.5 42.5 11.5 46.8 11.5C54.2 11.5 60 17.2 60 24.8C60 33.8 53.8 40.8 42.5 51.4C41.8 52.1 40.9 52.5 40 52.5H32Z" transform="translate(-4, -1)" fill="url(#engazeGradient)" />
+  <circle cx="28" cy="23" r="3.2" fill="#FFFFFF" opacity="0.9" />
+</svg>

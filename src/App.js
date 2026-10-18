@@ -1,5 +1,6 @@
+import React, { useEffect } from 'react';
 import './App.css';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import theme from './theme';
 import LandingPage from './pages/landing';
@@ -18,12 +19,44 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
 
+function PageTitleManager() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/') {
+      document.title = 'Engaze — Dating & Live Video Connections';
+    } else if (path === '/auth') {
+      document.title = 'Sign In or Join — Engaze';
+    } else if (path === '/discovery') {
+      document.title = 'Discovery — Engaze';
+    } else if (path === '/matches') {
+      document.title = 'Your Matches — Engaze';
+    } else if (path.startsWith('/chat')) {
+      document.title = 'Messages & Chat — Engaze';
+    } else if (path === '/random-video' || path === '/random-call') {
+      document.title = 'Live 1-on-1 Video Dating — Engaze';
+    } else if (path === '/profile') {
+      document.title = 'Profile & Settings — Engaze';
+    } else if (path === '/history') {
+      document.title = 'Call History — Engaze';
+    } else if (path === '/home') {
+      document.title = 'Dashboard — Engaze';
+    } else {
+      document.title = 'Engaze — Dating & Live Video Connections';
+    }
+  }, [location.pathname]);
+
+  return null;
+}
+
 function App() {
   const appContent = (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <div className="App">
         <Router>
+          <PageTitleManager />
           <AuthProvider>
             <Routes>
               <Route path='/' element={<LandingPage />} />

@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 import { BRAND_COLORS } from "../theme";
+import EngazeLogo from "./EngazeLogo";
 import {
     AppBar,
     Avatar,
@@ -94,39 +95,12 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                 height: { xs: 58, sm: 66 },
                             }}
                         >
-                            {/* Brand Logo with Heart Flame Badge */}
-                            <Box
+                            {/* Official Engaze Brand Logo */}
+                            <EngazeLogo
+                                size={30}
+                                fontSize="1.35rem"
                                 onClick={() => navigate("/discovery")}
-                                sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 1.2,
-                                    cursor: "pointer",
-                                    userSelect: "none",
-                                    transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                                    "&:hover": { transform: "scale(1.02)" },
-                                    "&:active": { transform: "scale(0.98)" },
-                                }}
-                            >
-                                <FavoriteRoundedIcon
-                                    sx={{
-                                        color: BRAND_COLORS.coralPink,
-                                        fontSize: { xs: 26, sm: 30 },
-                                        filter: "drop-shadow(0 2px 8px rgba(253, 58, 115, 0.6))",
-                                    }}
-                                />
-                                <Typography
-                                    variant="h6"
-                                    sx={{
-                                        fontWeight: 800,
-                                        letterSpacing: "-0.02em",
-                                        fontSize: { xs: "1.25rem", sm: "1.4rem" },
-                                        color: "#FFFFFF",
-                                    }}
-                                >
-                                    Engaze
-                                </Typography>
-                            </Box>
+                            />
 
                         {/* Desktop Navigation Centered Pill Container */}
                         {!isMobile && (
