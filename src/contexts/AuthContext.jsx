@@ -311,10 +311,14 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // 13. GET CONVERSATION MESSAGES
-    const getConversationMessages = useCallback(async (conversationId, page = 1, limit = 40) => {
+    const getConversationMessages = useCallback(async (conversationId, page = 1, limit = 40, after = null) => {
         try {
+            const params = { page, limit };
+            if (after) {
+                params.after = after;
+            }
             const response = await api.get(`/conversations/${conversationId}/messages`, {
-                params: { page, limit },
+                params,
             });
             return response.data;
         } catch (err) {

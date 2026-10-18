@@ -60,6 +60,11 @@ import BlockIcon from "@mui/icons-material/Block";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import SafetyActionModal from "../components/SafetyActionModal";
+import {
+    reconcileSingleMessage,
+    reconcileBatchMessages,
+    isStaleConversationResponse,
+} from "../utils/chatHelpers";
 
 // Quick photo presets for engaging conversation
 const PHOTO_PRESETS = [
@@ -112,6 +117,8 @@ function extractImageUrl(text) {
     return text.trim();
 }
 
+
+
 function ChatPage() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -162,19 +169,77 @@ function ChatPage() {
     const socketRef = useRef(null);
     const messagesEndRef = useRef(null);
     const activeConvRef = useRef(null);
+    const messagesRef = useRef(messages);
+    const pendingTimeoutsRef = useRef({});
     const loadConversationsRef = useRef(null);
     const typingTimeoutRef = useRef(null);
     const lastTypingEmitRef = useRef(0);
 
-    // Keep activeConvRef in sync for socket event handlers
+    // Keep activeConvRef and messagesRef in sync for callbacks
     useEffect(() => {
         activeConvRef.current = activeConversation;
     }, [activeConversation]);
+
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
 
     // Auto-scroll to bottom of chat
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
+
+    // Missed message recovery using cursor after reconnect
+    const recoverMissedMessages = useCallback(async (convId) => {
+        if (!convId || isStaleConversationResponse(activeConvRef.current?._id, convId)) return;
+
+        // Find the latest message that has a persisted MongoDB _id
+        const currentMessages = messagesRef.current;
+        let lastPersistedId = null;
+        for (let i = currentMessages.length - 1; i >= 0; i--) {
+            const msg = currentMessages[i];
+            if (msg._id && typeof msg._id === "string" && !msg._id.startsWith("temp_")) {
+                lastPersistedId = msg._id;
+                break;
+            }
+        }
+
+        try {
+            let missed = [];
+            if (lastPersistedId) {
+                const res = await getConversationMessages(convId, 1, 50, lastPersistedId);
+                if (res?.messages) {
+                    missed = res.messages;
+                }
+            } else {
+                const res = await getConversationMessages(convId, 1, 50);
+                if (res?.messages) {
+                    missed = res.messages;
+                }
+            }
+
+            // Verify conversation hasn't changed while request was in-flight
+            if (isStaleConversationResponse(activeConvRef.current?._id, convId)) return;
+
+            if (missed.length > 0) {
+                setMessages((prev) => reconcileBatchMessages(prev, missed));
+                setTimeout(scrollToBottom, 50);
+
+                // If any missed message is from partner, send read receipt
+                const hasPartnerMsg = missed.some(
+                    (m) => (m.sender?._id || m.sender) !== userData?._id
+                );
+                if (hasPartnerMsg) {
+                    if (socketRef.current?.connected) {
+                        socketRef.current.emit("chat:read", { conversationId: convId });
+                    }
+                    markConversationRead(convId).catch(() => {});
+                }
+            }
+        } catch (err) {
+            console.error("Failed to recover missed messages:", err);
+        }
+    }, [getConversationMessages, markConversationRead, userData?._id]);
 
     // 1. Initialize Socket.io connection with JWT auth
     useEffect(() => {
@@ -189,8 +254,11 @@ function ChatPage() {
 
         socket.on("connect", () => {
             setIsConnected(true);
-            if (activeConvRef.current?._id) {
-                socket.emit("chat:join", { conversationId: activeConvRef.current._id });
+            const activeConv = activeConvRef.current;
+            if (activeConv?._id) {
+                socket.emit("chat:join", { conversationId: activeConv._id });
+                socket.emit("chat:read", { conversationId: activeConv._id });
+                recoverMissedMessages(activeConv._id);
             }
         });
 
@@ -203,19 +271,7 @@ function ChatPage() {
             const currentConv = activeConvRef.current;
 
             if (currentConv && currentConv._id.toString() === newMsg.conversation.toString()) {
-                setMessages((prev) => {
-                    // Avoid duplicate if sent locally with clientTempId
-                    if (newMsg.clientTempId && prev.some((m) => m.clientTempId === newMsg.clientTempId)) {
-                        return prev.map((m) =>
-                            m.clientTempId === newMsg.clientTempId ? newMsg : m
-                        );
-                    }
-                    if (prev.some((m) => m._id === newMsg._id)) {
-                        return prev;
-                    }
-                    return [...prev, newMsg];
-                });
-
+                setMessages((prev) => reconcileSingleMessage(prev, newMsg));
                 scrollToBottom();
 
                 // If message from the other person, send read event
@@ -257,7 +313,7 @@ function ChatPage() {
 
         // Real-time read receipt handler
         socket.on("chat:read", ({ conversationId, readerId }) => {
-            if (activeConvRef.current?._id.toString() === conversationId.toString()) {
+            if (activeConvRef.current?._id?.toString() === conversationId?.toString()) {
                 setMessages((prev) =>
                     prev.map((m) => {
                         if (!m.readBy?.includes(readerId)) {
@@ -304,9 +360,12 @@ function ChatPage() {
 
         return () => {
             if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+            Object.values(pendingTimeoutsRef.current).forEach(clearTimeout);
+            pendingTimeoutsRef.current = {};
+            socket.removeAllListeners();
             socket.disconnect();
         };
-    }, [token, userData?._id]);
+    }, [token, userData?._id, recoverMissedMessages]);
 
     // 2. Load conversations and handle query params (e.g. ?matchId=...)
     const loadConversations = useCallback(async () => {
@@ -404,22 +463,22 @@ function ChatPage() {
             setLoadingMessages(true);
             try {
                 const data = await getConversationMessages(convId, 1, 50);
-                if (!isCancelled && data?.messages) {
-                    setMessages(data.messages);
+                if (!isCancelled && data?.messages && !isStaleConversationResponse(activeConvRef.current?._id, convId)) {
+                    setMessages((prev) => reconcileBatchMessages(prev, data.messages));
                     setTimeout(scrollToBottom, 100);
                 }
-                if (!isCancelled) {
+                if (!isCancelled && !isStaleConversationResponse(activeConvRef.current?._id, convId)) {
                     await markConversationRead(convId);
                     setConversations((prev) =>
                         prev.map((c) => (c._id === convId ? { ...c, unreadCount: 0 } : c))
                     );
                 }
             } catch (err) {
-                if (!isCancelled) {
+                if (!isCancelled && !isStaleConversationResponse(activeConvRef.current?._id, convId)) {
                     console.error("Failed to load messages:", err);
                 }
             } finally {
-                if (!isCancelled) {
+                if (!isCancelled && !isStaleConversationResponse(activeConvRef.current?._id, convId)) {
                     setLoadingMessages(false);
                 }
             }
@@ -431,6 +490,111 @@ function ChatPage() {
             isCancelled = true;
         };
     }, [activeConversation?._id, getConversationMessages, markConversationRead]);
+
+    const ACK_TIMEOUT_MS = 5000;
+    const MAX_AUTO_RETRIES = 1;
+
+    // Execute message send with bounded retry and ack timeout
+    const executeSend = useCallback(
+        async (msgToProcess, autoRetryCount = 0) => {
+            const { conversation: convId, content, clientTempId } = msgToProcess;
+            if (!convId || !clientTempId) return;
+
+            // Clear any previous timer for this clientTempId
+            if (pendingTimeoutsRef.current[clientTempId]) {
+                clearTimeout(pendingTimeoutsRef.current[clientTempId]);
+                delete pendingTimeoutsRef.current[clientTempId];
+            }
+
+            if (socketRef.current?.connected) {
+                let ackHandled = false;
+
+                // Set 5-second timeout for socket ack
+                pendingTimeoutsRef.current[clientTempId] = setTimeout(async () => {
+                    if (ackHandled) return;
+                    delete pendingTimeoutsRef.current[clientTempId];
+
+                    if (autoRetryCount < MAX_AUTO_RETRIES) {
+                        console.warn(`Socket ack timeout for ${clientTempId}. Attempting auto-retry via REST...`);
+                        executeSend(msgToProcess, autoRetryCount + 1);
+                    } else {
+                        setMessages((prev) =>
+                            prev.map((m) =>
+                                m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
+                            )
+                        );
+                        setSending(false);
+                    }
+                }, ACK_TIMEOUT_MS);
+
+                try {
+                    socketRef.current.emit(
+                        "chat:send",
+                        {
+                            conversationId: convId,
+                            content,
+                            clientTempId,
+                        },
+                        (response) => {
+                            ackHandled = true;
+                            if (pendingTimeoutsRef.current[clientTempId]) {
+                                clearTimeout(pendingTimeoutsRef.current[clientTempId]);
+                                delete pendingTimeoutsRef.current[clientTempId];
+                            }
+                            setSending(false);
+
+                            if (response?.success && response.message) {
+                                setMessages((prev) => reconcileSingleMessage(prev, response.message));
+                            } else {
+                                setMessages((prev) =>
+                                    prev.map((m) =>
+                                        m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
+                                    )
+                                );
+                            }
+                        }
+                    );
+                } catch (emitErr) {
+                    console.error("Socket emit failed:", emitErr);
+                    if (autoRetryCount < MAX_AUTO_RETRIES) {
+                        executeSend(msgToProcess, autoRetryCount + 1);
+                    } else {
+                        setMessages((prev) =>
+                            prev.map((m) =>
+                                m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
+                            )
+                        );
+                        setSending(false);
+                    }
+                }
+            } else {
+                // Socket disconnected: send via REST directly
+                try {
+                    const resData = await sendMessageRest(convId, content, clientTempId);
+                    setSending(false);
+
+                    if (resData?.success && resData.message) {
+                        setMessages((prev) => reconcileSingleMessage(prev, resData.message));
+                    } else {
+                        setMessages((prev) =>
+                            prev.map((m) =>
+                                m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
+                            )
+                        );
+                    }
+                } catch (restErr) {
+                    console.error("REST send failed:", restErr);
+                    setSending(false);
+                    setMessages((prev) =>
+                        prev.map((m) =>
+                            m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
+                        )
+                    );
+                }
+            }
+        },
+        [sendMessageRest]
+    );
 
     // 4. Send Message Handler
     const handleSendMessage = async (textToSend) => {
@@ -456,48 +620,30 @@ function ChatPage() {
             content: trimmed,
             createdAt: new Date().toISOString(),
             readBy: [userData?._id],
+            status: "pending",
         };
 
         // Optimistically add to UI
         setMessages((prev) => [...prev, optimisticMessage]);
         setTimeout(scrollToBottom, 50);
 
-        try {
-            if (socketRef.current?.connected) {
-                socketRef.current.emit(
-                    "chat:send",
-                    {
-                        conversationId: convId,
-                        content: trimmed,
-                        clientTempId,
-                    },
-                    (response) => {
-                        setSending(false);
-                        if (response?.success && response.message) {
-                            setMessages((prev) =>
-                                prev.map((m) =>
-                                    m.clientTempId === clientTempId ? response.message : m
-                                )
-                            );
-                        }
-                    }
-                );
-            } else {
-                const resData = await sendMessageRest(convId, trimmed, clientTempId);
-                setSending(false);
+        executeSend(optimisticMessage, 0);
+    };
 
-                if (resData?.success && resData.message) {
-                    setMessages((prev) =>
-                        prev.map((m) =>
-                            m.clientTempId === clientTempId ? resData.message : m
-                        )
-                    );
-                }
-            }
-        } catch (err) {
-            console.error("Failed to send message:", err);
-            setSending(false);
-        }
+    // Manual Retry Handler for failed messages
+    const handleRetryMessage = (failedMsg) => {
+        if (!failedMsg || !failedMsg.clientTempId) return;
+
+        // Reset status to pending in UI
+        setMessages((prev) =>
+            prev.map((m) =>
+                m.clientTempId === failedMsg.clientTempId ? { ...m, status: "pending" } : m
+            )
+        );
+        setSending(true);
+
+        // Retry with the exact same clientTempId to reuse server-side idempotency
+        executeSend(failedMsg, 0);
     };
 
     const handleSendPhoto = (photoUrl) => {
@@ -1250,7 +1396,27 @@ function ChatPage() {
                                                         {formatTime(msg.createdAt)}
                                                     </Typography>
                                                     {isMine && (
-                                                        isRead ? (
+                                                        msg.status === "failed" ? (
+                                                            <Box
+                                                                component="span"
+                                                                onClick={() => handleRetryMessage(msg)}
+                                                                sx={{
+                                                                    display: "inline-flex",
+                                                                    alignItems: "center",
+                                                                    gap: 0.4,
+                                                                    color: "#F87171",
+                                                                    cursor: "pointer",
+                                                                    fontSize: "0.72rem",
+                                                                    fontWeight: 700,
+                                                                    "&:hover": { textDecoration: "underline" },
+                                                                }}
+                                                            >
+                                                                <span>⚠️ Failed.</span>
+                                                                <span>Retry</span>
+                                                            </Box>
+                                                        ) : msg.status === "pending" ? (
+                                                            <CircularProgress size={10} sx={{ color: "rgba(255,255,255,0.5)", ml: 0.3 }} />
+                                                        ) : isRead ? (
                                                             <DoneAllIcon sx={{ fontSize: 14, color: "#60A5FA" }} />
                                                         ) : (
                                                             <DoneIcon sx={{ fontSize: 14, color: "rgba(255,255,255,0.5)" }} />
