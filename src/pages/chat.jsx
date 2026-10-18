@@ -17,6 +17,7 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
+    Divider,
     IconButton,
     InputAdornment,
     List,
@@ -55,6 +56,10 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import SchoolIcon from "@mui/icons-material/School";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import BlockIcon from "@mui/icons-material/Block";
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import SafetyActionModal from "../components/SafetyActionModal";
 
 // Quick photo presets for engaging conversation
 const PHOTO_PRESETS = [
@@ -122,6 +127,9 @@ function ChatPage() {
         getConversationMessages,
         markConversationRead,
         sendMessageRest,
+        blockUser,
+        reportUser,
+        unmatchUser,
     } = useContext(AuthContext);
 
     // State
@@ -143,6 +151,8 @@ function ChatPage() {
     const [showVideoModal, setShowVideoModal] = useState(false);
     const [showMediaModal, setShowMediaModal] = useState(false);
     const [customImageUrl, setCustomImageUrl] = useState("");
+    const [safetyModalOpen, setSafetyModalOpen] = useState(false);
+    const [safetyActionType, setSafetyActionType] = useState("report");
     const [previewImage, setPreviewImage] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [messageReactions, setMessageReactions] = useState({});
@@ -274,6 +284,19 @@ function ChatPage() {
 
         // Real-time mutual match handler
         socket.on("match:new", () => {
+            if (loadConversationsRef.current) {
+                loadConversationsRef.current();
+            }
+        });
+
+        // Real-time unmatch notification
+        socket.on("match:unmatched", ({ matchId }) => {
+            const currentConv = activeConvRef.current;
+            const currentMatchId = currentConv?.match?._id?.toString() || currentConv?.match?.toString();
+            if (currentMatchId && matchId && currentMatchId === matchId.toString()) {
+                setActiveConversation(null);
+                setMobileShowChat(false);
+            }
             if (loadConversationsRef.current) {
                 loadConversationsRef.current();
             }
@@ -1494,7 +1517,62 @@ function ChatPage() {
                     <PhotoCameraIcon fontSize="small" sx={{ color: "#38BDF8" }} />
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>Share Photo</Typography>
                 </MenuItem>
+
+                <Divider sx={{ my: 1, borderColor: "rgba(255, 255, 255, 0.08)" }} />
+
+                <MenuItem
+                    onClick={() => {
+                        handleCloseMenu();
+                        setSafetyActionType("unmatch");
+                        setSafetyModalOpen(true);
+                    }}
+                    sx={{ gap: 1.5, py: 1.2, color: "#FBBF24", "&:hover": { bgcolor: "rgba(251, 191, 36, 0.1)" } }}
+                >
+                    <PersonRemoveIcon fontSize="small" sx={{ color: "#FBBF24" }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Unmatch</Typography>
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleCloseMenu();
+                        setSafetyActionType("report");
+                        setSafetyModalOpen(true);
+                    }}
+                    sx={{ gap: 1.5, py: 1.2, color: "#F87171", "&:hover": { bgcolor: "rgba(248, 113, 113, 0.1)" } }}
+                >
+                    <ReportProblemIcon fontSize="small" sx={{ color: "#F87171" }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Report User</Typography>
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleCloseMenu();
+                        setSafetyActionType("block");
+                        setSafetyModalOpen(true);
+                    }}
+                    sx={{ gap: 1.5, py: 1.2, color: "#EF4444", "&:hover": { bgcolor: "rgba(239, 68, 68, 0.1)" } }}
+                >
+                    <BlockIcon fontSize="small" sx={{ color: "#EF4444" }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Block User</Typography>
+                </MenuItem>
             </Menu>
+
+            {/* Dating Safety Action Modal (Block, Report, Unmatch) */}
+            <SafetyActionModal
+                isOpen={safetyModalOpen}
+                onClose={() => setSafetyModalOpen(false)}
+                actionType={safetyActionType}
+                targetUser={otherUser}
+                matchId={activeConversation?.match?._id || activeConversation?.match}
+                conversationId={activeConversation?._id}
+                context="chat"
+                onBlockUser={blockUser}
+                onReportUser={reportUser}
+                onUnmatchUser={unmatchUser}
+                onSuccess={() => {
+                    setActiveConversation(null);
+                    setMobileShowChat(false);
+                    loadConversations();
+                }}
+            />
 
             {/* Video Call Initiation Modal */}
             <Dialog

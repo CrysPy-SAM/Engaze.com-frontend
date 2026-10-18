@@ -37,10 +37,21 @@ import PhotoCameraRoundedIcon from "@mui/icons-material/PhotoCameraRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import DoneAllRoundedIcon from "@mui/icons-material/DoneAllRounded";
 import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
+import BlockRoundedIcon from "@mui/icons-material/BlockRounded";
+import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
+import PersonRemoveRoundedIcon from "@mui/icons-material/PersonRemoveRounded";
+import SafetyActionModal from "../components/SafetyActionModal";
 
 function MatchesPage() {
     const navigate = useNavigate();
-    const { userData, getMatches, getConversations } = useContext(AuthContext);
+    const {
+        userData,
+        getMatches,
+        getConversations,
+        blockUser,
+        reportUser,
+        unmatchUser,
+    } = useContext(AuthContext);
 
     const [matches, setMatches] = useState([]);
     const [conversations, setConversations] = useState([]);
@@ -55,6 +66,15 @@ function MatchesPage() {
 
     // Options menu
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+
+    // Safety action modal state
+    const [safetyModalOpen, setSafetyModalOpen] = useState(false);
+    const [safetyActionType, setSafetyActionType] = useState("unmatch");
+    const [safetyTargetUser, setSafetyTargetUser] = useState(null);
+    const [safetyMatchId, setSafetyMatchId] = useState(null);
+    const [safetyConvId, setSafetyConvId] = useState(null);
+    const [itemMenuAnchorEl, setItemMenuAnchorEl] = useState(null);
+    const [selectedItemForMenu, setSelectedItemForMenu] = useState(null);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -465,38 +485,64 @@ function MatchesPage() {
                                             }
                                         />
 
-                                        {/* Timestamp & Unread Badge Column */}
-                                        <Stack alignItems="flex-end" spacing={0.8} sx={{ pl: 1 }}>
-                                            <Typography
-                                                variant="caption"
-                                                sx={{
-                                                    color: unread ? BRAND_COLORS.coralPink : BRAND_COLORS.textMuted,
-                                                    fontWeight: unread ? 700 : 500,
-                                                    fontSize: "0.75rem",
-                                                }}
-                                            >
-                                                {formatTimeShort(conv.lastMessageAt || lastMsg?.createdAt)}
-                                            </Typography>
-
-                                            {unread && (
-                                                <Box
+                                        {/* Timestamp, Unread Badge & Safety Options */}
+                                        <Stack direction="row" alignItems="center" spacing={1} sx={{ pl: 1 }}>
+                                            <Stack alignItems="flex-end" spacing={0.8}>
+                                                <Typography
+                                                    variant="caption"
                                                     sx={{
-                                                        width: 20,
-                                                        height: 20,
-                                                        borderRadius: "50%",
-                                                        bgcolor: BRAND_COLORS.coralPink,
-                                                        color: "#FFFFFF",
-                                                        fontSize: "0.72rem",
-                                                        fontWeight: 900,
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        justifyContent: "center",
-                                                        boxShadow: "0 2px 8px rgba(253, 58, 115, 0.6)",
+                                                        color: unread ? BRAND_COLORS.coralPink : BRAND_COLORS.textMuted,
+                                                        fontWeight: unread ? 700 : 500,
+                                                        fontSize: "0.75rem",
                                                     }}
                                                 >
-                                                    {conv.unreadCount}
-                                                </Box>
-                                            )}
+                                                    {formatTimeShort(conv.lastMessageAt || lastMsg?.createdAt)}
+                                                </Typography>
+
+                                                {unread && (
+                                                    <Box
+                                                        sx={{
+                                                            width: 20,
+                                                            height: 20,
+                                                            borderRadius: "50%",
+                                                            bgcolor: BRAND_COLORS.coralPink,
+                                                            color: "#FFFFFF",
+                                                            fontSize: "0.72rem",
+                                                            fontWeight: 900,
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            boxShadow: "0 2px 8px rgba(253, 58, 115, 0.6)",
+                                                        }}
+                                                    >
+                                                        {conv.unreadCount}
+                                                    </Box>
+                                                )}
+                                            </Stack>
+
+                                            <IconButton
+                                                size="small"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setItemMenuAnchorEl(e.currentTarget);
+                                                    setSelectedItemForMenu({
+                                                        user: other,
+                                                        matchId: conv.matchId || null,
+                                                        conversationId: conv._id,
+                                                    });
+                                                }}
+                                                sx={{
+                                                    color: BRAND_COLORS.textMuted,
+                                                    p: 0.5,
+                                                    "&:hover": {
+                                                        color: "#FFFFFF",
+                                                        bgcolor: "rgba(255, 255, 255, 0.08)",
+                                                    },
+                                                }}
+                                                aria-label="Safety options"
+                                            >
+                                                <MoreVertRoundedIcon sx={{ fontSize: 19 }} />
+                                            </IconButton>
                                         </Stack>
                                     </ListItemButton>
                                 </ListItem>
@@ -684,6 +730,101 @@ function MatchesPage() {
                     </Typography>
                 </MenuItem>
             </Menu>
+
+            {/* ITEM SAFETY MENU */}
+            <Menu
+                anchorEl={itemMenuAnchorEl}
+                open={Boolean(itemMenuAnchorEl)}
+                onClose={() => setItemMenuAnchorEl(null)}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                PaperProps={{
+                    sx: {
+                        mt: 0.5,
+                        minWidth: 170,
+                        borderRadius: "16px",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        boxShadow: "0 16px 40px rgba(0, 0, 0, 0.7)",
+                        p: 0.5,
+                    },
+                }}
+            >
+                <MenuItem
+                    onClick={() => {
+                        const item = selectedItemForMenu;
+                        setItemMenuAnchorEl(null);
+                        setSafetyActionType("unmatch");
+                        setSafetyTargetUser(item?.user);
+                        setSafetyMatchId(item?.matchId);
+                        setSafetyConvId(item?.conversationId);
+                        setSafetyModalOpen(true);
+                    }}
+                    sx={{ borderRadius: "10px", gap: 1.2, py: 1, color: "#FFFFFF" }}
+                >
+                    <PersonRemoveRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.textSecondary }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        Unmatch
+                    </Typography>
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        const item = selectedItemForMenu;
+                        setItemMenuAnchorEl(null);
+                        setSafetyActionType("report");
+                        setSafetyTargetUser(item?.user);
+                        setSafetyMatchId(item?.matchId);
+                        setSafetyConvId(item?.conversationId);
+                        setSafetyModalOpen(true);
+                    }}
+                    sx={{ borderRadius: "10px", gap: 1.2, py: 1, color: "#F59E0B" }}
+                >
+                    <ReportProblemRoundedIcon fontSize="small" sx={{ color: "#F59E0B" }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        Report User
+                    </Typography>
+                </MenuItem>
+                <Divider sx={{ my: 0.5, borderColor: "rgba(255,255,255,0.08)" }} />
+                <MenuItem
+                    onClick={() => {
+                        const item = selectedItemForMenu;
+                        setItemMenuAnchorEl(null);
+                        setSafetyActionType("block");
+                        setSafetyTargetUser(item?.user);
+                        setSafetyMatchId(item?.matchId);
+                        setSafetyConvId(item?.conversationId);
+                        setSafetyModalOpen(true);
+                    }}
+                    sx={{ borderRadius: "10px", gap: 1.2, py: 1, color: "#EF4444" }}
+                >
+                    <BlockRoundedIcon fontSize="small" sx={{ color: "#EF4444" }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        Block User
+                    </Typography>
+                </MenuItem>
+            </Menu>
+
+            {/* SAFETY ACTION MODAL */}
+            <SafetyActionModal
+                isOpen={safetyModalOpen}
+                onClose={() => {
+                    setSafetyModalOpen(false);
+                    setSafetyTargetUser(null);
+                    setSafetyMatchId(null);
+                    setSafetyConvId(null);
+                }}
+                actionType={safetyActionType}
+                targetUser={safetyTargetUser}
+                matchId={safetyMatchId}
+                conversationId={safetyConvId}
+                context="chat"
+                onBlockUser={blockUser}
+                onReportUser={reportUser}
+                onUnmatchUser={unmatchUser}
+                onSuccess={() => {
+                    fetchData();
+                }}
+            />
         </Box>
     );
 }

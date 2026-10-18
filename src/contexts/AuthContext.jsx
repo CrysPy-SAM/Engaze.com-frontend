@@ -347,6 +347,72 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    // 16. BLOCK USER
+    const blockUser = useCallback(async (userId, reason) => {
+        try {
+            const response = await api.post("/safety/block", { userId, reason });
+            return response.data;
+        } catch (err) {
+            console.error("Block user error:", err);
+            throw new Error(err.response?.data?.message || "Failed to block user");
+        }
+    }, []);
+
+    // 17. UNBLOCK USER
+    const unblockUser = useCallback(async (userId) => {
+        try {
+            const response = await api.post("/safety/unblock", { userId });
+            return response.data;
+        } catch (err) {
+            console.error("Unblock user error:", err);
+            throw new Error(err.response?.data?.message || "Failed to unblock user");
+        }
+    }, []);
+
+    // 18. GET BLOCKED USERS
+    const getBlockedUsers = useCallback(async () => {
+        try {
+            const response = await api.get("/safety/blocked");
+            return response.data;
+        } catch (err) {
+            console.error("Get blocked users error:", err);
+            throw new Error(err.response?.data?.message || "Failed to load blocked users");
+        }
+    }, []);
+
+    // 19. REPORT USER
+    const reportUser = useCallback(async ({ reportedUserId, category, reason, context, conversationId, callId }) => {
+        try {
+            const response = await api.post("/safety/report", {
+                reportedUserId,
+                category,
+                reason,
+                context,
+                conversationId,
+                callId,
+            });
+            return response.data;
+        } catch (err) {
+            console.error("Report user error:", err);
+            throw new Error(err.response?.data?.message || "Failed to submit report");
+        }
+    }, []);
+
+    // 20. UNMATCH USER
+    const unmatchUser = useCallback(async (matchIdOrPayload) => {
+        try {
+            if (typeof matchIdOrPayload === "object") {
+                const response = await api.post("/safety/unmatch", matchIdOrPayload);
+                return response.data;
+            }
+            const response = await api.post(`/matches/${matchIdOrPayload}/unmatch`);
+            return response.data;
+        } catch (err) {
+            console.error("Unmatch error:", err);
+            throw new Error(err.response?.data?.message || "Failed to unmatch");
+        }
+    }, []);
+
     const value = useMemo(() => ({
         userData,
         setUserData,
@@ -368,6 +434,11 @@ export const AuthProvider = ({ children }) => {
         getConversationMessages,
         markConversationRead,
         sendMessageRest,
+        blockUser,
+        unblockUser,
+        getBlockedUsers,
+        reportUser,
+        unmatchUser,
     }), [
         userData,
         token,
@@ -387,6 +458,11 @@ export const AuthProvider = ({ children }) => {
         getConversationMessages,
         markConversationRead,
         sendMessageRest,
+        blockUser,
+        unblockUser,
+        getBlockedUsers,
+        reportUser,
+        unmatchUser,
     ]);
 
     return (

@@ -36,6 +36,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import SecurityIcon from "@mui/icons-material/Security";
 import SparklesIcon from "@mui/icons-material/AutoAwesome";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import SafetyActionModal from "../components/SafetyActionModal";
 
 const ICE_SERVERS = {
     iceServers: [
@@ -47,13 +48,18 @@ const ICE_SERVERS = {
 
 function RandomVideoPage() {
     const navigate = useNavigate();
-    const { userData, token } = useContext(AuthContext);
+    const { userData, token, blockUser, reportUser } = useContext(AuthContext);
 
     // Call state: 'idle' | 'searching' | 'connecting' | 'connected' | 'ended'
     const [callState, setCallState] = useState("idle");
     const [partner, setPartner] = useState(null);
+    const [lastPartner, setLastPartner] = useState(null);
     const [callId, setCallId] = useState(null);
     const [searchDuration, setSearchDuration] = useState(0);
+
+    // Safety action modal
+    const [safetyModalOpen, setSafetyModalOpen] = useState(false);
+    const [safetyActionType, setSafetyActionType] = useState("report");
 
     // Media states
     const [audioEnabled, setAudioEnabled] = useState(true);
@@ -421,6 +427,7 @@ function RandomVideoPage() {
             activeCallIdRef.current = newCallId;
             setCallId(newCallId);
             setPartner(matchedPartner);
+            setLastPartner(matchedPartner);
             setCallState("connecting");
             showToast(`Connected with ${matchedPartner?.name || "a member"}! Setting up video...`, "success");
 
@@ -1248,6 +1255,25 @@ function RandomVideoPage() {
                                 </IconButton>
                             </Tooltip>
 
+                            {/* Report & Safety Button */}
+                            <Tooltip title="Report or Block Partner">
+                                <IconButton
+                                    onClick={() => {
+                                        setSafetyActionType("report");
+                                        setSafetyModalOpen(true);
+                                    }}
+                                    sx={{
+                                        backgroundColor: "rgba(255, 255, 255, 0.12)",
+                                        color: "#F59E0B",
+                                        "&:hover": { backgroundColor: "rgba(245, 158, 11, 0.22)" },
+                                        width: 46,
+                                        height: 46,
+                                    }}
+                                >
+                                    <SecurityIcon />
+                                </IconButton>
+                            </Tooltip>
+
                             {/* Next Match Button */}
                             <Tooltip title="Skip to Next Match">
                                 <Button
@@ -1355,6 +1381,28 @@ function RandomVideoPage() {
                                 >
                                     Back to Preview
                                 </Button>
+                                {lastPartner && (
+                                    <Button
+                                        variant="text"
+                                        startIcon={<SecurityIcon sx={{ color: "#F59E0B" }} />}
+                                        onClick={() => {
+                                            setSafetyActionType("report");
+                                            setSafetyModalOpen(true);
+                                        }}
+                                        sx={{
+                                            color: "#F59E0B",
+                                            borderRadius: "14px",
+                                            py: 1,
+                                            fontWeight: 600,
+                                            textTransform: "none",
+                                            "&:hover": {
+                                                bgcolor: "rgba(245, 158, 11, 0.08)",
+                                            },
+                                        }}
+                                    >
+                                        Report or Block {lastPartner.name || "partner"}
+                                    </Button>
+                                )}
                             </Stack>
                         </Paper>
                     </Container>
@@ -1418,6 +1466,26 @@ function RandomVideoPage() {
                     {toastMessage}
                 </Alert>
             </Snackbar>
+
+            {/* Safety Action Modal */}
+            <SafetyActionModal
+                isOpen={safetyModalOpen}
+                onClose={() => setSafetyModalOpen(false)}
+                actionType={safetyActionType}
+                targetUser={partner || lastPartner}
+                callId={callId || activeCallIdRef.current}
+                context="call"
+                onBlockUser={blockUser}
+                onReportUser={reportUser}
+                onSuccess={(result) => {
+                    if (result.action === "block" || result.alsoBlocked) {
+                        handleEndCall();
+                        showToast("User blocked. You will no longer be paired in video calls.", "info");
+                    } else {
+                        showToast("Report submitted successfully. Thank you for keeping Engaze safe.", "success");
+                    }
+                }}
+            />
         </Box>
     );
 }

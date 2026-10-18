@@ -42,10 +42,19 @@ import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRound
 import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
 import WhatshotRoundedIcon from "@mui/icons-material/WhatshotRounded";
 import SparklesIcon from "@mui/icons-material/AutoAwesome";
+import SecurityRoundedIcon from "@mui/icons-material/SecurityRounded";
+import SafetyActionModal from "../components/SafetyActionModal";
 
 function DiscoveryPage() {
     const navigate = useNavigate();
-    const { userData, getDiscovery, sendSwipe, resetDiscoveryFeed } = useContext(AuthContext);
+    const {
+        userData,
+        getDiscovery,
+        sendSwipe,
+        resetDiscoveryFeed,
+        blockUser,
+        reportUser,
+    } = useContext(AuthContext);
 
     const [profiles, setProfiles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -53,6 +62,11 @@ function DiscoveryPage() {
     const [loading, setLoading] = useState(true);
     const [resettingFeed, setResettingFeed] = useState(false);
     const [swiping, setSwiping] = useState(false);
+
+    // Safety action modal state
+    const [safetyModalOpen, setSafetyModalOpen] = useState(false);
+    const [safetyActionType, setSafetyActionType] = useState("report");
+    const [safetyTargetUser, setSafetyTargetUser] = useState(null);
     const [swipeAnimation, setSwipeAnimation] = useState(""); // 'swipe-left-exit' | 'swipe-right-exit' | 'swipe-up-exit'
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -1160,6 +1174,31 @@ function DiscoveryPage() {
                                 Like
                             </Button>
                         </Stack>
+
+                        <Button
+                            fullWidth
+                            variant="text"
+                            onClick={() => {
+                                setSafetyTargetUser(currentProfile);
+                                setSafetyActionType("report");
+                                setSafetyModalOpen(true);
+                            }}
+                            startIcon={<SecurityRoundedIcon sx={{ fontSize: 18, color: "#F59E0B" }} />}
+                            sx={{
+                                mt: 1.8,
+                                color: BRAND_COLORS.textSecondary,
+                                fontSize: "0.82rem",
+                                textTransform: "none",
+                                borderRadius: "12px",
+                                py: 0.8,
+                                "&:hover": {
+                                    color: "#F59E0B",
+                                    bgcolor: "rgba(245, 158, 11, 0.08)",
+                                },
+                            }}
+                        >
+                            Report or Block {currentProfile.name}
+                        </Button>
                     </DialogContent>
                 </Dialog>
             )}
@@ -1540,6 +1579,28 @@ function DiscoveryPage() {
                     {toastMessage}
                 </Alert>
             </Snackbar>
+
+            {/* Safety Action Modal */}
+            <SafetyActionModal
+                isOpen={safetyModalOpen}
+                onClose={() => {
+                    setSafetyModalOpen(false);
+                    setSafetyTargetUser(null);
+                }}
+                actionType={safetyActionType}
+                targetUser={safetyTargetUser}
+                context="profile"
+                onBlockUser={blockUser}
+                onReportUser={reportUser}
+                onSuccess={({ action, userId }) => {
+                    const removedId = userId || safetyTargetUser?._id;
+                    setProfiles((prev) => prev.filter((p) => p._id !== removedId));
+                    setDetailsModalOpen(false);
+                    setToastMessage(action === "block" ? "User blocked." : "Report submitted. Thank you.");
+                    setToastSeverity("info");
+                    setOpenToast(true);
+                }}
+            />
         </Box>
     );
 }
