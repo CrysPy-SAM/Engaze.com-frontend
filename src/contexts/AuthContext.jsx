@@ -237,31 +237,7 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    // 6. USER HISTORY FETCH
-    const getHistoryOfUser = useCallback(async () => {
-        try {
-            const response = await api.get("/users/get_all_activity");
-            return response.data;
-        } catch (err) {
-            console.error("Get history error:", err);
-            throw new Error(err.response?.data?.message || "Failed to fetch history");
-        }
-    }, []);
-
-    // 7. ADD TO HISTORY
-    const addToUserHistory = useCallback(async (meetingCode) => {
-        try {
-            const response = await api.post("/users/add_to_activity", {
-                meeting_code: meetingCode,
-            });
-            return response.data;
-        } catch (e) {
-            console.error("Add to history error:", e);
-            throw new Error(e.response?.data?.message || "Unable to save meeting history");
-        }
-    }, []);
-
-    // 8. DATING DISCOVERY FEED
+    // 6. DATING DISCOVERY FEED
     const getDiscovery = useCallback(async (page = 1, limit = 10) => {
         try {
             const response = await api.get("/discovery", {
@@ -383,8 +359,6 @@ export const AuthProvider = ({ children }) => {
         handleLogout,
         getProfile,
         updateProfile,
-        addToUserHistory,
-        getHistoryOfUser,
         getDiscovery,
         sendSwipe,
         resetDiscoveryFeed,
@@ -404,8 +378,6 @@ export const AuthProvider = ({ children }) => {
         handleLogout,
         getProfile,
         updateProfile,
-        addToUserHistory,
-        getHistoryOfUser,
         getDiscovery,
         sendSwipe,
         resetDiscoveryFeed,

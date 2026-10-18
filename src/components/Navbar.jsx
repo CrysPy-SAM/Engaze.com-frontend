@@ -26,7 +26,6 @@ import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
 import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
-import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 
@@ -292,23 +291,6 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                     <EditRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.coralPink }} />
                                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                         Edit Profile
-                                    </Typography>
-                                </MenuItem>
-                                <MenuItem
-                                    onClick={() => {
-                                        handleProfileMenuClose();
-                                        navigate("/history");
-                                    }}
-                                    sx={{
-                                        borderRadius: "12px",
-                                        gap: 1.5,
-                                        py: 1,
-                                        "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" },
-                                    }}
-                                >
-                                    <HistoryRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.violet }} />
-                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                        Video Activity
                                     </Typography>
                                 </MenuItem>
                                 <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder, my: 0.8 }} />

@@ -8,11 +8,7 @@
 
 The official frontend web application for **Engaze.com** — an engaging dating and social discovery experience combining Tinder-style candidate discovery, mutual matching, persistent real-time chat, and random 1-to-1 WebRTC video matchmaking.
 
-<<<<<<< HEAD
-In the project directory, you can run
-=======
 ---
->>>>>>> 21da8c2 (readme and all)
 
 ## 🌐 Production & Repository Links
 
@@ -52,7 +48,7 @@ In the project directory, you can run
 - **Persistent Private Messaging:** Real-time 1-to-1 chat via Socket.IO with REST fallback, unread message badges, sent/delivered/read receipts, auto-scroll to latest message, and seamless mobile responsive drawer/list switching.
 - **Random 1-to-1 WebRTC Video Matchmaking:** Queue-based matching connecting two live users peer-to-peer with camera/mic controls, partner dating profile overlay card, skip-to-next partner, and clean disconnect handling.
 - **Profile Management Suite:** Multi-tab profile editor with completion progress meter, photo URL gallery manager with primary photo selector, age calculation from DOB, gender & dating preferences, bio, and 12+ interactive interest chips.
-- **Legacy Room Video Meetings:** Instant room-based video calls (`/:url`) with multi-peer mesh WebRTC, screen sharing, and in-call text chat.
+- **NotFound (404) Route Protection:** Explicit catch-all route (`*`) with branded 404 page preventing unknown URLs or arbitrary paths from accessing video interfaces.
 - **Centralized Authentication Context:** Automatic JWT token persistence in `localStorage`, automated Axios Bearer token injection, and global 401 interceptors for session expiry.
 
 ---
@@ -67,15 +63,14 @@ The application consists of the following primary views:
 ├────────────────────────────────────────────────────────────────────────┤
 │  /                     Landing Page (Hero, Value Props, CTAs)          │
 │  /auth                 Authentication (Tabbed Login & Registration)    │
-│  /home                 Dashboard Hub (Quick Navigation & Room Join)    │
+│  /home                 Dashboard Hub (Quick Navigation & Profile)      │
 │  /discovery            Dating Swipe Feed & Match Modal                 │
 │  /matches              Mutual Matches List & Search Filter             │
 │  /chat                 Real-Time Private Messaging & Thread List       │
 │  /chat/:id             Direct Conversation View                        │
 │  /random-video         1-to-1 WebRTC Video Matchmaking Screen          │
 │  /profile              Profile Editor & Live Preview Mode              │
-│  /history              Historical Video Meetings Log                   │
-│  /:url                 Legacy Multi-Peer Room Video Call               │
+│  *                     Dedicated Branded 404 (Not Found) Page          │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -89,12 +84,9 @@ The application consists of the following primary views:
 | **Private Chat** | Responsive 2-column layout with real-time socket delivery & read receipts. | *[ Private Chat UI ]* |
 | **Video Match** | Dual video feed (Local PIP + Remote Partner) with matchmaking controls. | *[ Video Calling UI ]* |
 | **Profile Editor** | Live profile card preview alongside tabbed editing controls. | *[ Profile Editor UI ]* |
+| **404 Not Found** | Branded not-found page with clear navigation CTAs. | *[ 404 UI ]* |
 
-<<<<<<< HEAD
-## Learn More:
-=======
 ---
->>>>>>> 21da8c2 (readme and all)
 
 ## 🛠 Technology Stack
 
@@ -133,15 +125,12 @@ frontend/
 │   │   ├── authentication.jsx  # Tabbed login and registration forms
 │   │   ├── chat.jsx            # Persistent real-time private messaging interface
 │   │   ├── discovery.jsx       # Swipe discovery feed & match celebration modal
-│   │   ├── history.jsx         # Meeting history log
 │   │   ├── home.jsx            # Authenticated user dashboard
 │   │   ├── landing.jsx         # Public landing page
 │   │   ├── matches.jsx         # Mutual matches grid with search filter
+│   │   ├── NotFound.jsx        # Dedicated branded 404 Not Found page
 │   │   ├── profile.jsx         # Profile edit and live preview tabs
-│   │   ├── randomVideo.jsx     # Random 1-to-1 WebRTC video matchmaking
-│   │   └── VideoMeet.jsx       # Legacy multi-peer video room meeting
-│   ├── styles/
-│   │   └── videoComponent.module.css # Styling for legacy room video interface
+│   │   └── randomVideo.jsx     # Random 1-to-1 WebRTC video matchmaking
 │   └── utils/
 │       └── withAuth.jsx        # Higher-Order Component protecting private routes
 ├── .env                  # Local environment file (DO NOT COMMIT)

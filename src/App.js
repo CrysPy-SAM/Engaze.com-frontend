@@ -6,9 +6,8 @@ import theme from './theme';
 import LandingPage from './pages/landing';
 import Authentication from './pages/authentication';
 import { AuthProvider } from './contexts/AuthContext';
-import VideoMeetComponent from './pages/VideoMeet';
+import NotFound from './pages/NotFound';
 import HomeComponent from './pages/home';
-import History from './pages/history';
 import ProfilePage from './pages/profile';
 import DiscoveryPage from './pages/discovery';
 import MatchesPage from './pages/matches';
@@ -38,12 +37,10 @@ function PageTitleManager() {
       document.title = 'Live 1-on-1 Video Dating — Engaze';
     } else if (path === '/profile') {
       document.title = 'Profile & Settings — Engaze';
-    } else if (path === '/history') {
-      document.title = 'Call History — Engaze';
     } else if (path === '/home') {
       document.title = 'Dashboard — Engaze';
     } else {
-      document.title = 'Engaze — Dating & Live Video Connections';
+      document.title = 'Page Not Found — Engaze';
     }
   }, [location.pathname]);
 
@@ -69,8 +66,7 @@ function App() {
               <Route path='/random-video' element={<RandomVideoPage />} />
               <Route path='/random-call' element={<RandomVideoPage />} />
               <Route path='/profile' element={<ProfilePage />} />
-              <Route path='/history' element={<History />} />
-              <Route path='/:url' element={<VideoMeetComponent />} />
+              <Route path='*' element={<NotFound />} />
             </Routes>
           </AuthProvider>
         </Router>
