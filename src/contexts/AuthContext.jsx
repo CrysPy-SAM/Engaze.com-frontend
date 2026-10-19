@@ -237,11 +237,51 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    // 6. DATING DISCOVERY FEED
-    const getDiscovery = useCallback(async (page = 1, limit = 10) => {
+    // 5b. GET DISCOVERY PREFERENCES
+    const getDiscoveryPreferences = useCallback(async () => {
         try {
+            const response = await api.get("/discovery/preferences");
+            return response.data;
+        } catch (err) {
+            console.error("Get discovery preferences error:", err);
+            throw new Error(err.response?.data?.message || "Failed to get discovery preferences");
+        }
+    }, []);
+
+    // 5c. UPDATE DISCOVERY PREFERENCES
+    const updateDiscoveryPreferences = useCallback(async (preferences) => {
+        try {
+            const response = await api.put("/discovery/preferences", preferences);
+            if (response.data && response.data.datingPreferences) {
+                setUserData((prev) => {
+                    if (!prev) return prev;
+                    return {
+                        ...prev,
+                        datingPreferences: response.data.datingPreferences,
+                    };
+                });
+            }
+            return response.data;
+        } catch (err) {
+            console.error("Update discovery preferences error:", err);
+            throw new Error(err.response?.data?.message || "Failed to update discovery preferences");
+        }
+    }, []);
+
+    // 6. DATING DISCOVERY FEED
+    const getDiscovery = useCallback(async (pageOrOptions = 1, maybeLimit = 15, maybeCursor = null) => {
+        try {
+            let params = {};
+            if (typeof pageOrOptions === "object" && pageOrOptions !== null) {
+                params = { ...pageOrOptions };
+            } else {
+                params = { page: pageOrOptions, limit: maybeLimit };
+                if (maybeCursor) {
+                    params.cursor = maybeCursor;
+                }
+            }
             const response = await api.get("/discovery", {
-                params: { page, limit },
+                params,
             });
             return response.data;
         } catch (e) {
@@ -311,11 +351,19 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // 13. GET CONVERSATION MESSAGES
-    const getConversationMessages = useCallback(async (conversationId, page = 1, limit = 40, after = null) => {
+    const getConversationMessages = useCallback(async (conversationId, pageOrOptions = 1, limit = 40, after = null, before = null) => {
         try {
-            const params = { page, limit };
-            if (after) {
-                params.after = after;
+            let params = {};
+            if (typeof pageOrOptions === "object" && pageOrOptions !== null) {
+                params = { ...pageOrOptions };
+            } else {
+                params = { page: pageOrOptions, limit };
+                if (after) {
+                    params.after = after;
+                }
+                if (before) {
+                    params.before = before;
+                }
             }
             const response = await api.get(`/conversations/${conversationId}/messages`, {
                 params,
@@ -461,6 +509,8 @@ export const AuthProvider = ({ children }) => {
         handleLogout,
         getProfile,
         updateProfile,
+        getDiscoveryPreferences,
+        updateDiscoveryPreferences,
         getDiscovery,
         sendSwipe,
         resetDiscoveryFeed,
@@ -487,6 +537,8 @@ export const AuthProvider = ({ children }) => {
         handleLogout,
         getProfile,
         updateProfile,
+        getDiscoveryPreferences,
+        updateDiscoveryPreferences,
         getDiscovery,
         sendSwipe,
         resetDiscoveryFeed,

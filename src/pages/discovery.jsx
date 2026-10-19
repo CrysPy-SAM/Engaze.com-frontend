@@ -54,6 +54,7 @@ function DiscoveryPage() {
         resetDiscoveryFeed,
         blockUser,
         reportUser,
+        updateDiscoveryPreferences,
     } = useContext(AuthContext);
 
     const [profiles, setProfiles] = useState([]);
@@ -69,6 +70,7 @@ function DiscoveryPage() {
     const [safetyTargetUser, setSafetyTargetUser] = useState(null);
     const [swipeAnimation, setSwipeAnimation] = useState(""); // 'swipe-left-exit' | 'swipe-right-exit' | 'swipe-up-exit'
     const [page, setPage] = useState(1);
+    const [cursor, setCursor] = useState(null);
     const [hasMore, setHasMore] = useState(true);
     const [error, setError] = useState("");
 
@@ -89,10 +91,41 @@ function DiscoveryPage() {
     const [filterDialogOpen, setFilterDialogOpen] = useState(false);
     const [boostDialogOpen, setBoostDialogOpen] = useState(false);
     const [boostActive, setBoostActive] = useState(false);
-    const [ageRange, setAgeRange] = useState([18, 35]);
-    const [maxDistance, setMaxDistance] = useState(30);
-    const [genderPreference, setGenderPreference] = useState("all");
+    const [savingPreferences, setSavingPreferences] = useState(false);
+    const [ageRange, setAgeRange] = useState([
+        userData?.datingPreferences?.ageRange?.min ?? 18,
+        userData?.datingPreferences?.ageRange?.max ?? 100,
+    ]);
+    const [genderPreference, setGenderPreference] = useState(() => {
+        const pref = userData?.datingPreferences?.interestedIn;
+        if (pref && Array.isArray(pref)) {
+            if (pref.includes("female") && !pref.includes("male")) return "women";
+            if (pref.includes("male") && !pref.includes("female")) return "men";
+        }
+        return "all";
+    });
     const [verifiedOnly, setVerifiedOnly] = useState(false);
+
+    // Synchronize filter state whenever authenticated user preferences load or change
+    useEffect(() => {
+        if (userData?.datingPreferences) {
+            const prefs = userData.datingPreferences;
+            if (prefs.ageRange) {
+                const minVal = typeof prefs.ageRange.min === "number" ? prefs.ageRange.min : 18;
+                const maxVal = typeof prefs.ageRange.max === "number" ? prefs.ageRange.max : 100;
+                setAgeRange([minVal, maxVal]);
+            }
+            if (prefs.interestedIn && Array.isArray(prefs.interestedIn)) {
+                if (prefs.interestedIn.includes("female") && !prefs.interestedIn.includes("male")) {
+                    setGenderPreference("women");
+                } else if (prefs.interestedIn.includes("male") && !prefs.interestedIn.includes("female")) {
+                    setGenderPreference("men");
+                } else {
+                    setGenderPreference("all");
+                }
+            }
+        }
+    }, [userData?.datingPreferences]);
 
     // Toast notification state
     const [toastMessage, setToastMessage] = useState("");
@@ -158,21 +191,34 @@ function DiscoveryPage() {
         </Stack>
     );
 
-    // Fetch discovery profiles
-    const fetchProfiles = useCallback(async (pageNum = 1) => {
+    // Fetch discovery profiles with cursor-based stable pagination and deduplication
+    const fetchProfiles = useCallback(async (options = {}) => {
+        const isReset = options === 1 || options?.reset === true;
+        const targetCursor = isReset ? null : (options?.cursor !== undefined ? options.cursor : cursor);
+        const targetPage = isReset ? 1 : (typeof options === "number" ? options : page + 1);
+
         setLoading(true);
         setError("");
         try {
-            const data = await getDiscovery(pageNum, 15);
+            const data = await getDiscovery({
+                limit: 15,
+                ...(targetCursor ? { cursor: targetCursor } : { page: targetPage }),
+            });
             if (data && data.profiles) {
-                if (pageNum === 1) {
+                if (isReset) {
                     setProfiles(data.profiles);
                     setCurrentIndex(0);
                 } else {
-                    setProfiles((prev) => [...prev, ...data.profiles]);
+                    // ID-based deduplication ensures swiped or updated candidate profiles are never duplicated
+                    setProfiles((prev) => {
+                        const existingIds = new Set(prev.map((p) => p._id));
+                        const uniqueNew = data.profiles.filter((p) => !existingIds.has(p._id));
+                        return [...prev, ...uniqueNew];
+                    });
                 }
-                setHasMore(pageNum < data.totalPages);
-                setPage(pageNum);
+                setCursor(data.nextCursor || null);
+                setHasMore(Boolean(data.hasMore));
+                setPage(targetPage);
             }
         } catch (err) {
             console.error("Discovery fetch error:", err);
@@ -180,7 +226,7 @@ function DiscoveryPage() {
         } finally {
             setLoading(false);
         }
-    }, [getDiscovery]);
+    }, [getDiscovery, cursor, page]);
 
     // Reset passed swipes and reload deck
     const handleResetFeed = useCallback(async () => {
@@ -190,7 +236,7 @@ function DiscoveryPage() {
             setToastMessage(res?.message || "Deck refreshed! You can now explore all profiles again.");
             setToastSeverity("success");
             setOpenToast(true);
-            await fetchProfiles(1);
+            await fetchProfiles({ reset: true });
         } catch (err) {
             console.error("Reset feed error:", err);
             setToastMessage(err.message || "Failed to reset discovery feed. Please retry.");
@@ -202,7 +248,7 @@ function DiscoveryPage() {
     }, [resetDiscoveryFeed, fetchProfiles]);
 
     useEffect(() => {
-        fetchProfiles(1);
+        fetchProfiles({ reset: true });
     }, [fetchProfiles]);
 
     const currentProfile = profiles[currentIndex] || null;
@@ -224,12 +270,45 @@ function DiscoveryPage() {
         setIsDragging(false);
     }, [currentIndex]);
 
-    // Check if next page of profiles should be preloaded
+    // Check if next page of profiles should be preloaded using stable cursor
     useEffect(() => {
         if (profiles.length > 0 && currentIndex >= profiles.length - 3 && hasMore && !loading) {
-            fetchProfiles(page + 1);
+            fetchProfiles({ cursor });
         }
-    }, [currentIndex, profiles.length, hasMore, loading, page, fetchProfiles]);
+    }, [currentIndex, profiles.length, hasMore, loading, cursor, fetchProfiles]);
+
+    // Persist discovery preferences durably to backend and refresh feed
+    const handleApplyFilters = useCallback(async () => {
+        setSavingPreferences(true);
+        try {
+            let mappedInterestedIn = ["everyone"];
+            if (genderPreference === "women") {
+                mappedInterestedIn = ["female"];
+            } else if (genderPreference === "men") {
+                mappedInterestedIn = ["male"];
+            } else if (genderPreference === "all") {
+                mappedInterestedIn = ["everyone"];
+            }
+
+            await updateDiscoveryPreferences({
+                interestedIn: mappedInterestedIn,
+                ageRange: { min: ageRange[0], max: ageRange[1] },
+            });
+
+            setFilterDialogOpen(false);
+            setToastMessage("Preferences saved! Discovery feed refreshed.");
+            setToastSeverity("success");
+            setOpenToast(true);
+            await fetchProfiles({ reset: true });
+        } catch (err) {
+            console.error("Apply filters error:", err);
+            setToastMessage(err.message || "Failed to save preferences. Please try again.");
+            setToastSeverity("error");
+            setOpenToast(true);
+        } finally {
+            setSavingPreferences(false);
+        }
+    }, [genderPreference, ageRange, updateDiscoveryPreferences, fetchProfiles]);
 
     // Handle Swipe (Like, Pass, or Super Like)
     const handleSwipeAction = useCallback(async (action) => {
@@ -1353,28 +1432,35 @@ function DiscoveryPage() {
                         </IconButton>
                     </Stack>
 
-                    {/* Maximum Distance Slider */}
-                    <Box sx={{ mb: 3.5 }}>
-                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
+                    {/* Distance Filtering Status */}
+                    <Box
+                        sx={{
+                            mb: 3,
+                            p: 2,
+                            borderRadius: "16px",
+                            bgcolor: "rgba(255, 255, 255, 0.04)",
+                            border: "1px dashed rgba(255, 255, 255, 0.16)",
+                        }}
+                    >
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
                             <Typography variant="body2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
-                                Maximum Distance
+                                Distance Filtering
                             </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 800, color: BRAND_COLORS.coralPink }}>
-                                {maxDistance} km
-                            </Typography>
+                            <Chip
+                                label="Unavailable"
+                                size="small"
+                                sx={{
+                                    height: 20,
+                                    fontSize: "0.68rem",
+                                    fontWeight: 700,
+                                    bgcolor: "rgba(255, 255, 255, 0.08)",
+                                    color: BRAND_COLORS.textSecondary,
+                                }}
+                            />
                         </Stack>
-                        <Slider
-                            value={maxDistance}
-                            min={1}
-                            max={100}
-                            onChange={(_, val) => setMaxDistance(val)}
-                            sx={{
-                                color: BRAND_COLORS.coralPink,
-                                "& .MuiSlider-thumb": {
-                                    boxShadow: "0 0 10px rgba(253, 58, 115, 0.6)",
-                                },
-                            }}
-                        />
+                        <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>
+                            Location-based distance filtering is currently unavailable. Discovery shows eligible profiles across all regions.
+                        </Typography>
                     </Box>
 
                     {/* Age Range Dual Slider */}
@@ -1390,7 +1476,7 @@ function DiscoveryPage() {
                         <Slider
                             value={ageRange}
                             min={18}
-                            max={55}
+                            max={100}
                             onChange={(_, val) => setAgeRange(val)}
                             valueLabelDisplay="auto"
                             sx={{
@@ -1461,13 +1547,8 @@ function DiscoveryPage() {
                     <Button
                         variant="contained"
                         fullWidth
-                        onClick={() => {
-                            setFilterDialogOpen(false);
-                            setToastMessage("Preferences saved! Discovery deck refreshed.");
-                            setToastSeverity("success");
-                            setOpenToast(true);
-                            fetchProfiles(1);
-                        }}
+                        disabled={savingPreferences}
+                        onClick={handleApplyFilters}
                         sx={{
                             background: BRAND_COLORS.primaryGradient,
                             borderRadius: "9999px",
@@ -1477,7 +1558,7 @@ function DiscoveryPage() {
                             boxShadow: "0 6px 20px rgba(253, 58, 115, 0.4)",
                         }}
                     >
-                        Apply Filters
+                        {savingPreferences ? <CircularProgress size={24} sx={{ color: "#FFFFFF" }} /> : "Apply Filters"}
                     </Button>
                 </DialogContent>
             </Dialog>
