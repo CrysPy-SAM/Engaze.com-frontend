@@ -506,7 +506,9 @@ function ChatPage() {
                 delete pendingTimeoutsRef.current[clientTempId];
             }
 
-            if (socketRef.current?.connected) {
+            const sendViaRest = autoRetryCount > 0 || !socketRef.current?.connected;
+
+            if (!sendViaRest) {
                 let ackHandled = false;
 
                 // Set 5-second timeout for socket ack
@@ -518,11 +520,13 @@ function ChatPage() {
                         console.warn(`Socket ack timeout for ${clientTempId}. Attempting auto-retry via REST...`);
                         executeSend(msgToProcess, autoRetryCount + 1);
                     } else {
-                        setMessages((prev) =>
-                            prev.map((m) =>
-                                m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
-                            )
-                        );
+                        if (activeConvRef.current?._id?.toString() === convId.toString()) {
+                            setMessages((prev) =>
+                                prev.map((m) =>
+                                    m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
+                                )
+                            );
+                        }
                         setSending(false);
                     }
                 }, ACK_TIMEOUT_MS);
@@ -544,13 +548,29 @@ function ChatPage() {
                             setSending(false);
 
                             if (response?.success && response.message) {
-                                setMessages((prev) => reconcileSingleMessage(prev, response.message));
-                            } else {
-                                setMessages((prev) =>
-                                    prev.map((m) =>
-                                        m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
-                                    )
+                                if (activeConvRef.current?._id?.toString() === convId.toString()) {
+                                    setMessages((prev) => reconcileSingleMessage(prev, response.message));
+                                }
+                                setConversations((prevConvs) =>
+                                    prevConvs.map((conv) => {
+                                        if (conv._id.toString() === convId.toString()) {
+                                            return {
+                                                ...conv,
+                                                lastMessage: response.message,
+                                                lastMessageAt: response.message.createdAt || new Date().toISOString(),
+                                            };
+                                        }
+                                        return conv;
+                                    })
                                 );
+                            } else {
+                                if (activeConvRef.current?._id?.toString() === convId.toString()) {
+                                    setMessages((prev) =>
+                                        prev.map((m) =>
+                                            m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
+                                        )
+                                    );
+                                }
                             }
                         }
                     );
@@ -559,37 +579,57 @@ function ChatPage() {
                     if (autoRetryCount < MAX_AUTO_RETRIES) {
                         executeSend(msgToProcess, autoRetryCount + 1);
                     } else {
-                        setMessages((prev) =>
-                            prev.map((m) =>
-                                m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
-                            )
-                        );
+                        if (activeConvRef.current?._id?.toString() === convId.toString()) {
+                            setMessages((prev) =>
+                                prev.map((m) =>
+                                    m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
+                                )
+                            );
+                        }
                         setSending(false);
                     }
                 }
             } else {
-                // Socket disconnected: send via REST directly
+                // Socket disconnected or retry after socket ack timeout: send via REST fallback directly
                 try {
                     const resData = await sendMessageRest(convId, content, clientTempId);
                     setSending(false);
 
                     if (resData?.success && resData.message) {
-                        setMessages((prev) => reconcileSingleMessage(prev, resData.message));
+                        if (activeConvRef.current?._id?.toString() === convId.toString()) {
+                            setMessages((prev) => reconcileSingleMessage(prev, resData.message));
+                        }
+                        setConversations((prevConvs) =>
+                            prevConvs.map((conv) => {
+                                if (conv._id.toString() === convId.toString()) {
+                                    return {
+                                        ...conv,
+                                        lastMessage: resData.message,
+                                        lastMessageAt: resData.message.createdAt || new Date().toISOString(),
+                                    };
+                                }
+                                return conv;
+                            })
+                        );
                     } else {
+                        if (activeConvRef.current?._id?.toString() === convId.toString()) {
+                            setMessages((prev) =>
+                                prev.map((m) =>
+                                    m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
+                                )
+                            );
+                        }
+                    }
+                } catch (restErr) {
+                    console.error("REST send failed:", restErr);
+                    setSending(false);
+                    if (activeConvRef.current?._id?.toString() === convId.toString()) {
                         setMessages((prev) =>
                             prev.map((m) =>
                                 m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
                             )
                         );
                     }
-                } catch (restErr) {
-                    console.error("REST send failed:", restErr);
-                    setSending(false);
-                    setMessages((prev) =>
-                        prev.map((m) =>
-                            m.clientTempId === clientTempId ? { ...m, status: "failed" } : m
-                        )
-                    );
                 }
             }
         },
