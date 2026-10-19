@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import { GoogleLogin } from "@react-oauth/google";
@@ -266,10 +266,10 @@ export default function Authentication() {
                                     justifyContent: "center",
                                 }}
                             >
-                                <VerifiedUserIcon sx={{ color: "#10B981", fontSize: 18 }} />
+                                <ShieldOutlinedIcon sx={{ color: "#10B981", fontSize: 18 }} />
                             </Box>
                             <Typography variant="body2" sx={{ color: "#FFFFFF", fontWeight: 600 }}>
-                                Verified Member Profiles & Privacy-First Security
+                                Adult 18+ Profiles & Privacy-First Security
                             </Typography>
                         </Stack>
                     </Stack>

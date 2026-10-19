@@ -24,7 +24,6 @@ import {
     Tooltip,
     Typography,
     Slider,
-    Switch,
 } from "@mui/material";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -32,10 +31,8 @@ import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import ReplayRoundedIcon from "@mui/icons-material/ReplayRounded";
 import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
-import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import SchoolRoundedIcon from "@mui/icons-material/SchoolRounded";
-import FlashOnRoundedIcon from "@mui/icons-material/FlashOnRounded";
 import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
@@ -87,10 +84,8 @@ function DiscoveryPage() {
     const [isDragging, setIsDragging] = useState(false);
     const dragStartRef = useRef({ x: 0, y: 0 });
 
-    // Filter Preferences & Boost State
+    // Filter Preferences State
     const [filterDialogOpen, setFilterDialogOpen] = useState(false);
-    const [boostDialogOpen, setBoostDialogOpen] = useState(false);
-    const [boostActive, setBoostActive] = useState(false);
     const [savingPreferences, setSavingPreferences] = useState(false);
     const [ageRange, setAgeRange] = useState([
         userData?.datingPreferences?.ageRange?.min ?? 18,
@@ -104,7 +99,6 @@ function DiscoveryPage() {
         }
         return "all";
     });
-    const [verifiedOnly, setVerifiedOnly] = useState(false);
 
     // Synchronize filter state whenever authenticated user preferences load or change
     useEffect(() => {
@@ -132,41 +126,8 @@ function DiscoveryPage() {
     const [toastSeverity, setToastSeverity] = useState("info");
     const [openToast, setOpenToast] = useState(false);
 
-    const handleActivateBoost = () => {
-        setBoostActive(true);
-        setBoostDialogOpen(false);
-        setToastMessage("🚀 Profile Boosted! You are getting 3x more visibility for 30 minutes.");
-        setToastSeverity("success");
-        setOpenToast(true);
-    };
-
     const discoveryRightActions = (
         <Stack direction="row" spacing={1.2} alignItems="center">
-            {/* Boost Button */}
-            <Tooltip title={boostActive ? "Boost Active!" : "Boost Profile"}>
-                <IconButton
-                    onClick={() => setBoostDialogOpen(true)}
-                    sx={{
-                        width: { xs: 36, sm: 40 },
-                        height: { xs: 36, sm: 40 },
-                        borderRadius: "50%",
-                        background: boostActive
-                            ? "linear-gradient(135deg, #A855F7 0%, #EC4899 100%)"
-                            : "rgba(168, 85, 247, 0.18)",
-                        border: "1.5px solid rgba(168, 85, 247, 0.45)",
-                        color: "#FFFFFF",
-                        boxShadow: boostActive ? "0 0 15px rgba(168, 85, 247, 0.7)" : "none",
-                        transition: "all 0.2s ease",
-                        "&:hover": {
-                            transform: "scale(1.08)",
-                            background: "linear-gradient(135deg, #A855F7 0%, #EC4899 100%)",
-                        },
-                    }}
-                >
-                    <FlashOnRoundedIcon sx={{ fontSize: { xs: 20, sm: 22 }, color: "#E9D5FF" }} />
-                </IconButton>
-            </Tooltip>
-
             {/* Filter Preferences Button */}
             <Tooltip title="Discovery Filters">
                 <IconButton
@@ -837,13 +798,6 @@ function DiscoveryPage() {
                                                 {currentProfile.name}
                                                 {currentProfile.age ? `, ${currentProfile.age}` : ""}
                                             </Typography>
-                                            <VerifiedRoundedIcon
-                                                sx={{
-                                                    color: BRAND_COLORS.verifiedBlue,
-                                                    fontSize: 22,
-                                                    filter: "drop-shadow(0 2px 6px rgba(56, 189, 248, 0.6))",
-                                                }}
-                                            />
                                         </Stack>
 
                                         {/* Info Sheet Trigger Button */}
@@ -872,45 +826,32 @@ function DiscoveryPage() {
                                         </IconButton>
                                     </Box>
 
-                                    {/* Location Row (e.g. 📍 Mumbai, India) */}
-                                    <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mb: 0.5 }}>
-                                        <LocationOnRoundedIcon sx={{ fontSize: 16, color: "rgba(255, 255, 255, 0.75)" }} />
-                                        <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.9)", fontWeight: 500, fontSize: "0.88rem" }}>
-                                            {currentProfile.city || "Mumbai, India"}
-                                        </Typography>
-                                    </Stack>
-
-                                    {/* Education / Occupation & Distance Badge Row */}
-                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 0.4 }}>
-                                        <Stack direction="row" spacing={0.8} alignItems="center">
-                                            <SchoolRoundedIcon sx={{ fontSize: 16, color: "rgba(255, 255, 255, 0.75)" }} />
+                                    {/* Location Row (if specified) */}
+                                    {currentProfile.city && (
+                                        <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mb: 0.5 }}>
+                                            <LocationOnRoundedIcon sx={{ fontSize: 16, color: "rgba(255, 255, 255, 0.75)" }} />
                                             <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.9)", fontWeight: 500, fontSize: "0.88rem" }}>
-                                                {currentProfile.occupation || "Student"}
+                                                {currentProfile.city}
                                             </Typography>
                                         </Stack>
+                                    )}
 
-                                        {/* Distance Badge Pill */}
-                                        <Box
-                                            sx={{
-                                                px: 1.2,
-                                                py: 0.35,
-                                                borderRadius: "9999px",
-                                                bgcolor: "rgba(0, 0, 0, 0.45)",
-                                                backdropFilter: "blur(10px)",
-                                                border: "1px solid rgba(255, 255, 255, 0.12)",
-                                                color: "rgba(255, 255, 255, 0.85)",
-                                                fontSize: "0.74rem",
-                                                fontWeight: 600,
-                                            }}
-                                        >
-                                            {currentProfile.distance ? `${currentProfile.distance} km away` : "3 km away"}
+                                    {/* Education / Occupation (if specified) */}
+                                    {currentProfile.occupation && (
+                                        <Box sx={{ display: "flex", alignItems: "center", mt: 0.4 }}>
+                                            <Stack direction="row" spacing={0.8} alignItems="center">
+                                                <SchoolRoundedIcon sx={{ fontSize: 16, color: "rgba(255, 255, 255, 0.75)" }} />
+                                                <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.9)", fontWeight: 500, fontSize: "0.88rem" }}>
+                                                    {currentProfile.occupation}
+                                                </Typography>
+                                            </Stack>
                                         </Box>
-                                    </Box>
+                                    )}
                                 </Box>
                             </Card>
                         </Box>
 
-                        {/* TACTILE 4-BUTTON TINDER ACTION DOCK (Yellow Rewind, Red Nope, Pink Heart, Blue Super Like) */}
+                        {/* TACTILE 4-BUTTON TINDER ACTION DOCK (Yellow Reset, Red Nope, Pink Heart, Blue Super Like) */}
                         <Stack
                             direction="row"
                             spacing={{ xs: 2.2, sm: 3 }}
@@ -918,10 +859,10 @@ function DiscoveryPage() {
                             justifyContent="center"
                             sx={{ mt: { xs: 2.5, sm: 3 } }}
                         >
-                            {/* 1. Yellow Rewind / Reset Button (↺) */}
-                            <Tooltip title="Rewind / Reset Deck">
+                            {/* 1. Yellow Reset Passed Profiles Button (↺) */}
+                            <Tooltip title="Reset Passed Profiles">
                                 <IconButton
-                                    aria-label="Refresh deck"
+                                    aria-label="Reset passed profiles"
                                     onClick={handleResetFeed}
                                     disabled={resettingFeed || swiping}
                                     className="btn-tactile-action"
@@ -1172,9 +1113,6 @@ function DiscoveryPage() {
                                     {currentProfile.name}
                                     {currentProfile.age ? `, ${currentProfile.age}` : ""}
                                 </Typography>
-                                {currentProfile.isProfileComplete && (
-                                    <VerifiedRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 20 }} />
-                                )}
                             </Stack>
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, textTransform: "capitalize" }}>
                                 {currentProfile.gender || "Engaze Member"}
@@ -1520,30 +1458,6 @@ function DiscoveryPage() {
                         </Stack>
                     </Box>
 
-                    {/* Verified Profiles Only Toggle */}
-                    <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
-                                Verified Profiles Only
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                Only show accounts with verified photo checkmark
-                            </Typography>
-                        </Box>
-                        <Switch
-                            checked={verifiedOnly}
-                            onChange={(e) => setVerifiedOnly(e.target.checked)}
-                            sx={{
-                                "& .MuiSwitch-switchBase.Mui-checked": {
-                                    color: BRAND_COLORS.coralPink,
-                                },
-                                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                                    backgroundColor: BRAND_COLORS.coralPink,
-                                },
-                            }}
-                        />
-                    </Box>
-
                     <Button
                         variant="contained"
                         fullWidth
@@ -1556,86 +1470,11 @@ function DiscoveryPage() {
                             fontWeight: 800,
                             fontSize: "0.95rem",
                             boxShadow: "0 6px 20px rgba(253, 58, 115, 0.4)",
+                            mt: 2,
                         }}
                     >
                         {savingPreferences ? <CircularProgress size={24} sx={{ color: "#FFFFFF" }} /> : "Apply Filters"}
                     </Button>
-                </DialogContent>
-            </Dialog>
-
-            {/* Profile Boost Modal */}
-            <Dialog
-                open={boostDialogOpen}
-                onClose={() => setBoostDialogOpen(false)}
-                PaperProps={{
-                    sx: {
-                        borderRadius: "28px",
-                        bgcolor: BRAND_COLORS.surfaceDark,
-                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                        maxWidth: 400,
-                        width: "100%",
-                        p: { xs: 3, sm: 4 },
-                        textAlign: "center",
-                        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
-                    },
-                }}
-            >
-                <DialogContent sx={{ p: 0 }}>
-                    <Box
-                        sx={{
-                            width: 80,
-                            height: 80,
-                            borderRadius: "50%",
-                            background: "linear-gradient(135deg, #A855F7 0%, #EC4899 100%)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            mx: "auto",
-                            mb: 2.5,
-                            boxShadow: "0 8px 30px rgba(168, 85, 247, 0.6)",
-                        }}
-                    >
-                        <FlashOnRoundedIcon sx={{ fontSize: 44, color: "#FFFFFF" }} />
-                    </Box>
-
-                    <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF", mb: 1 }}>
-                        Boost Your Profile
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3.5, lineHeight: 1.5 }}>
-                        Get up to <strong>3x more profile views</strong> and jump straight to top of the deck for the next 30 minutes!
-                    </Typography>
-
-                    <Stack spacing={1.5}>
-                        <Button
-                            variant="contained"
-                            fullWidth
-                            onClick={handleActivateBoost}
-                            sx={{
-                                background: "linear-gradient(135deg, #A855F7 0%, #EC4899 100%)",
-                                borderRadius: "9999px",
-                                py: 1.4,
-                                fontWeight: 800,
-                                fontSize: "1rem",
-                                boxShadow: "0 8px 24px rgba(168, 85, 247, 0.5)",
-                            }}
-                        >
-                            ⚡ Activate Boost (1 Free)
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            fullWidth
-                            onClick={() => setBoostDialogOpen(false)}
-                            sx={{
-                                borderRadius: "9999px",
-                                py: 1.2,
-                                color: BRAND_COLORS.textSecondary,
-                                borderColor: BRAND_COLORS.surfaceDarkBorder,
-                                fontWeight: 700,
-                            }}
-                        >
-                            Maybe Later
-                        </Button>
-                    </Stack>
                 </DialogContent>
             </Dialog>
 

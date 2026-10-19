@@ -47,7 +47,6 @@ import WifiOffIcon from "@mui/icons-material/WifiOff";
 import SearchIcon from "@mui/icons-material/Search";
 import ForumIcon from "@mui/icons-material/Forum";
 import SparklesIcon from "@mui/icons-material/AutoAwesome";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AddIcon from "@mui/icons-material/Add";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
@@ -1011,7 +1010,6 @@ function ChatPage() {
                                                                 >
                                                                     {other.name}
                                                                 </Typography>
-                                                                <CheckCircleIcon sx={{ fontSize: 14, color: BRAND_COLORS.verifiedBlue }} />
                                                             </Stack>
                                                             <Typography
                                                                 variant="caption"
@@ -1129,7 +1127,6 @@ function ChatPage() {
                                             >
                                                 {otherUser.name}{otherUser.age ? `, ${otherUser.age}` : ""}
                                             </Typography>
-                                            <CheckCircleIcon sx={{ fontSize: 16, color: BRAND_COLORS.verifiedBlue }} />
                                         </Stack>
                                         <Stack direction="row" spacing={0.6} alignItems="center" sx={{ mt: 0.2 }}>
                                             <Box
@@ -2077,7 +2074,6 @@ function ChatPage() {
                                     <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF" }}>
                                         {otherUser.name}{otherUser.age ? `, ${otherUser.age}` : ""}
                                     </Typography>
-                                    <CheckCircleIcon sx={{ fontSize: 20, color: BRAND_COLORS.verifiedBlue }} />
                                 </Stack>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, textTransform: "capitalize" }}>
                                     {otherUser.gender ? `${otherUser.gender} • ` : ""}Engaze Match

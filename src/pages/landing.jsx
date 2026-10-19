@@ -22,7 +22,6 @@ import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import ReplayRoundedIcon from "@mui/icons-material/ReplayRounded";
 import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
-import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
@@ -221,7 +220,7 @@ export default function LandingPage() {
                                     maxWidth: 580,
                                 }}
                             >
-                                Experience dating without the guesswork. Browse verified singles nearby, chat instantly with mutual likes, and test genuine chemistry through secure 1-on-1 video dates — before exchanging numbers.
+                                Experience dating without the guesswork. Browse compatible singles, chat instantly with mutual likes, and test genuine chemistry through secure 1-on-1 video dates — before exchanging numbers.
                             </Typography>
 
                             {/* CTAs */}
@@ -283,11 +282,11 @@ export default function LandingPage() {
                             >
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                     <ShieldOutlinedIcon sx={{ fontSize: 18, color: BRAND_COLORS.emerald }} />
-                                    <span>Verified 18+ Profiles</span>
+                                    <span>Adult 18+ Profiles</span>
                                 </Box>
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                     <FavoriteRoundedIcon sx={{ fontSize: 18, color: BRAND_COLORS.coralPink }} />
-                                    <span>100% Mutual Likes Only</span>
+                                    <span>Mutual Likes Only</span>
                                 </Box>
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                     <LockOutlinedIcon sx={{ fontSize: 18, color: BRAND_COLORS.violet }} />
@@ -419,7 +418,7 @@ export default function LandingPage() {
                                         }}
                                     >
                                         <BoltRoundedIcon sx={{ fontSize: 16, color: BRAND_COLORS.coralPink }} />
-                                        98% Spark
+                                        Demo Profile
                                     </Box>
 
                                     <Box
@@ -439,7 +438,7 @@ export default function LandingPage() {
                                         }}
                                     >
                                         <LocationOnRoundedIcon sx={{ fontSize: 14, color: BRAND_COLORS.skyBlue }} />
-                                        3 km away
+                                        New Delhi
                                     </Box>
                                 </Box>
 
@@ -456,12 +455,11 @@ export default function LandingPage() {
                                         zIndex: 3,
                                     }}
                                 >
-                                    {/* Name, Age & Verified Checkmark */}
+                                    {/* Name and Age */}
                                     <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.4 }}>
                                         <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.01em" }}>
                                             Ananya Sharma, 24
                                         </Typography>
-                                        <VerifiedRoundedIcon sx={{ color: BRAND_COLORS.skyBlue, fontSize: 22 }} />
                                     </Box>
 
                                     {/* Bio snippet */}
@@ -519,8 +517,9 @@ export default function LandingPage() {
 
                                     {/* Realistic Discovery Action Buttons Dock */}
                                     <Stack direction="row" spacing={1.5} justifyContent="center" alignItems="center">
-                                        {/* Rewind */}
+                                        {/* Reset Deck */}
                                         <IconButton
+                                            aria-label="Reset deck (Demo)"
                                             sx={{
                                                 width: 42,
                                                 height: 42,
@@ -661,7 +660,7 @@ export default function LandingPage() {
                         </Grid>
                         <Grid item xs={6} md={3} sx={{ textAlign: "center", borderRight: { md: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` } }}>
                             <Typography variant="h3" sx={{ fontWeight: 900, color: BRAND_COLORS.emerald, mb: 0.5, letterSpacing: "-0.02em" }}>
-                                HD 1080p
+                                HD Video
                             </Typography>
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, fontWeight: 600 }}>
                                 WebRTC Encrypted Video Dating
@@ -746,11 +745,11 @@ export default function LandingPage() {
                                     Portrait Card Discovery
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem", mb: 3 }}>
-                                    Browse edge-to-edge profile portraits with full photo galleries, bio highlights, and smart distance & age filters. Swipe right when you feel a spark, swipe left without awkwardness.
+                                    Browse edge-to-edge profile portraits with full photo galleries, bio highlights, and smart age & gender filters. Swipe right when you feel a spark, swipe left without awkwardness.
                                 </Typography>
                                 <Box sx={{ mt: "auto", pt: 2, borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
                                     <Typography variant="caption" sx={{ color: BRAND_COLORS.coralPink, fontWeight: 700 }}>
-                                        ✓ 100% Mutual opt-in &bull; Zero cold spam
+                                        ✓ Mutual opt-in &bull; Zero cold spam
                                     </Typography>
                                 </Box>
                             </Paper>
@@ -845,7 +844,7 @@ export default function LandingPage() {
                                     Instant Real-Time Chat
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem", mb: 3 }}>
-                                    Break the ice effortlessly with verified mutual matches. Powered by high-speed WebSockets featuring real-time typing indicators, double-check read receipts, and photo previews.
+                                    Break the ice effortlessly with genuine mutual matches. Powered by high-speed WebSockets featuring real-time typing indicators, double-check read receipts, and photo previews.
                                 </Typography>
                                 <Box sx={{ mt: "auto", pt: 2, borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
                                     <Typography variant="caption" sx={{ color: BRAND_COLORS.emerald, fontWeight: 700 }}>
@@ -949,7 +948,7 @@ export default function LandingPage() {
                                     <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
                                         <CheckCircleRoundedIcon sx={{ color: BRAND_COLORS.emerald, fontSize: 20, mt: 0.3 }} />
                                         <Typography variant="body2" sx={{ color: "#FFFFFF", fontWeight: 600, lineHeight: 1.6 }}>
-                                            Active verified profiles with identity confirmation badges.
+                                            Authentic 18+ profiles with member discovery and safety reporting.
                                         </Typography>
                                     </Box>
                                     <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
@@ -1015,12 +1014,12 @@ export default function LandingPage() {
                                     border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                 }}
                             >
-                                <VerifiedRoundedIcon sx={{ color: BRAND_COLORS.skyBlue, fontSize: 36, mb: 2 }} />
+                                <ShieldOutlinedIcon sx={{ color: BRAND_COLORS.skyBlue, fontSize: 36, mb: 2 }} />
                                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: "#FFFFFF" }}>
-                                    Verified Profiles
+                                    Adult 18+ Profiles
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.6 }}>
-                                    Identity badges ensure you are interacting with genuine people, keeping catfish and bots out of discovery.
+                                    Age-verified onboarding and safety reporting ensure you connect with genuine adults across discovery.
                                 </Typography>
                             </Paper>
                         </Grid>
@@ -1178,11 +1177,11 @@ export default function LandingPage() {
                         <Grid item xs={12} md={4}>
                             <EngazeLogo size={36} fontSize="1.45rem" sx={{ mb: 2 }} />
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, maxWidth: 340, mb: 3 }}>
-                                Engaze connects verified singles through intuitive card discovery, instant mutual messaging, and encrypted 1-on-1 video dates.
+                                Engaze connects genuine singles through intuitive card discovery, instant mutual messaging, and encrypted 1-on-1 video dates.
                             </Typography>
                             <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: BRAND_COLORS.emerald, fontSize: "0.85rem", fontWeight: 700 }}>
                                 <ShieldOutlinedIcon sx={{ fontSize: 18 }} />
-                                Verified 18+ Dating Platform
+                                Adult 18+ Dating Platform
                             </Box>
                         </Grid>
 

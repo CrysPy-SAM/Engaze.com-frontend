@@ -24,6 +24,7 @@ import {
     Stack,
     Switch,
     Typography,
+    Chip,
 } from "@mui/material";
 import WhatshotRoundedIcon from "@mui/icons-material/WhatshotRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
@@ -33,7 +34,6 @@ import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
-import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
 import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
@@ -48,11 +48,6 @@ function HomeComponent() {
     const [settingsModalOpen, setSettingsModalOpen] = useState(false);
     const [supportModalOpen, setSupportModalOpen] = useState(false);
 
-    // Settings local state
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    const [readReceiptsEnabled, setReadReceiptsEnabled] = useState(true);
-    const [incognitoMode, setIncognitoMode] = useState(false);
-
     const menuItems = [
         {
             id: "discover",
@@ -66,7 +61,6 @@ function HomeComponent() {
             title: "Matches",
             subtitle: "Your connections",
             icon: <FavoriteRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 24 }} />,
-            badge: "5",
             onClick: () => navigate("/matches"),
         },
         {
@@ -107,12 +101,10 @@ function HomeComponent() {
     ];
 
     const plusPerks = [
-        "Unlimited Likes & Swipes",
-        "Rewind Your Last Swipe Anytime",
-        "5 Free Super Likes Every Day",
-        "1 Free Profile Boost per Month",
-        "See Who Liked You Before Swiping",
-        "Control Who Sees Your Profile",
+        "Ad-Free Premium Experience (Coming Soon)",
+        "Priority Profile Matching (In Development)",
+        "Extended Discovery Radius (Planned)",
+        "Advanced Conversation Insights (Planned)",
     ];
 
     return (
@@ -150,13 +142,6 @@ function HomeComponent() {
                             <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
                                 {userData?.name || "Member"}
                             </Typography>
-                            <VerifiedRoundedIcon
-                                sx={{
-                                    color: BRAND_COLORS.verifiedBlue,
-                                    fontSize: 22,
-                                    filter: "drop-shadow(0 2px 6px rgba(56, 189, 248, 0.6))",
-                                }}
-                            />
                         </Stack>
 
                         <Stack
@@ -220,10 +205,10 @@ function HomeComponent() {
                         </Box>
                         <Box>
                             <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF", lineHeight: 1.2 }}>
-                                Engaze Plus
+                                Engaze Plus (Coming Soon)
                             </Typography>
                             <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "0.8rem", fontWeight: 500 }}>
-                                Get more matches and premium features
+                                Preview upcoming premium features
                             </Typography>
                         </Box>
                     </Box>
@@ -366,7 +351,7 @@ function HomeComponent() {
                         <Stack direction="row" spacing={1} alignItems="center">
                             <WorkspacePremiumRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 32 }} />
                             <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF" }}>
-                                Engaze Plus
+                                Engaze Plus (Coming Soon)
                             </Typography>
                         </Stack>
                         <IconButton onClick={() => setPlusModalOpen(false)} size="small" sx={{ color: BRAND_COLORS.textSecondary }}>
@@ -375,7 +360,7 @@ function HomeComponent() {
                     </Stack>
 
                     <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
-                        Unlock the ultimate dating experience with unlimited connections and premium superpowers.
+                        Premium features are currently in development to enhance your connections safely.
                     </Typography>
 
                     <Stack spacing={1.8} sx={{ mb: 4 }}>
@@ -392,21 +377,18 @@ function HomeComponent() {
                     <Button
                         variant="contained"
                         fullWidth
-                        onClick={() => {
-                            setPlusModalOpen(false);
-                            alert("Engaze Plus perks unlocked for this demo session!");
-                        }}
+                        disabled
                         sx={{
-                            background: BRAND_COLORS.primaryGradient,
                             borderRadius: "9999px",
                             py: 1.5,
                             fontWeight: 800,
                             fontSize: "1rem",
-                            boxShadow: "0 8px 25px rgba(253, 58, 115, 0.5)",
                             mb: 1.5,
+                            bgcolor: "rgba(255, 255, 255, 0.08)",
+                            color: "rgba(255, 255, 255, 0.5)",
                         }}
                     >
-                        Get Engaze Plus &bull; ₹499 / mo
+                        Premium Tier (In Development)
                     </Button>
 
                     <Button
@@ -415,7 +397,7 @@ function HomeComponent() {
                         onClick={() => setPlusModalOpen(false)}
                         sx={{ color: BRAND_COLORS.textSecondary, fontWeight: 700 }}
                     >
-                        No thanks, maybe later
+                        Close
                     </Button>
                 </DialogContent>
             </Dialog>
@@ -448,64 +430,49 @@ function HomeComponent() {
 
                     <Stack spacing={2.5} sx={{ mb: 4 }}>
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <Box>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
-                                    Push Notifications
-                                </Typography>
+                            <Box sx={{ pr: 2 }}>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                        Push Notifications
+                                    </Typography>
+                                    <Chip label="Coming Soon" size="small" sx={{ height: 18, fontSize: "0.65rem", bgcolor: "rgba(255, 255, 255, 0.08)", color: BRAND_COLORS.textSecondary }} />
+                                </Stack>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                    Get alerts for new matches and messages
+                                    In-app notifications are active. Native push delivery is in development.
                                 </Typography>
                             </Box>
-                            <Switch
-                                checked={notificationsEnabled}
-                                onChange={(e) => setNotificationsEnabled(e.target.checked)}
-                                sx={{
-                                    "& .MuiSwitch-switchBase.Mui-checked": { color: BRAND_COLORS.coralPink },
-                                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: BRAND_COLORS.coralPink },
-                                }}
-                            />
+                            <Switch disabled checked={false} />
                         </Box>
 
                         <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)" }} />
 
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <Box>
+                            <Box sx={{ pr: 2 }}>
                                 <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
                                     Read Receipts
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                    Show double checkmarks when messages are viewed
+                                    Double checkmarks indicate delivery and read status in active chat
                                 </Typography>
                             </Box>
-                            <Switch
-                                checked={readReceiptsEnabled}
-                                onChange={(e) => setReadReceiptsEnabled(e.target.checked)}
-                                sx={{
-                                    "& .MuiSwitch-switchBase.Mui-checked": { color: BRAND_COLORS.coralPink },
-                                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: BRAND_COLORS.coralPink },
-                                }}
-                            />
+                            <Chip label="Active" size="small" sx={{ height: 20, fontSize: "0.7rem", fontWeight: 700, bgcolor: "rgba(16, 185, 129, 0.15)", color: BRAND_COLORS.emerald }} />
                         </Box>
 
                         <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)" }} />
 
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <Box>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
-                                    Incognito Discovery
-                                </Typography>
+                            <Box sx={{ pr: 2 }}>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                        Incognito Discovery
+                                    </Typography>
+                                    <Chip label="Coming Soon" size="small" sx={{ height: 18, fontSize: "0.65rem", bgcolor: "rgba(255, 255, 255, 0.08)", color: BRAND_COLORS.textSecondary }} />
+                                </Stack>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                    Only be visible to profiles you have already liked
+                                    Private browsing mode is currently in development.
                                 </Typography>
                             </Box>
-                            <Switch
-                                checked={incognitoMode}
-                                onChange={(e) => setIncognitoMode(e.target.checked)}
-                                sx={{
-                                    "& .MuiSwitch-switchBase.Mui-checked": { color: BRAND_COLORS.coralPink },
-                                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: BRAND_COLORS.coralPink },
-                                }}
-                            />
+                            <Switch disabled checked={false} />
                         </Box>
                     </Stack>
 

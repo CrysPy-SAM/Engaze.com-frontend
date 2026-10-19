@@ -1156,7 +1156,7 @@ function RandomVideoPage() {
                                 Video Matchmaking
                             </Typography>
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3.5, px: 2 }}>
-                                Connect face-to-face with verified members instantly over private, encrypted WebRTC streams.
+                                Connect face-to-face with eligible members instantly over private, encrypted WebRTC streams.
                             </Typography>
 
                             {mediaError && (
@@ -1469,7 +1469,7 @@ function RandomVideoPage() {
                             </Typography>
 
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 1, textTransform: "capitalize" }}>
-                                {partner?.gender || "Verified Member"}
+                                {partner?.gender || "Engaze Member"}
                             </Typography>
 
                             {partner?.bio && (

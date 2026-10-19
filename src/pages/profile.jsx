@@ -38,7 +38,6 @@ import SparklesIcon from "@mui/icons-material/AutoAwesome";
 import PreviewIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import StarIcon from "@mui/icons-material/Star";
-import VerifiedIcon from "@mui/icons-material/Verified";
 
 const SUGGESTED_INTERESTS = [
     "Travel ✈️",
@@ -989,9 +988,6 @@ function ProfilePage() {
                                             {name || "Your Name"}
                                             {currentAge ? `, ${currentAge}` : ""}
                                         </Typography>
-                                        {isProfileComplete && (
-                                            <VerifiedIcon sx={{ color: "#38BDF8", fontSize: 24 }} />
-                                        )}
                                     </Stack>
 
                                     <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.75)", textTransform: "capitalize" }}>
