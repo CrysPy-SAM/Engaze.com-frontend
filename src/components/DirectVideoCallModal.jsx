@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from "react";
 import {
     Avatar,
     Box,
-    Button,
     CircularProgress,
     Dialog,
     IconButton,

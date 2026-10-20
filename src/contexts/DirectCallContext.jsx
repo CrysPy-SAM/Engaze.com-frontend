@@ -111,7 +111,7 @@ class RingtoneEngine {
 const ringtone = new RingtoneEngine();
 
 export const DirectCallProvider = ({ children }) => {
-    const { userData, token, getIceServers } = useContext(AuthContext);
+    const { token, getIceServers } = useContext(AuthContext);
 
     // Call state: 'idle' | 'outgoing_ringing' | 'incoming_ringing' | 'connecting' | 'connected' | 'declined' | 'busy' | 'no_answer' | 'ended'
     const [callState, setCallState] = useState("idle");
@@ -336,7 +336,7 @@ export const DirectCallProvider = ({ children }) => {
 
         try {
             // 1. Acquire local camera & microphone
-            const stream = await acquireLocalMedia();
+            await acquireLocalMedia();
 
             setCallError(null);
             setStatusMessage(`Calling ${targetUser.name || "user"}...`);
@@ -421,7 +421,7 @@ export const DirectCallProvider = ({ children }) => {
             const stream = await acquireLocalMedia();
 
             // 2. Create peer connection
-            const pc = await createPeerConnection(session, stream);
+            await createPeerConnection(session, stream);
 
             // 3. Emit call:accept to server
             if (socketRef.current) {
