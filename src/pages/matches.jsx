@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import withAuth from "../utils/withAuth";
 import { AuthContext } from "../contexts/AuthContext";
 import Navbar from "../components/Navbar";
@@ -9,7 +9,10 @@ import {
     Avatar,
     Box,
     Button,
+    Chip,
     Container,
+    Dialog,
+    DialogContent,
     Divider,
     IconButton,
     InputAdornment,
@@ -27,6 +30,9 @@ import {
     Typography,
 } from "@mui/material";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
+import WhatshotRoundedIcon from "@mui/icons-material/WhatshotRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -39,13 +45,21 @@ import SafetyActionModal from "../components/SafetyActionModal";
 
 function MatchesPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const {
+        userData,
         getMatches,
+        getLikesYou,
+        sendSwipe,
         getConversations,
         blockUser,
         reportUser,
         unmatchUser,
     } = useContext(AuthContext);
+
+    // Active tab: 'matches' or 'likes'
+    const queryTab = new URLSearchParams(location.search).get("tab");
+    const [activeTab, setActiveTab] = useState(queryTab === "likes" ? "likes" : "matches");
 
     const [matches, setMatches] = useState([]);
     const [conversations, setConversations] = useState([]);
@@ -53,6 +67,31 @@ function MatchesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchOpen, setSearchOpen] = useState(false);
     const [error, setError] = useState("");
+
+    // Likes You state
+    const [likesYouProfiles, setLikesYouProfiles] = useState([]);
+    const [loadingLikes, setLoadingLikes] = useState(false);
+    const [likesError, setLikesError] = useState("");
+
+    // Match celebration modal state
+    const [matchModalOpen, setMatchModalOpen] = useState(false);
+    const [matchedUserData, setMatchedUserData] = useState(null);
+    const [matchedMatchData, setMatchedMatchData] = useState(null);
+
+    // Sync tab with URL search parameter
+    useEffect(() => {
+        const tabParam = new URLSearchParams(location.search).get("tab");
+        if (tabParam === "likes") {
+            setActiveTab("likes");
+        } else if (tabParam === "matches") {
+            setActiveTab("matches");
+        }
+    }, [location.search]);
+
+    const handleTabChange = (newTab) => {
+        setActiveTab(newTab);
+        navigate(`/matches?tab=${newTab}`, { replace: true });
+    };
 
     // Options menu
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);
@@ -89,9 +128,59 @@ function MatchesPage() {
         }
     }, [getMatches, getConversations]);
 
+    const fetchLikes = useCallback(async () => {
+        setLoadingLikes(true);
+        setLikesError("");
+        try {
+            if (getLikesYou) {
+                const res = await getLikesYou(1, 30);
+                if (res?.profiles) {
+                    setLikesYouProfiles(res.profiles);
+                }
+            }
+        } catch (err) {
+            console.error("Fetch likes you error:", err);
+            setLikesError(err.message || "Failed to load incoming likes");
+        } finally {
+            setLoadingLikes(false);
+        }
+    }, [getLikesYou]);
+
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    useEffect(() => {
+        if (activeTab === "likes") {
+            fetchLikes();
+        }
+    }, [activeTab, fetchLikes]);
+
+    const handleLikeBack = async (profile) => {
+        try {
+            if (!sendSwipe) return;
+            const res = await sendSwipe(profile._id, "like");
+            setLikesYouProfiles((prev) => prev.filter((p) => p._id !== profile._id));
+            if (res && res.isMatch && res.match) {
+                setMatchedUserData(res.match.matchedUser || profile);
+                setMatchedMatchData(res.match);
+                setMatchModalOpen(true);
+                fetchData();
+            }
+        } catch (err) {
+            console.error("Error liking profile:", err);
+        }
+    };
+
+    const handlePassProfile = async (profile) => {
+        try {
+            if (!sendSwipe) return;
+            await sendSwipe(profile._id, "pass");
+            setLikesYouProfiles((prev) => prev.filter((p) => p._id !== profile._id));
+        } catch (err) {
+            console.error("Error passing profile:", err);
+        }
+    };
 
     // Format relative time concisely (2m, 14m, 1h, 1d)
     const formatTimeShort = (dateStr) => {
@@ -220,6 +309,58 @@ function MatchesPage() {
                     </Box>
                 )}
 
+                {/* Segmented Tab Control: Matches vs Likes You */}
+                <Stack direction="row" spacing={1.5} sx={{ mb: 2.5 }}>
+                    <Button
+                        fullWidth
+                        onClick={() => handleTabChange("matches")}
+                        startIcon={<FavoriteRoundedIcon fontSize="small" />}
+                        sx={{
+                            py: 1.1,
+                            borderRadius: "9999px",
+                            fontWeight: activeTab === "matches" ? 800 : 600,
+                            fontSize: "0.88rem",
+                            textTransform: "none",
+                            bgcolor: activeTab === "matches" ? BRAND_COLORS.primaryGradient : "rgba(255, 255, 255, 0.05)",
+                            border: `1px solid ${activeTab === "matches" ? "transparent" : BRAND_COLORS.surfaceDarkBorder}`,
+                            color: activeTab === "matches" ? "#fff" : BRAND_COLORS.textSecondary,
+                            boxShadow: activeTab === "matches" ? "0 4px 16px rgba(253, 58, 115, 0.35)" : "none",
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                                bgcolor: activeTab === "matches" ? BRAND_COLORS.primaryGradientHover : "rgba(255, 255, 255, 0.08)",
+                                color: "#fff",
+                            },
+                        }}
+                    >
+                        Matches ({matches.length})
+                    </Button>
+                    <Button
+                        fullWidth
+                        onClick={() => handleTabChange("likes")}
+                        startIcon={<WhatshotRoundedIcon fontSize="small" />}
+                        sx={{
+                            py: 1.1,
+                            borderRadius: "9999px",
+                            fontWeight: activeTab === "likes" ? 800 : 600,
+                            fontSize: "0.88rem",
+                            textTransform: "none",
+                            bgcolor: activeTab === "likes" ? BRAND_COLORS.primaryGradient : "rgba(255, 255, 255, 0.05)",
+                            border: `1px solid ${activeTab === "likes" ? "transparent" : BRAND_COLORS.surfaceDarkBorder}`,
+                            color: activeTab === "likes" ? "#fff" : BRAND_COLORS.textSecondary,
+                            boxShadow: activeTab === "likes" ? "0 4px 16px rgba(253, 58, 115, 0.35)" : "none",
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                                bgcolor: activeTab === "likes" ? BRAND_COLORS.primaryGradientHover : "rgba(255, 255, 255, 0.08)",
+                                color: "#fff",
+                            },
+                        }}
+                    >
+                        Likes You ({likesYouProfiles.length})
+                    </Button>
+                </Stack>
+
+                {activeTab === "matches" && (
+                    <>
                 {/* 1. MATCHES SECTION HEADER (Matches 5) */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 1.8 }}>
                     <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
@@ -538,6 +679,279 @@ function MatchesPage() {
                         </Button>
                     </Paper>
                 )}
+                    </>
+                )}
+
+                {/* 2. LIKES YOU TAB CONTENT */}
+                {activeTab === "likes" && (
+                    <Box>
+                        {likesError && (
+                            <Box sx={{ mb: 2, p: 1.5, borderRadius: "16px", bgcolor: "rgba(239, 68, 68, 0.15)", color: "#EF4444", fontSize: "0.85rem" }}>
+                                {likesError}
+                            </Box>
+                        )}
+
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                                    Interested in You
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        width: 24,
+                                        height: 24,
+                                        borderRadius: "50%",
+                                        bgcolor: BRAND_COLORS.coralPink,
+                                        color: "#FFFFFF",
+                                        fontSize: "0.8rem",
+                                        fontWeight: 800,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        boxShadow: "0 2px 8px rgba(253, 58, 115, 0.5)",
+                                    }}
+                                >
+                                    {likesYouProfiles.length}
+                                </Box>
+                            </Box>
+                            {likesYouProfiles.length > 0 && (
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    Match back to chat
+                                </Typography>
+                            )}
+                        </Box>
+
+                        {loadingLikes && (
+                            <Stack spacing={2}>
+                                {[1, 2, 3].map((i) => (
+                                    <Box key={i} sx={{ p: 2, borderRadius: "24px", bgcolor: BRAND_COLORS.surfaceDark, border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
+                                        <Skeleton variant="rounded" width="100%" height={200} sx={{ borderRadius: "16px", bgcolor: "rgba(255,255,255,0.05)", mb: 1.5 }} />
+                                        <Skeleton variant="text" width="50%" height={24} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+                                        <Skeleton variant="text" width="80%" height={18} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
+                                    </Box>
+                                ))}
+                            </Stack>
+                        )}
+
+                        {!loadingLikes && likesYouProfiles.length === 0 && (
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    p: 4,
+                                    textAlign: "center",
+                                    borderRadius: "28px",
+                                    bgcolor: BRAND_COLORS.surfaceDark,
+                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                    mt: 2,
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: 64,
+                                        height: 64,
+                                        borderRadius: "50%",
+                                        bgcolor: "rgba(253, 58, 115, 0.12)",
+                                        color: BRAND_COLORS.coralPink,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        mx: "auto",
+                                        mb: 2,
+                                    }}
+                                >
+                                    <WhatshotRoundedIcon sx={{ fontSize: 32 }} />
+                                </Box>
+                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", mb: 1 }}>
+                                    No Pending Likes Yet
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, maxWidth: 360, mx: "auto", mb: 3 }}>
+                                    When other members like your profile from discovery, they'll appear here. Keep your profile active to get noticed!
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    onClick={() => navigate("/discovery")}
+                                    startIcon={<WhatshotRoundedIcon />}
+                                    sx={{
+                                        borderRadius: "9999px",
+                                        px: 3,
+                                        py: 1.2,
+                                        background: BRAND_COLORS.primaryGradient,
+                                        fontWeight: 800,
+                                        textTransform: "none",
+                                        boxShadow: "0 6px 20px rgba(253, 58, 115, 0.4)",
+                                    }}
+                                >
+                                    Explore Discover
+                                </Button>
+                            </Paper>
+                        )}
+
+                        {!loadingLikes && likesYouProfiles.length > 0 && (
+                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+                                {likesYouProfiles.map((profile) => (
+                                    <Box
+                                        key={profile._id}
+                                        sx={{
+                                            borderRadius: "24px",
+                                            bgcolor: BRAND_COLORS.surfaceDark,
+                                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                            overflow: "hidden",
+                                            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            transition: "all 0.25s ease",
+                                            "&:hover": {
+                                                transform: "translateY(-3px)",
+                                                borderColor: BRAND_COLORS.coralPink,
+                                                boxShadow: "0 12px 32px rgba(253, 58, 115, 0.25)",
+                                            },
+                                        }}
+                                    >
+                                        {/* Profile Photo with Overlay */}
+                                        <Box sx={{ position: "relative", height: 240, width: "100%", bgcolor: "#111" }}>
+                                            {profile.photos?.[0] ? (
+                                                <Box
+                                                    component="img"
+                                                    src={profile.photos[0]}
+                                                    alt={profile.name}
+                                                    sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                                />
+                                            ) : (
+                                                <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                    <Avatar sx={{ width: 64, height: 64, bgcolor: "rgba(253, 58, 115, 0.2)", color: BRAND_COLORS.coralPink, fontSize: "1.5rem", fontWeight: 800 }}>
+                                                        {profile.name?.charAt(0) || "U"}
+                                                    </Avatar>
+                                                </Box>
+                                            )}
+                                            <Box
+                                                sx={{
+                                                    position: "absolute",
+                                                    inset: 0,
+                                                    background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 50%, rgba(9, 10, 16, 0.95) 100%)",
+                                                }}
+                                            />
+                                            {/* Liked Timestamp Pill */}
+                                            {profile.likedAt && (
+                                                <Chip
+                                                    label={`Liked you ${formatTimeShort(profile.likedAt)}`}
+                                                    size="small"
+                                                    sx={{
+                                                        position: "absolute",
+                                                        top: 12,
+                                                        left: 12,
+                                                        bgcolor: "rgba(9, 10, 16, 0.75)",
+                                                        backdropFilter: "blur(10px)",
+                                                        color: "#fff",
+                                                        fontWeight: 700,
+                                                        fontSize: "0.68rem",
+                                                        border: "1px solid rgba(255, 255, 255, 0.15)",
+                                                    }}
+                                                />
+                                            )}
+                                            {/* Profile Name & Age */}
+                                            <Box sx={{ position: "absolute", bottom: 12, left: 14, right: 14 }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 900, color: "#fff", lineHeight: 1.2 }}>
+                                                    {profile.name}{profile.age ? `, ${profile.age}` : ""}
+                                                </Typography>
+                                                {profile.gender && (
+                                                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.7)", textTransform: "capitalize" }}>
+                                                        {profile.gender}
+                                                    </Typography>
+                                                )}
+                                            </Box>
+                                        </Box>
+
+                                        {/* Profile Info & Bio */}
+                                        <Box sx={{ p: 2, flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                                            {profile.bio && (
+                                                <Typography
+                                                    variant="body2"
+                                                    sx={{
+                                                        color: BRAND_COLORS.textSecondary,
+                                                        fontSize: "0.82rem",
+                                                        mb: 1.5,
+                                                        display: "-webkit-box",
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: "vertical",
+                                                        overflow: "hidden",
+                                                    }}
+                                                >
+                                                    {profile.bio}
+                                                </Typography>
+                                            )}
+
+                                            {Array.isArray(profile.interests) && profile.interests.length > 0 && (
+                                                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6, mb: 2 }}>
+                                                    {profile.interests.slice(0, 3).map((tag, idx) => (
+                                                        <Chip
+                                                            key={idx}
+                                                            label={tag}
+                                                            size="small"
+                                                            sx={{
+                                                                height: 22,
+                                                                fontSize: "0.68rem",
+                                                                bgcolor: "rgba(255, 255, 255, 0.05)",
+                                                                color: "#fff",
+                                                                border: "1px solid rgba(255, 255, 255, 0.08)",
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </Box>
+                                            )}
+
+                                            {/* Action Buttons: Pass & Match */}
+                                            <Stack direction="row" spacing={1.2} sx={{ mt: "auto", pt: 1 }}>
+                                                <Button
+                                                    fullWidth
+                                                    variant="outlined"
+                                                    onClick={() => handlePassProfile(profile)}
+                                                    startIcon={<CloseRoundedIcon />}
+                                                    sx={{
+                                                        py: 0.9,
+                                                        borderRadius: "9999px",
+                                                        borderColor: BRAND_COLORS.surfaceDarkBorder,
+                                                        color: BRAND_COLORS.textSecondary,
+                                                        fontSize: "0.82rem",
+                                                        fontWeight: 700,
+                                                        textTransform: "none",
+                                                        "&:hover": {
+                                                            borderColor: "#EF4444",
+                                                            bgcolor: "rgba(239, 68, 68, 0.1)",
+                                                            color: "#EF4444",
+                                                        },
+                                                    }}
+                                                >
+                                                    Pass
+                                                </Button>
+                                                <Button
+                                                    fullWidth
+                                                    variant="contained"
+                                                    onClick={() => handleLikeBack(profile)}
+                                                    startIcon={<FavoriteRoundedIcon />}
+                                                    sx={{
+                                                        py: 0.9,
+                                                        borderRadius: "9999px",
+                                                        background: BRAND_COLORS.primaryGradient,
+                                                        color: "#fff",
+                                                        fontSize: "0.82rem",
+                                                        fontWeight: 800,
+                                                        textTransform: "none",
+                                                        boxShadow: "0 4px 14px rgba(253, 58, 115, 0.35)",
+                                                        "&:hover": {
+                                                            background: BRAND_COLORS.primaryGradientHover,
+                                                        },
+                                                    }}
+                                                >
+                                                    Match
+                                                </Button>
+                                            </Stack>
+                                        </Box>
+                                    </Box>
+                                ))}
+                            </Box>
+                        )}
+                    </Box>
+                )}
             </Container>
 
 
@@ -681,6 +1095,132 @@ function MatchesPage() {
                     fetchData();
                 }}
             />
+
+            {/* MUTUAL MATCH CELEBRATION MODAL */}
+            <Dialog
+                open={matchModalOpen}
+                onClose={() => setMatchModalOpen(false)}
+                PaperProps={{
+                    sx: {
+                        borderRadius: "32px",
+                        background: "linear-gradient(180deg, #1A1226 0%, #0B0D17 100%)",
+                        border: `2px solid ${BRAND_COLORS.coralPink}`,
+                        boxShadow: "0 25px 70px rgba(253, 58, 115, 0.45)",
+                        p: { xs: 2.5, sm: 4 },
+                        maxWidth: 420,
+                        width: "100%",
+                        textAlign: "center",
+                    },
+                }}
+            >
+                <DialogContent sx={{ p: 0 }}>
+                    {/* Animated Glow Badge */}
+                    <Box
+                        sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.8,
+                            px: 2,
+                            py: 0.6,
+                            borderRadius: "9999px",
+                            bgcolor: "rgba(253, 58, 115, 0.18)",
+                            border: `1px solid ${BRAND_COLORS.coralPink}`,
+                            mb: 2.5,
+                        }}
+                    >
+                        <AutoAwesomeRoundedIcon sx={{ fontSize: 16, color: BRAND_COLORS.coralPink }} />
+                        <Typography variant="caption" sx={{ color: "#fff", fontWeight: 800, letterSpacing: "1px" }}>
+                            IT'S A MUTUAL MATCH!
+                        </Typography>
+                    </Box>
+
+                    {/* Overlapping Dual Avatars */}
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", my: 2.5 }}>
+                        <Avatar
+                            src={userData?.photos?.[0]}
+                            sx={{
+                                width: 92,
+                                height: 92,
+                                border: `3px solid ${BRAND_COLORS.coralPink}`,
+                                boxShadow: "0 10px 25px rgba(253, 58, 115, 0.5)",
+                                zIndex: 2,
+                                transform: "translateX(12px)",
+                            }}
+                        >
+                            {userData?.name?.charAt(0) || "U"}
+                        </Avatar>
+                        <Avatar
+                            src={matchedUserData?.photos?.[0]}
+                            sx={{
+                                width: 92,
+                                height: 92,
+                                border: `3px solid ${BRAND_COLORS.sunsetOrange}`,
+                                boxShadow: "0 10px 25px rgba(255, 122, 0, 0.5)",
+                                zIndex: 1,
+                                transform: "translateX(-12px)",
+                            }}
+                        >
+                            {matchedUserData?.name?.charAt(0) || "M"}
+                        </Avatar>
+                    </Box>
+
+                    <Typography variant="h5" sx={{ fontWeight: 900, mb: 1, color: "#fff", letterSpacing: "-0.02em" }}>
+                        You and {matchedUserData?.name || "your match"} liked each other!
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3.5 }}>
+                        Start a conversation now and send your first message.
+                    </Typography>
+
+                    <Stack spacing={1.5}>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            size="large"
+                            startIcon={<ChatBubbleRoundedIcon />}
+                            onClick={() => {
+                                setMatchModalOpen(false);
+                                if (matchedMatchData?.conversationId) {
+                                    navigate(`/chat?conversationId=${matchedMatchData.conversationId}`);
+                                } else if (matchedMatchData?._id) {
+                                    navigate(`/chat?matchId=${matchedMatchData._id}`);
+                                } else {
+                                    navigate("/chat");
+                                }
+                            }}
+                            sx={{
+                                borderRadius: "9999px",
+                                py: 1.4,
+                                background: BRAND_COLORS.primaryGradient,
+                                boxShadow: "0 8px 25px rgba(253, 58, 115, 0.5)",
+                                fontWeight: 800,
+                                fontSize: "0.95rem",
+                                "&:hover": {
+                                    background: BRAND_COLORS.primaryGradientHover,
+                                },
+                            }}
+                        >
+                            Send a Message
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            fullWidth
+                            onClick={() => setMatchModalOpen(false)}
+                            sx={{
+                                borderRadius: "9999px",
+                                py: 1.2,
+                                color: BRAND_COLORS.textSecondary,
+                                borderColor: BRAND_COLORS.surfaceDarkBorder,
+                                "&:hover": {
+                                    borderColor: BRAND_COLORS.coralPink,
+                                    color: "#fff",
+                                },
+                            }}
+                        >
+                            Keep Browsing
+                        </Button>
+                    </Stack>
+                </DialogContent>
+            </Dialog>
         </Box>
     );
 }

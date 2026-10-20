@@ -28,6 +28,9 @@ export const AuthProvider = ({ children }) => {
     const [userData, setUserData] = useState(null);
     const [token, setToken] = useState(localStorage.getItem("token") || null);
     const [loading, setLoading] = useState(true);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+    const [likesYouCount, setLikesYouCount] = useState(0);
     const router = useNavigate();
 
     // Check token and fetch user profile on initial mount
@@ -412,6 +415,83 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    // 10b. GET LIKES YOU PROFILES
+    const getLikesYou = useCallback(async (page = 1, limit = 20) => {
+        try {
+            const response = await api.get("/matches/likes-you", {
+                params: { page, limit },
+            });
+            if (response.data && response.data.pagination) {
+                setLikesYouCount(response.data.pagination.total || 0);
+            }
+            return response.data;
+        } catch (e) {
+            console.error("Get likes you error:", e);
+            throw new Error(e.response?.data?.message || "Failed to load likes");
+        }
+    }, []);
+
+    // 10c. GET IN-APP NOTIFICATIONS
+    const getNotifications = useCallback(async (page = 1, limit = 20, unreadOnly = false) => {
+        try {
+            const response = await api.get("/notifications", {
+                params: { page, limit, unreadOnly },
+            });
+            if (response.data) {
+                if (typeof response.data.unreadCount === "number") {
+                    setUnreadNotificationCount(response.data.unreadCount);
+                }
+                if (Array.isArray(response.data.notifications)) {
+                    setNotifications(response.data.notifications);
+                }
+            }
+            return response.data;
+        } catch (e) {
+            console.error("Get notifications error:", e);
+            throw new Error(e.response?.data?.message || "Failed to load notifications");
+        }
+    }, []);
+
+    // 10d. GET UNREAD NOTIFICATION COUNT
+    const getUnreadNotificationCount = useCallback(async () => {
+        try {
+            const response = await api.get("/notifications/unread-count");
+            if (response.data && typeof response.data.unreadCount === "number") {
+                setUnreadNotificationCount(response.data.unreadCount);
+            }
+            return response.data?.unreadCount || 0;
+        } catch (e) {
+            console.debug("Get unread notification count error:", e);
+            return 0;
+        }
+    }, []);
+
+    // 10e. MARK NOTIFICATION AS READ
+    const markNotificationRead = useCallback(async (notificationId) => {
+        try {
+            const response = await api.patch(`/notifications/${notificationId}/read`);
+            setNotifications((prev) =>
+                prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n))
+            );
+            setUnreadNotificationCount((prev) => Math.max(0, prev - 1));
+            return response.data;
+        } catch (e) {
+            console.error("Mark notification read error:", e);
+        }
+    }, []);
+
+    // 10f. MARK ALL NOTIFICATIONS AS READ
+    const markAllNotificationsRead = useCallback(async () => {
+        try {
+            const response = await api.patch("/notifications/read-all");
+            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+            setUnreadNotificationCount(0);
+            return response.data;
+        } catch (e) {
+            console.error("Mark all notifications read error:", e);
+        }
+    }, []);
+
     // 11. GET CONVERSATIONS LIST
     const getConversations = useCallback(async () => {
         try {
@@ -587,6 +667,10 @@ export const AuthProvider = ({ children }) => {
         token,
         loading,
         isAuthenticated: Boolean(token),
+        notifications,
+        setNotifications,
+        unreadNotificationCount,
+        likesYouCount,
         handleRegister,
         handleLogin,
         handleGoogleLogin,
@@ -599,6 +683,11 @@ export const AuthProvider = ({ children }) => {
         sendSwipe,
         resetDiscoveryFeed,
         getMatches,
+        getLikesYou,
+        getNotifications,
+        getUnreadNotificationCount,
+        markNotificationRead,
+        markAllNotificationsRead,
         getConversations,
         getOrCreateConversationByMatch,
         getConversationMessages,
@@ -619,6 +708,9 @@ export const AuthProvider = ({ children }) => {
         userData,
         token,
         loading,
+        notifications,
+        unreadNotificationCount,
+        likesYouCount,
         handleRegister,
         handleLogin,
         handleGoogleLogin,
@@ -631,6 +723,11 @@ export const AuthProvider = ({ children }) => {
         sendSwipe,
         resetDiscoveryFeed,
         getMatches,
+        getLikesYou,
+        getNotifications,
+        getUnreadNotificationCount,
+        markNotificationRead,
+        markAllNotificationsRead,
         getConversations,
         getOrCreateConversationByMatch,
         getConversationMessages,
