@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import withAuth from "../utils/withAuth";
 import { AuthContext } from "../contexts/AuthContext";
+import { useDirectCall } from "../contexts/DirectCallContext";
 import Navbar from "../components/Navbar";
 import { BRAND_COLORS } from "../theme";
 import "../App.css";
@@ -60,6 +61,8 @@ function MatchesPage() {
         reportUser,
         unmatchUser,
     } = useContext(AuthContext);
+
+    const { initiateDirectCall } = useDirectCall();
 
     // Active tab: 'matches', 'requests', or 'likes'
     const queryTab = new URLSearchParams(location.search).get("tab");
@@ -1506,7 +1509,9 @@ function MatchesPage() {
                             startIcon={<VideocamRoundedIcon />}
                             onClick={() => {
                                 setMatchModalOpen(false);
-                                navigate("/random-video");
+                                if (matchedUserData) {
+                                    initiateDirectCall(matchedUserData, matchedMatchData?.conversationId);
+                                }
                             }}
                             sx={{
                                 borderRadius: "9999px",

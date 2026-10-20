@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
+import { useDirectCall } from "../contexts/DirectCallContext";
 import withAuth from "../utils/withAuth";
 import Navbar from "../components/Navbar";
 import { BRAND_COLORS } from "../theme";
@@ -46,6 +47,8 @@ function SearchPage() {
         acceptMatchRequest,
         declineMatchRequest,
     } = useContext(AuthContext);
+
+    const { initiateDirectCall } = useDirectCall();
 
     // Search state
     const [query, setQuery] = useState("");
@@ -1031,8 +1034,11 @@ function SearchPage() {
                             size="large"
                             startIcon={<VideocamRoundedIcon />}
                             onClick={() => {
+                                const userToCall = celebrationUser;
                                 setCelebrationUser(null);
-                                navigate("/random-video");
+                                if (userToCall) {
+                                    initiateDirectCall(userToCall);
+                                }
                             }}
                             sx={{
                                 borderRadius: "9999px",

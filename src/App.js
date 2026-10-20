@@ -6,6 +6,8 @@ import theme from './theme';
 import LandingPage from './pages/landing';
 import Authentication from './pages/authentication';
 import { AuthProvider } from './contexts/AuthContext';
+import { DirectCallProvider } from './contexts/DirectCallContext';
+import DirectVideoCallModal from './components/DirectVideoCallModal';
 import NotFound from './pages/NotFound';
 import HomeComponent from './pages/home';
 import ProfilePage from './pages/profile';
@@ -58,20 +60,23 @@ function App() {
         <Router>
           <PageTitleManager />
           <AuthProvider>
-            <Routes>
-              <Route path='/' element={<LandingPage />} />
-              <Route path='/auth' element={<Authentication />} />
-              <Route path='/home' element={<HomeComponent />} />
-              <Route path='/discovery' element={<DiscoveryPage />} />
-              <Route path='/search' element={<SearchPage />} />
-              <Route path='/matches' element={<MatchesPage />} />
-              <Route path='/chat' element={<ChatPage />} />
-              <Route path='/chat/:conversationId' element={<ChatPage />} />
-              <Route path='/random-video' element={<RandomVideoPage />} />
-              <Route path='/random-call' element={<RandomVideoPage />} />
-              <Route path='/profile' element={<ProfilePage />} />
-              <Route path='*' element={<NotFound />} />
-            </Routes>
+            <DirectCallProvider>
+              <Routes>
+                <Route path='/' element={<LandingPage />} />
+                <Route path='/auth' element={<Authentication />} />
+                <Route path='/home' element={<HomeComponent />} />
+                <Route path='/discovery' element={<DiscoveryPage />} />
+                <Route path='/search' element={<SearchPage />} />
+                <Route path='/matches' element={<MatchesPage />} />
+                <Route path='/chat' element={<ChatPage />} />
+                <Route path='/chat/:conversationId' element={<ChatPage />} />
+                <Route path='/random-video' element={<RandomVideoPage />} />
+                <Route path='/random-call' element={<RandomVideoPage />} />
+                <Route path='/profile' element={<ProfilePage />} />
+                <Route path='*' element={<NotFound />} />
+              </Routes>
+              <DirectVideoCallModal />
+            </DirectCallProvider>
           </AuthProvider>
         </Router>
       </div>

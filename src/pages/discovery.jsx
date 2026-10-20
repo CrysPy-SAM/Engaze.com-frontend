@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState, useCallback, useRef } from "rea
 import { useNavigate } from "react-router-dom";
 import withAuth from "../utils/withAuth";
 import { AuthContext } from "../contexts/AuthContext";
+import { useDirectCall } from "../contexts/DirectCallContext";
 import Navbar from "../components/Navbar";
 import { BRAND_COLORS } from "../theme";
 import "../App.css";
@@ -53,6 +54,8 @@ function DiscoveryPage() {
         reportUser,
         updateDiscoveryPreferences,
     } = useContext(AuthContext);
+
+    const { initiateDirectCall } = useDirectCall();
 
     const [profiles, setProfiles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -1329,7 +1332,9 @@ function DiscoveryPage() {
                             startIcon={<VideocamRoundedIcon />}
                             onClick={() => {
                                 setMatchModalOpen(false);
-                                navigate("/random-video");
+                                if (matchedUserData) {
+                                    initiateDirectCall(matchedUserData, matchedMatchData?.conversationId);
+                                }
                             }}
                             sx={{
                                 borderRadius: "9999px",

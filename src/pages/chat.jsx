@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import io from "socket.io-client";
 import withAuth from "../utils/withAuth";
 import { AuthContext } from "../contexts/AuthContext";
+import { useDirectCall } from "../contexts/DirectCallContext";
 import server from "../environment";
 import Navbar from "../components/Navbar";
 import { BRAND_COLORS } from "../theme";
@@ -137,6 +138,8 @@ function ChatPage() {
         reportUser,
         unmatchUser,
     } = useContext(AuthContext);
+
+    const { initiateDirectCall } = useDirectCall();
 
     // State
     const [conversations, setConversations] = useState([]);
@@ -1822,7 +1825,9 @@ function ChatPage() {
                         size="large"
                         onClick={() => {
                             setShowVideoModal(false);
-                            navigate("/random-video");
+                            if (otherUser) {
+                                initiateDirectCall(otherUser, activeConversation?._id);
+                            }
                         }}
                         startIcon={<VideocamIcon />}
                         sx={{
@@ -1833,7 +1838,7 @@ function ChatPage() {
                             boxShadow: "0 6px 20px rgba(253, 58, 115, 0.35)",
                         }}
                     >
-                        Join 1-on-1 Video Room
+                        Direct 1-on-1 Video Call
                     </Button>
                     <Button
                         variant="outlined"
