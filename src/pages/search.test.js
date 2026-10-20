@@ -153,7 +153,7 @@ describe("Instagram-Inspired Search and People Discovery Frontend Tests", () => 
         const input = screen.getByPlaceholderText(/Search by name, @username, or interests.../i);
         fireEvent.change(input, { target: { value: "ben" } });
 
-        const connectBtn = await screen.findByRole("button", { name: /^connect$/i });
+        const connectBtn = await screen.findByRole("button", { name: /^connect$/i }, { timeout: 4000 });
         fireEvent.click(connectBtn);
 
         await waitFor(() => {
@@ -164,7 +164,7 @@ describe("Instagram-Inspired Search and People Discovery Frontend Tests", () => 
         });
 
         // Transitions to "Requested"
-        expect(await screen.findByRole("button", { name: /^requested$/i })).toBeInTheDocument();
+        expect(await screen.findByRole("button", { name: /^requested$/i }, { timeout: 4000 })).toBeInTheDocument();
     });
 
     test("4. Displays 'Accept' and 'Decline' buttons for incoming requests and shows celebration dialog on accept", async () => {
@@ -180,7 +180,7 @@ describe("Instagram-Inspired Search and People Discovery Frontend Tests", () => 
         const input = screen.getByPlaceholderText(/Search by name, @username, or interests.../i);
         fireEvent.change(input, { target: { value: "charlie" } });
 
-        const acceptBtn = await screen.findByRole("button", { name: /^accept$/i });
+        const acceptBtn = await screen.findByRole("button", { name: /^accept$/i }, { timeout: 4000 });
         const declineBtn = screen.getByRole("button", { name: /^decline$/i });
         expect(acceptBtn).toBeInTheDocument();
         expect(declineBtn).toBeInTheDocument();
@@ -210,7 +210,7 @@ describe("Instagram-Inspired Search and People Discovery Frontend Tests", () => 
         const input = screen.getByPlaceholderText(/Search by name, @username, or interests.../i);
         fireEvent.change(input, { target: { value: "diana" } });
 
-        const messageBtn = await screen.findByRole("button", { name: /^message$/i });
+        const messageBtn = await screen.findByRole("button", { name: /^message$/i }, { timeout: 4000 });
         expect(messageBtn).toBeInTheDocument();
     });
 

@@ -86,6 +86,17 @@ function DiscoveryPage() {
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const dragStartRef = useRef({ x: 0, y: 0 });
+    const pendingSwipesRef = useRef(new Set());
+    const currentIndexRef = useRef(0);
+    const profilesRef = useRef(profiles);
+
+    useEffect(() => {
+        currentIndexRef.current = currentIndex;
+    }, [currentIndex]);
+
+    useEffect(() => {
+        profilesRef.current = profiles;
+    }, [profiles]);
 
     // Filter Preferences State
     const [filterDialogOpen, setFilterDialogOpen] = useState(false);
@@ -170,14 +181,18 @@ function DiscoveryPage() {
             });
             if (data && data.profiles) {
                 if (isReset) {
+                    profilesRef.current = data.profiles;
                     setProfiles(data.profiles);
+                    currentIndexRef.current = 0;
                     setCurrentIndex(0);
                 } else {
                     // ID-based deduplication ensures swiped or updated candidate profiles are never duplicated
                     setProfiles((prev) => {
                         const existingIds = new Set(prev.map((p) => p._id));
                         const uniqueNew = data.profiles.filter((p) => !existingIds.has(p._id));
-                        return [...prev, ...uniqueNew];
+                        const merged = [...prev, ...uniqueNew];
+                        profilesRef.current = merged;
+                        return merged;
                     });
                 }
                 setCursor(data.nextCursor || null);
@@ -241,6 +256,20 @@ function DiscoveryPage() {
         }
     }, [currentIndex, profiles.length, hasMore, loading, cursor, fetchProfiles]);
 
+    // High-performance image preloading: Preload primary photos of the next 3 cards in the deck
+    useEffect(() => {
+        if (!profiles || profiles.length === 0) return;
+        const upcomingProfiles = profiles.slice(currentIndex + 1, currentIndex + 4);
+        upcomingProfiles.forEach((profile) => {
+            const firstPhoto = profile?.photos?.[0];
+            if (firstPhoto && typeof Image !== "undefined") {
+                const img = new Image();
+                img.decoding = "async";
+                img.src = firstPhoto;
+            }
+        });
+    }, [profiles, currentIndex]);
+
     // Persist discovery preferences durably to backend and refresh feed
     const handleApplyFilters = useCallback(async () => {
         setSavingPreferences(true);
@@ -274,9 +303,58 @@ function DiscoveryPage() {
         }
     }, [genderPreference, ageRange, updateDiscoveryPreferences, fetchProfiles]);
 
-    // Handle Swipe (Like, Pass, or Super Like)
+    // ID-based deterministic rollback for failed swipes with pure state updates
+    const rollbackFailedSwipe = useCallback((failedProfile) => {
+        if (!failedProfile?._id) return;
+        const failedId = failedProfile._id;
+
+        const currentProfiles = profilesRef.current;
+        const activeIdx = currentIndexRef.current;
+        const oldIdx = currentProfiles.findIndex((p) => p._id === failedId);
+
+        // If the failed profile is already the active card, keep it in place
+        if (oldIdx === activeIdx && activeIdx < currentProfiles.length) {
+            setSwipeAnimation("");
+            setDragOffset({ x: 0, y: 0 });
+            setSwiping(false);
+            return;
+        }
+
+        // Remove failed profile from wherever it was
+        const withoutFailed = currentProfiles.filter((p) => p._id !== failedId);
+
+        // Determine where the current active card shifted after removal
+        let newActiveIdx = activeIdx;
+        if (oldIdx !== -1 && oldIdx < activeIdx) {
+            newActiveIdx = Math.max(0, activeIdx - 1);
+        }
+        newActiveIdx = Math.min(newActiveIdx, withoutFailed.length);
+
+        // Splice the failed profile right at newActiveIdx so it becomes the active card
+        const updated = [...withoutFailed];
+        updated.splice(newActiveIdx, 0, failedProfile);
+
+        // Update refs synchronously before dispatching state updates
+        profilesRef.current = updated;
+        currentIndexRef.current = newActiveIdx;
+
+        // Pure state updates: dispatch updated values without nesting or side effects
+        setProfiles(updated);
+        setCurrentIndex(newActiveIdx);
+
+        setSwipeAnimation("");
+        setDragOffset({ x: 0, y: 0 });
+        setSwiping(false);
+    }, []);
+
+    // Handle Swipe (Like, Pass, or Super Like) with Optimistic UI & Background Processing
     const handleSwipeAction = useCallback(async (action) => {
         if (!currentProfile || swiping) return;
+
+        const targetProfile = currentProfile;
+        const targetId = targetProfile._id;
+        if (pendingSwipesRef.current.has(targetId)) return;
+        pendingSwipesRef.current.add(targetId);
 
         setSwiping(true);
         if (action === "like") {
@@ -287,36 +365,38 @@ function DiscoveryPage() {
             setSwipeAnimation("swipe-up-exit");
         }
 
-        try {
-            const targetId = currentProfile._id;
-            // Map superlike to 'like' on backend API
-            const backendAction = action === "superlike" ? "like" : action;
-            const res = await sendSwipe(targetId, backendAction);
-
-            // Check if mutual match occurred
-            if (res && res.isMatch && res.match) {
-                setMatchedUserData(res.match.matchedUser || currentProfile);
-                setMatchedMatchData(res.match);
-                setMatchModalOpen(true);
-            }
-
-            // Advance card after exit animation finishes
-            setTimeout(() => {
-                setCurrentIndex((prev) => prev + 1);
-                setSwipeAnimation("");
-                setDragOffset({ x: 0, y: 0 });
-                setSwiping(false);
-            }, 300);
-        } catch (err) {
-            console.error("Swipe submission error:", err);
-            setToastMessage(err.message || "Failed to submit swipe. Please retry.");
-            setToastSeverity("error");
-            setOpenToast(true);
+        // Optimistically advance card immediately after exit animation completes (220ms)
+        setTimeout(() => {
+            const nextIdx = currentIndexRef.current + 1;
+            currentIndexRef.current = nextIdx;
+            setCurrentIndex(nextIdx);
             setSwipeAnimation("");
             setDragOffset({ x: 0, y: 0 });
             setSwiping(false);
-        }
-    }, [currentProfile, swiping, sendSwipe]);
+        }, 220);
+
+        // Execute swipe API request asynchronously in background without blocking UI
+        const backendAction = action === "superlike" ? "like" : action;
+        sendSwipe(targetId, backendAction)
+            .then((res) => {
+                pendingSwipesRef.current.delete(targetId);
+                // Check if mutual match occurred
+                if (res && res.isMatch && res.match) {
+                    setMatchedUserData(res.match.matchedUser || targetProfile);
+                    setMatchedMatchData(res.match);
+                    setMatchModalOpen(true);
+                }
+            })
+            .catch((err) => {
+                pendingSwipesRef.current.delete(targetId);
+                console.error("Swipe submission error:", err);
+                // Profile-ID-based deterministic rollback restores the specific failed card
+                rollbackFailedSwipe(targetProfile);
+                setToastMessage(err.message || "Failed to submit swipe. Please retry.");
+                setToastSeverity("error");
+                setOpenToast(true);
+            });
+    }, [currentProfile, swiping, sendSwipe, rollbackFailedSwipe]);
 
     // Pointer Drag Handlers for True Tinder-Style Swipe Gestures
     const handlePointerDown = useCallback((e) => {
@@ -570,6 +650,8 @@ function DiscoveryPage() {
                                         component="img"
                                         src={nextPhotos[0]}
                                         alt={nextProfile.name}
+                                        loading="eager"
+                                        decoding="async"
                                         onError={(e) => {
                                             e.target.src = "/logo192.png";
                                         }}
@@ -652,6 +734,9 @@ function DiscoveryPage() {
                                     component="img"
                                     src={photos[currentPhotoIndex]}
                                     alt={currentProfile.name}
+                                    loading="eager"
+                                    decoding="async"
+                                    fetchpriority="high"
                                     onError={(e) => {
                                         e.target.src = "/logo192.png";
                                     }}
@@ -1543,7 +1628,11 @@ function DiscoveryPage() {
                 onReportUser={reportUser}
                 onSuccess={({ action, userId }) => {
                     const removedId = userId || safetyTargetUser?._id;
-                    setProfiles((prev) => prev.filter((p) => p._id !== removedId));
+                    setProfiles((prev) => {
+                        const updated = prev.filter((p) => p._id !== removedId);
+                        profilesRef.current = updated;
+                        return updated;
+                    });
                     setDetailsModalOpen(false);
                     setToastMessage(action === "block" ? "User blocked." : "Report submitted. Thank you.");
                     setToastSeverity("info");

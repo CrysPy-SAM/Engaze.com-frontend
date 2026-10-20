@@ -102,50 +102,53 @@ body {
   animation: floatGentle 4s ease-in-out infinite;
 }
 
-/* Swipe Exit Animations */
+/* Swipe Exit Animations - GPU Hardware Accelerated */
 @keyframes swipeLeftExit {
   0% {
-    transform: translateX(0) rotate(0deg);
+    transform: translate3d(0, 0, 0) rotate(0deg);
     opacity: 1;
   }
   100% {
-    transform: translateX(-120%) rotate(-18deg);
+    transform: translate3d(-120%, 0, 0) rotate(-18deg);
     opacity: 0;
   }
 }
 
 @keyframes swipeRightExit {
   0% {
-    transform: translateX(0) rotate(0deg);
+    transform: translate3d(0, 0, 0) rotate(0deg);
     opacity: 1;
   }
   100% {
-    transform: translateX(120%) rotate(18deg);
+    transform: translate3d(120%, 0, 0) rotate(18deg);
     opacity: 0;
   }
 }
 
 @keyframes swipeUpExit {
   0% {
-    transform: translateY(0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
     opacity: 1;
   }
   100% {
-    transform: translateY(-120%) scale(0.85);
+    transform: translate3d(0, -120%, 0) scale(0.85);
     opacity: 0;
   }
 }
 
 .swipe-left-exit {
-  animation: swipeLeftExit 0.35s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: swipeLeftExit 0.24s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
 }
 
 .swipe-right-exit {
-  animation: swipeRightExit 0.35s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: swipeRightExit 0.24s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
 }
 
 .swipe-up-exit {
-  animation: swipeUpExit 0.35s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: swipeUpExit 0.24s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
 }
 
 /* Match Celebration Glow */
