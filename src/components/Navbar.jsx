@@ -38,6 +38,7 @@ import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 
 export default function Navbar({ hideBottomNav = false, hideTopNav = false, rightActions = null }) {
     const navigate = useNavigate();
@@ -144,6 +145,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
 
     const navItems = [
         { label: "Discover", path: "/discovery", icon: <WhatshotRoundedIcon fontSize="small" /> },
+        { label: "Search", path: "/search", icon: <SearchRoundedIcon fontSize="small" /> },
         {
             label: "Matches",
             path: "/matches",

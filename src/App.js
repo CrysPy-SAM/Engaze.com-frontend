@@ -11,6 +11,7 @@ import HomeComponent from './pages/home';
 import ProfilePage from './pages/profile';
 import DiscoveryPage from './pages/discovery';
 import MatchesPage from './pages/matches';
+import SearchPage from './pages/search';
 import ChatPage from './pages/chat';
 import RandomVideoPage from './pages/randomVideo';
 
@@ -29,6 +30,8 @@ function PageTitleManager() {
       document.title = 'Sign In or Join — Engaze';
     } else if (path === '/discovery') {
       document.title = 'Discovery — Engaze';
+    } else if (path === '/search') {
+      document.title = 'Search People — Engaze';
     } else if (path === '/matches') {
       document.title = 'Your Matches — Engaze';
     } else if (path.startsWith('/chat')) {
@@ -60,6 +63,7 @@ function App() {
               <Route path='/auth' element={<Authentication />} />
               <Route path='/home' element={<HomeComponent />} />
               <Route path='/discovery' element={<DiscoveryPage />} />
+              <Route path='/search' element={<SearchPage />} />
               <Route path='/matches' element={<MatchesPage />} />
               <Route path='/chat' element={<ChatPage />} />
               <Route path='/chat/:conversationId' element={<ChatPage />} />

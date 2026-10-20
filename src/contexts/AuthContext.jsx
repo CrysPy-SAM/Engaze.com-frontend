@@ -730,6 +730,31 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    // Instagram-inspired Search & People Discovery
+    const searchUsers = useCallback(async (query, page = 1, limit = 20) => {
+        try {
+            const response = await api.get(`/users/search?q=${encodeURIComponent(query || "")}&page=${page}&limit=${limit}`);
+            return response.data;
+        } catch (err) {
+            const message = err.response?.data?.message || err.message || "Failed to search users";
+            const error = new Error(message);
+            error.status = err.response?.status;
+            throw error;
+        }
+    }, []);
+
+    const getPublicUserProfile = useCallback(async (userId) => {
+        try {
+            const response = await api.get(`/users/profile/public/${encodeURIComponent(userId)}`);
+            return response.data;
+        } catch (err) {
+            const message = err.response?.data?.message || err.message || "Failed to fetch user profile";
+            const error = new Error(message);
+            error.status = err.response?.status;
+            throw error;
+        }
+    }, []);
+
     const value = useMemo(() => ({
         userData,
         setUserData,
@@ -759,6 +784,8 @@ export const AuthProvider = ({ children }) => {
         acceptMatchRequest,
         declineMatchRequest,
         verifyCallAccess,
+        searchUsers,
+        getPublicUserProfile,
         getNotifications,
         getUnreadNotificationCount,
         markNotificationRead,
@@ -805,6 +832,8 @@ export const AuthProvider = ({ children }) => {
         acceptMatchRequest,
         declineMatchRequest,
         verifyCallAccess,
+        searchUsers,
+        getPublicUserProfile,
         getNotifications,
         getUnreadNotificationCount,
         markNotificationRead,
