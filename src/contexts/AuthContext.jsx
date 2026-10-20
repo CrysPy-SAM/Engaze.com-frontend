@@ -268,6 +268,90 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    // 5d. REQUEST PHOTO UPLOAD URL
+    const requestPhotoUploadUrl = useCallback(async ({ filename, contentType, fileSize, targetIndex }) => {
+        try {
+            const response = await api.post("/users/profile/photo/upload-url", {
+                filename,
+                contentType,
+                fileSize,
+                targetIndex,
+            });
+            return response.data;
+        } catch (err) {
+            console.error("Request photo upload URL error:", err);
+            const error = new Error(err.response?.data?.message || err.message || "Failed to request photo upload authorization");
+            error.status = err.response?.status;
+            error.code = err.response?.data?.code;
+            error.response = err.response;
+            throw error;
+        }
+    }, []);
+
+    // 5e. UPLOAD PHOTO BINARY TO PROVIDER
+    const uploadPhotoBinary = useCallback(async (uploadUrl, file, onProgress) => {
+        try {
+            // Use axios directly so the api Authorization interceptor is bypassed for storage providers (S3/R2)
+            const response = await axios.put(uploadUrl, file, {
+                headers: {
+                    "Content-Type": file.type || "application/octet-stream",
+                },
+                onUploadProgress: (progressEvent) => {
+                    if (onProgress && progressEvent.total) {
+                        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        onProgress(percent);
+                    }
+                },
+            });
+            return response.data;
+        } catch (err) {
+            console.error("Binary upload to storage provider error:", err);
+            const error = new Error(err.response?.data?.message || err.message || "Failed to upload photo to storage provider");
+            error.status = err.response?.status;
+            error.response = err.response;
+            throw error;
+        }
+    }, []);
+
+    // 5f. CONFIRM PHOTO UPLOAD
+    const confirmPhotoUpload = useCallback(async ({ key, uploadToken, targetIndex }) => {
+        try {
+            const response = await api.post("/users/profile/photo/confirm", {
+                key,
+                uploadToken,
+                targetIndex,
+            });
+            if (response.data && response.data.photos) {
+                setUserData((prev) => (prev ? { ...prev, photos: response.data.photos } : prev));
+            }
+            return response.data;
+        } catch (err) {
+            console.error("Confirm photo upload error:", err);
+            const error = new Error(err.response?.data?.message || err.message || "Failed to confirm photo upload");
+            error.status = err.response?.status;
+            error.code = err.response?.data?.code;
+            error.response = err.response;
+            throw error;
+        }
+    }, []);
+
+    // 5g. DELETE PROFILE PHOTO
+    const deleteProfilePhoto = useCallback(async (photoIndex) => {
+        try {
+            const response = await api.delete(`/users/profile/photo/${photoIndex}`);
+            if (response.data && response.data.photos) {
+                setUserData((prev) => (prev ? { ...prev, photos: response.data.photos } : prev));
+            }
+            return response.data;
+        } catch (err) {
+            console.error("Delete profile photo error:", err);
+            const error = new Error(err.response?.data?.message || err.message || "Failed to delete profile photo");
+            error.status = err.response?.status;
+            error.response = err.response;
+            throw error;
+        }
+    }, []);
+
     // 6. DATING DISCOVERY FEED
     const getDiscovery = useCallback(async (pageOrOptions = 1, maybeLimit = 15, maybeCursor = null) => {
         try {
@@ -527,6 +611,10 @@ export const AuthProvider = ({ children }) => {
         unmatchUser,
         getIceServers,
         sendWebRTCDiagnostics,
+        requestPhotoUploadUrl,
+        uploadPhotoBinary,
+        confirmPhotoUpload,
+        deleteProfilePhoto,
     }), [
         userData,
         token,
@@ -555,6 +643,10 @@ export const AuthProvider = ({ children }) => {
         unmatchUser,
         getIceServers,
         sendWebRTCDiagnostics,
+        requestPhotoUploadUrl,
+        uploadPhotoBinary,
+        confirmPhotoUpload,
+        deleteProfilePhoto,
     ]);
 
     return (

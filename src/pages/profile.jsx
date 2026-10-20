@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import withAuth from "../utils/withAuth";
 import { AuthContext } from "../contexts/AuthContext";
 import Navbar from "../components/Navbar";
@@ -38,6 +38,17 @@ import SparklesIcon from "@mui/icons-material/AutoAwesome";
 import PreviewIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import StarIcon from "@mui/icons-material/Star";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import CloseIcon from "@mui/icons-material/Close";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import {
+    validatePhotoFile,
+    formatFileSize,
+    parseUploadError,
+    executePhotoUploadFlow,
+    MAX_PHOTOS_COUNT,
+} from "../utils/photoUpload";
 
 const SUGGESTED_INTERESTS = [
     "Travel ✈️",
@@ -55,7 +66,14 @@ const SUGGESTED_INTERESTS = [
 ];
 
 function ProfilePage() {
-    const { getProfile, updateProfile } = useContext(AuthContext);
+    const {
+        getProfile,
+        updateProfile,
+        requestPhotoUploadUrl,
+        uploadPhotoBinary,
+        confirmPhotoUpload,
+        deleteProfilePhoto,
+    } = useContext(AuthContext);
 
     // Profile form state
     const [name, setName] = useState("");
@@ -70,6 +88,18 @@ function ProfilePage() {
     const [interestedIn, setInterestedIn] = useState(["everyone"]);
     const [ageRange, setAgeRange] = useState([18, 50]);
     const [isProfileComplete, setIsProfileComplete] = useState(false);
+
+    // Photo upload pipeline state
+    const fileInputRef = useRef(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [filePreviewUrl, setFilePreviewUrl] = useState(null);
+    const [targetSlot, setTargetSlot] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadError, setUploadError] = useState(null);
+    const [uploadErrorCode, setUploadErrorCode] = useState(null);
+    const [isDeletingIndex, setIsDeletingIndex] = useState(null);
+    const [showUrlInput, setShowUrlInput] = useState(false);
 
     // UI state
     const [activeTab, setActiveTab] = useState(0); // 0 = Edit, 1 = Live Match Card Preview
@@ -161,12 +191,169 @@ function ProfilePage() {
         };
     }, [getProfile]);
 
-    // Handle adding a photo URL
+    // Revoke object URL on unmount or when preview changes
+    useEffect(() => {
+        return () => {
+            if (filePreviewUrl) {
+                try {
+                    URL.revokeObjectURL(filePreviewUrl);
+                } catch (_) {}
+            }
+        };
+    }, [filePreviewUrl]);
+
+    // Trigger file selection for an optional specific slot (0..5) or next available (null)
+    const handleTriggerFileInput = (slotIndex = null) => {
+        if (slotIndex === null && photos.length >= MAX_PHOTOS_COUNT) {
+            setAlertMessage("Maximum 6 profile photos reached. Please replace an existing photo or delete one first.");
+            setAlertSeverity("warning");
+            setOpenSnackbar(true);
+            return;
+        }
+
+        setTargetSlot(slotIndex);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+            fileInputRef.current.click();
+        }
+    };
+
+    // Client-side file selection and preview generation
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Client-side preflight validation
+        const validation = validatePhotoFile(file);
+        if (!validation.valid) {
+            setAlertMessage(validation.error);
+            setAlertSeverity("error");
+            setOpenSnackbar(true);
+            return;
+        }
+
+        // Revoke prior preview if any
+        if (filePreviewUrl) {
+            try {
+                URL.revokeObjectURL(filePreviewUrl);
+            } catch (_) {}
+        }
+
+        const objectUrl = URL.createObjectURL(file);
+        setSelectedFile(file);
+        setFilePreviewUrl(objectUrl);
+        setUploadError(null);
+        setUploadErrorCode(null);
+        setUploadProgress(0);
+    };
+
+    // Cancel pending file upload and reset preview
+    const handleCancelUpload = () => {
+        if (filePreviewUrl) {
+            try {
+                URL.revokeObjectURL(filePreviewUrl);
+            } catch (_) {}
+        }
+        setSelectedFile(null);
+        setFilePreviewUrl(null);
+        setTargetSlot(null);
+        setUploadError(null);
+        setUploadErrorCode(null);
+        setUploadProgress(0);
+    };
+
+    // Execute authenticated 3-step upload
+    const handleStartUpload = async () => {
+        if (!selectedFile) return;
+
+        setIsUploading(true);
+        setUploadProgress(0);
+        setUploadError(null);
+        setUploadErrorCode(null);
+
+        try {
+            const result = await executePhotoUploadFlow({
+                file: selectedFile,
+                targetIndex: targetSlot !== null ? targetSlot : undefined,
+                requestUploadUrlFn: requestPhotoUploadUrl,
+                uploadBinaryFn: uploadPhotoBinary,
+                confirmUploadFn: confirmPhotoUpload,
+                onProgress: (p) => setUploadProgress(p),
+            });
+
+            // Update photos strictly after confirmation succeeds
+            if (result && Array.isArray(result.photos)) {
+                setPhotos(result.photos);
+            }
+
+            if (filePreviewUrl) {
+                try {
+                    URL.revokeObjectURL(filePreviewUrl);
+                } catch (_) {}
+            }
+            setSelectedFile(null);
+            setFilePreviewUrl(null);
+            setTargetSlot(null);
+            setUploadProgress(100);
+
+            setAlertMessage("Profile photo uploaded and verified successfully!");
+            setAlertSeverity("success");
+            setOpenSnackbar(true);
+        } catch (err) {
+            console.error("Photo upload error:", err);
+            const parsed = parseUploadError(err);
+            setUploadError(parsed.message);
+            setUploadErrorCode(parsed.code);
+            // CRITICAL: Previous photos state remains preserved on error
+            setAlertMessage(parsed.message);
+            setAlertSeverity(parsed.code === "STORAGE_UNAVAILABLE" ? "warning" : "error");
+            setOpenSnackbar(true);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    // Remove photo slot from profile and backend storage
+    const handleDeletePhotoSlot = async (index) => {
+        if (index < 0 || index >= photos.length) return;
+
+        try {
+            setIsDeletingIndex(index);
+            const result = await deleteProfilePhoto(index);
+            if (result && Array.isArray(result.photos)) {
+                setPhotos(result.photos);
+            } else {
+                setPhotos((prev) => prev.filter((_, i) => i !== index));
+            }
+
+            if (previewPhotoIndex >= photos.length - 1) {
+                setPreviewPhotoIndex(Math.max(0, photos.length - 2));
+            }
+
+            setAlertMessage("Profile photo removed successfully.");
+            setAlertSeverity("success");
+            setOpenSnackbar(true);
+        } catch (err) {
+            console.error("Failed to delete photo:", err);
+            // If the photo was only in local unsaved draft state, remove locally
+            if (err.message && (err.message.includes("Invalid photo index") || err.message.includes("not found"))) {
+                setPhotos((prev) => prev.filter((_, i) => i !== index));
+            } else {
+                setAlertMessage(err.message || "Failed to remove photo.");
+                setAlertSeverity("error");
+                setOpenSnackbar(true);
+            }
+        } finally {
+            setIsDeletingIndex(null);
+        }
+    };
+
+    // Handle adding a photo URL (backward compatibility with approved CDNs)
     const handleAddPhoto = () => {
         const trimmed = photoInput.trim();
         if (!trimmed) return;
 
-        if (photos.length >= 6) {
+        if (photos.length >= MAX_PHOTOS_COUNT) {
             setAlertMessage("You can add a maximum of 6 photos.");
             setAlertSeverity("warning");
             setOpenSnackbar(true);
@@ -174,7 +361,10 @@ function ProfilePage() {
         }
 
         try {
-            new URL(trimmed);
+            const parsed = new URL(trimmed);
+            if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+                throw new Error("Invalid protocol");
+            }
         } catch {
             setAlertMessage("Please enter a valid URL (starting with http:// or https://)");
             setAlertSeverity("error");
@@ -184,13 +374,6 @@ function ProfilePage() {
 
         setPhotos([...photos, trimmed]);
         setPhotoInput("");
-    };
-
-    const handleRemovePhoto = (index) => {
-        setPhotos(photos.filter((_, i) => i !== index));
-        if (previewPhotoIndex >= photos.length - 1) {
-            setPreviewPhotoIndex(Math.max(0, photos.length - 2));
-        }
     };
 
     // Handle adding an interest tag
@@ -730,40 +913,165 @@ function ProfilePage() {
                                 <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.5 }}>
                                     Profile Photos
                                 </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 2.5 }}>
-                                    Add up to 6 photo URLs. Your first photo is displayed on dating cards.
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 2 }}>
+                                    Upload up to 6 photos from your device (JPEG, PNG, WebP up to 5MB). Your first photo is displayed on dating cards.
                                 </Typography>
 
-                                <Stack spacing={1.5} sx={{ mb: 3 }}>
-                                    <TextField
-                                        label="Photo Image URL"
-                                        size="small"
-                                        fullWidth
-                                        placeholder="https://images.unsplash.com/..."
-                                        value={photoInput}
-                                        onChange={(e) => setPhotoInput(e.target.value)}
-                                        onKeyPress={(e) => e.key === "Enter" && handleAddPhoto()}
+                                {/* Accessible Hidden File Input */}
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    accept="image/jpeg,image/png,image/webp"
+                                    style={{ display: "none" }}
+                                    onChange={handleFileChange}
+                                    aria-label="Upload profile photo file"
+                                />
+
+                                {/* Pending Upload Preview Card */}
+                                {selectedFile && (
+                                    <Card
                                         sx={{
-                                            "& .MuiOutlinedInput-root": {
-                                                borderRadius: "12px",
-                                                bgcolor: "rgba(255, 255, 255, 0.04)",
-                                            },
-                                        }}
-                                    />
-                                    <Button
-                                        variant="contained"
-                                        startIcon={<AddPhotoAlternateIcon />}
-                                        onClick={handleAddPhoto}
-                                        disabled={!photoInput.trim() || photos.length >= 6}
-                                        sx={{
-                                            background: BRAND_COLORS.primaryGradient,
-                                            borderRadius: "12px",
-                                            fontWeight: 700,
+                                            p: 2,
+                                            mb: 2.5,
+                                            borderRadius: "16px",
+                                            bgcolor: "rgba(255, 255, 255, 0.05)",
+                                            border: `1px solid ${BRAND_COLORS.coralPink}`,
                                         }}
                                     >
-                                        Add Photo
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 1 }}>
+                                            {targetSlot !== null ? `Pending Upload for Slot ${targetSlot + 1}` : "Pending Photo Upload"}
+                                        </Typography>
+
+                                        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1.5 }}>
+                                            <Box
+                                                component="img"
+                                                src={filePreviewUrl}
+                                                alt="Pending photo preview"
+                                                sx={{
+                                                    width: 60,
+                                                    height: 75,
+                                                    borderRadius: "10px",
+                                                    objectFit: "cover",
+                                                    bgcolor: "rgba(0,0,0,0.4)",
+                                                }}
+                                            />
+                                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                <Typography variant="body2" sx={{ color: "#FFFFFF", fontWeight: 700, noWrap: true }}>
+                                                    {selectedFile.name}
+                                                </Typography>
+                                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>
+                                                    Size: {formatFileSize(selectedFile.size)}
+                                                </Typography>
+                                                {targetSlot !== null ? (
+                                                    <Chip
+                                                        size="small"
+                                                        label={`Replacing Slot ${targetSlot + 1}`}
+                                                        sx={{ mt: 0.5, height: 20, fontSize: "0.65rem", bgcolor: "rgba(253, 58, 115, 0.2)", color: BRAND_COLORS.coralPink }}
+                                                    />
+                                                ) : (
+                                                    <Chip
+                                                        size="small"
+                                                        label={photos.length === 0 ? "Setting as Main Photo" : `Adding as Photo ${photos.length + 1}`}
+                                                        sx={{ mt: 0.5, height: 20, fontSize: "0.65rem", bgcolor: "rgba(255, 255, 255, 0.1)", color: "#FFFFFF" }}
+                                                    />
+                                                )}
+                                            </Box>
+                                        </Stack>
+
+                                        {isUploading && (
+                                            <Box sx={{ mb: 1.5 }}>
+                                                <LinearProgress
+                                                    variant="determinate"
+                                                    value={uploadProgress}
+                                                    aria-label="Upload progress"
+                                                    aria-valuenow={uploadProgress}
+                                                    aria-valuemin={0}
+                                                    aria-valuemax={100}
+                                                    sx={{
+                                                        height: 8,
+                                                        borderRadius: 4,
+                                                        bgcolor: "rgba(255, 255, 255, 0.1)",
+                                                        "& .MuiLinearProgress-bar": {
+                                                            background: BRAND_COLORS.primaryGradient,
+                                                        },
+                                                    }}
+                                                />
+                                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, display: "block", mt: 0.5, textAlign: "right" }}>
+                                                    {uploadProgress}% • Uploading & verifying...
+                                                </Typography>
+                                            </Box>
+                                        )}
+
+                                        {uploadError && (
+                                            <Alert
+                                                severity={uploadErrorCode === "STORAGE_UNAVAILABLE" ? "warning" : "error"}
+                                                sx={{ mb: 1.5, borderRadius: "10px", fontSize: "0.8rem" }}
+                                            >
+                                                {uploadError}
+                                            </Alert>
+                                        )}
+
+                                        <Stack direction="row" spacing={1.5} justifyContent="flex-end">
+                                            <Button
+                                                data-testid="cancel-pending-photo-btn"
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={handleCancelUpload}
+                                                disabled={isUploading}
+                                                startIcon={<CloseIcon />}
+                                                sx={{ color: BRAND_COLORS.textSecondary, borderColor: "rgba(255,255,255,0.2)", borderRadius: "10px", textTransform: "none" }}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            {uploadError && uploadErrorCode !== "STORAGE_UNAVAILABLE" ? (
+                                                <Button
+                                                    data-testid="retry-upload-photo-btn"
+                                                    size="small"
+                                                    variant="contained"
+                                                    onClick={handleStartUpload}
+                                                    disabled={isUploading}
+                                                    startIcon={isUploading ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />}
+                                                    sx={{ background: BRAND_COLORS.primaryGradient, borderRadius: "10px", fontWeight: 700, textTransform: "none" }}
+                                                >
+                                                    Retry Upload
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    data-testid="upload-pending-photo-btn"
+                                                    size="small"
+                                                    variant="contained"
+                                                    onClick={handleStartUpload}
+                                                    disabled={isUploading || uploadErrorCode === "STORAGE_UNAVAILABLE"}
+                                                    startIcon={isUploading ? <CircularProgress size={16} color="inherit" /> : <CloudUploadIcon />}
+                                                    sx={{ background: BRAND_COLORS.primaryGradient, borderRadius: "10px", fontWeight: 700, textTransform: "none" }}
+                                                >
+                                                    {isUploading ? "Uploading..." : "Upload Photo"}
+                                                </Button>
+                                            )}
+                                        </Stack>
+                                    </Card>
+                                )}
+
+                                {/* Main Upload Trigger Button (when no file is currently selected) */}
+                                {!selectedFile && (
+                                    <Button
+                                        variant="contained"
+                                        fullWidth
+                                        startIcon={<CloudUploadIcon />}
+                                        onClick={() => handleTriggerFileInput(null)}
+                                        disabled={photos.length >= MAX_PHOTOS_COUNT}
+                                        sx={{
+                                            background: BRAND_COLORS.primaryGradient,
+                                            borderRadius: "14px",
+                                            py: 1.2,
+                                            fontWeight: 700,
+                                            mb: 2.5,
+                                            boxShadow: "0 4px 15px rgba(253, 58, 115, 0.3)",
+                                        }}
+                                    >
+                                        {photos.length === 0 ? "Upload Main Photo" : "Upload Photo from Device"}
                                     </Button>
-                                </Stack>
+                                )}
 
                                 {/* 6-slot photo grid */}
                                 <Grid container spacing={1.5}>
@@ -794,7 +1102,7 @@ function ProfilePage() {
                                                             <Box
                                                                 component="img"
                                                                 src={url}
-                                                                alt={`Photo ${index + 1}`}
+                                                                alt={`Profile photo ${index + 1}`}
                                                                 onError={(e) => {
                                                                     e.target.src = "/logo192.png";
                                                                 }}
@@ -824,26 +1132,64 @@ function ProfilePage() {
                                                                     }}
                                                                 />
                                                             )}
-                                                            <IconButton
-                                                                size="small"
-                                                                onClick={() => handleRemovePhoto(index)}
+                                                            <Stack
+                                                                direction="row"
+                                                                spacing={0.5}
                                                                 sx={{
                                                                     position: "absolute",
                                                                     top: 6,
                                                                     right: 6,
-                                                                    backgroundColor: "rgba(0, 0, 0, 0.65)",
-                                                                    backdropFilter: "blur(4px)",
-                                                                    color: "#FFFFFF",
-                                                                    "&:hover": { backgroundColor: "rgba(239, 68, 68, 0.85)" },
-                                                                    width: 24,
-                                                                    height: 24,
                                                                 }}
                                                             >
-                                                                <DeleteIcon sx={{ fontSize: 14 }} />
-                                                            </IconButton>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => handleTriggerFileInput(index)}
+                                                                    aria-label={`Replace photo in slot ${index + 1}`}
+                                                                    sx={{
+                                                                        backgroundColor: "rgba(0, 0, 0, 0.65)",
+                                                                        backdropFilter: "blur(4px)",
+                                                                        color: "#FFFFFF",
+                                                                        "&:hover": { backgroundColor: BRAND_COLORS.coralPink },
+                                                                        width: 24,
+                                                                        height: 24,
+                                                                    }}
+                                                                >
+                                                                    <PhotoCameraIcon sx={{ fontSize: 13 }} />
+                                                                </IconButton>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => handleDeletePhotoSlot(index)}
+                                                                    disabled={isDeletingIndex === index}
+                                                                    aria-label={`Remove photo ${index + 1}`}
+                                                                    sx={{
+                                                                        backgroundColor: "rgba(0, 0, 0, 0.65)",
+                                                                        backdropFilter: "blur(4px)",
+                                                                        color: "#FFFFFF",
+                                                                        "&:hover": { backgroundColor: "rgba(239, 68, 68, 0.85)" },
+                                                                        width: 24,
+                                                                        height: 24,
+                                                                    }}
+                                                                >
+                                                                    {isDeletingIndex === index ? (
+                                                                        <CircularProgress size={12} color="inherit" />
+                                                                    ) : (
+                                                                        <DeleteIcon sx={{ fontSize: 13 }} />
+                                                                    )}
+                                                                </IconButton>
+                                                            </Stack>
                                                         </>
                                                     ) : (
                                                         <Box
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            aria-label={`Upload photo to slot ${index + 1}`}
+                                                            onClick={() => handleTriggerFileInput(index)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === "Enter" || e.key === " ") {
+                                                                    e.preventDefault();
+                                                                    handleTriggerFileInput(index);
+                                                                }
+                                                            }}
                                                             sx={{
                                                                 position: "absolute",
                                                                 top: 0,
@@ -854,13 +1200,21 @@ function ProfilePage() {
                                                                 flexDirection: "column",
                                                                 alignItems: "center",
                                                                 justifyContent: "center",
-                                                                color: "rgba(255, 255, 255, 0.2)",
+                                                                color: "rgba(255, 255, 255, 0.35)",
+                                                                cursor: "pointer",
+                                                                "&:hover": {
+                                                                    color: BRAND_COLORS.coralPink,
+                                                                    bgcolor: "rgba(253, 58, 115, 0.05)",
+                                                                },
+                                                                "&:focus-visible": {
+                                                                    outline: `2px solid ${BRAND_COLORS.coralPink}`,
+                                                                },
                                                             }}
                                                         >
-                                                            <Typography variant="caption" sx={{ fontWeight: 800, fontSize: "1.1rem" }}>
+                                                            <Typography variant="caption" sx={{ fontWeight: 800, fontSize: "1.2rem" }}>
                                                                 +
                                                             </Typography>
-                                                            <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
+                                                            <Typography variant="caption" sx={{ fontSize: "0.68rem", fontWeight: 600 }}>
                                                                 Slot {index + 1}
                                                             </Typography>
                                                         </Box>
@@ -870,6 +1224,60 @@ function ProfilePage() {
                                         );
                                     })}
                                 </Grid>
+
+                                {/* Collapsible URL Input (for backward compatibility with approved CDN URLs) */}
+                                <Box sx={{ mt: 2.5, pt: 2, borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
+                                    <Button
+                                        size="small"
+                                        onClick={() => setShowUrlInput((prev) => !prev)}
+                                        sx={{
+                                            color: BRAND_COLORS.textSecondary,
+                                            fontSize: "0.75rem",
+                                            textTransform: "none",
+                                            p: 0,
+                                            mb: showUrlInput ? 1.5 : 0,
+                                            "&:hover": { color: "#FFFFFF" },
+                                        }}
+                                    >
+                                        {showUrlInput ? "▲ Hide image URL option" : "▼ Or add an approved image URL"}
+                                    </Button>
+
+                                    {showUrlInput && (
+                                        <Stack spacing={1.5}>
+                                            <TextField
+                                                label="Photo Image URL"
+                                                size="small"
+                                                fullWidth
+                                                placeholder="https://images.unsplash.com/..."
+                                                value={photoInput}
+                                                onChange={(e) => setPhotoInput(e.target.value)}
+                                                onKeyPress={(e) => e.key === "Enter" && handleAddPhoto()}
+                                                sx={{
+                                                    "& .MuiOutlinedInput-root": {
+                                                        borderRadius: "12px",
+                                                        bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                    },
+                                                }}
+                                            />
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                startIcon={<AddPhotoAlternateIcon />}
+                                                onClick={handleAddPhoto}
+                                                disabled={!photoInput.trim() || photos.length >= MAX_PHOTOS_COUNT}
+                                                sx={{
+                                                    borderColor: "rgba(255, 255, 255, 0.2)",
+                                                    color: "#FFFFFF",
+                                                    borderRadius: "10px",
+                                                    fontWeight: 600,
+                                                    textTransform: "none",
+                                                }}
+                                            >
+                                                Add URL to Photos
+                                            </Button>
+                                        </Stack>
+                                    )}
+                                </Box>
                             </Paper>
                         </Grid>
                     </Grid>
