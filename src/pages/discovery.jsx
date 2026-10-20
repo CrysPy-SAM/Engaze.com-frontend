@@ -1325,6 +1325,30 @@ function DiscoveryPage() {
                         <Button
                             variant="outlined"
                             fullWidth
+                            size="large"
+                            startIcon={<VideocamRoundedIcon />}
+                            onClick={() => {
+                                setMatchModalOpen(false);
+                                navigate("/random-video");
+                            }}
+                            sx={{
+                                borderRadius: "9999px",
+                                py: 1.3,
+                                color: "#C4B5FD",
+                                borderColor: "rgba(139, 92, 246, 0.4)",
+                                fontWeight: 700,
+                                "&:hover": {
+                                    borderColor: BRAND_COLORS.violet,
+                                    bgcolor: "rgba(139, 92, 246, 0.1)",
+                                    color: "#fff",
+                                },
+                            }}
+                        >
+                            Start Video Call
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            fullWidth
                             onClick={() => setMatchModalOpen(false)}
                             sx={{
                                 borderRadius: "9999px",

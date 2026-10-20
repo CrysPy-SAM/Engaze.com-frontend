@@ -41,6 +41,7 @@ import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 import BlockRoundedIcon from "@mui/icons-material/BlockRounded";
 import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
 import PersonRemoveRoundedIcon from "@mui/icons-material/PersonRemoveRounded";
+import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
 import SafetyActionModal from "../components/SafetyActionModal";
 
 function MatchesPage() {
@@ -51,15 +52,20 @@ function MatchesPage() {
         getMatches,
         getLikesYou,
         sendSwipe,
+        getIncomingMatchRequests,
+        acceptMatchRequest,
+        declineMatchRequest,
         getConversations,
         blockUser,
         reportUser,
         unmatchUser,
     } = useContext(AuthContext);
 
-    // Active tab: 'matches' or 'likes'
+    // Active tab: 'matches', 'requests', or 'likes'
     const queryTab = new URLSearchParams(location.search).get("tab");
-    const [activeTab, setActiveTab] = useState(queryTab === "likes" ? "likes" : "matches");
+    const [activeTab, setActiveTab] = useState(
+        queryTab === "likes" ? "likes" : queryTab === "requests" ? "requests" : "matches"
+    );
 
     const [matches, setMatches] = useState([]);
     const [conversations, setConversations] = useState([]);
@@ -67,6 +73,12 @@ function MatchesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchOpen, setSearchOpen] = useState(false);
     const [error, setError] = useState("");
+
+    // Match Requests state
+    const [incomingRequests, setIncomingRequests] = useState([]);
+    const [loadingRequests, setLoadingRequests] = useState(false);
+    const [requestsError, setRequestsError] = useState("");
+    const [requestActionLoading, setRequestActionLoading] = useState({});
 
     // Likes You state
     const [likesYouProfiles, setLikesYouProfiles] = useState([]);
@@ -83,6 +95,8 @@ function MatchesPage() {
         const tabParam = new URLSearchParams(location.search).get("tab");
         if (tabParam === "likes") {
             setActiveTab("likes");
+        } else if (tabParam === "requests") {
+            setActiveTab("requests");
         } else if (tabParam === "matches") {
             setActiveTab("matches");
         }
@@ -146,15 +160,67 @@ function MatchesPage() {
         }
     }, [getLikesYou]);
 
+    const fetchRequests = useCallback(async () => {
+        setLoadingRequests(true);
+        setRequestsError("");
+        try {
+            if (getIncomingMatchRequests) {
+                const res = await getIncomingMatchRequests();
+                if (res?.requests) {
+                    setIncomingRequests(res.requests);
+                }
+            }
+        } catch (err) {
+            console.error("Fetch requests error:", err);
+            setRequestsError(err.message || "Failed to load match requests");
+        } finally {
+            setLoadingRequests(false);
+        }
+    }, [getIncomingMatchRequests]);
+
     useEffect(() => {
         fetchData();
     }, [fetchData]);
 
     useEffect(() => {
-        if (activeTab === "likes") {
+        if (activeTab === "requests") {
+            fetchRequests();
+        } else if (activeTab === "likes") {
             fetchLikes();
         }
-    }, [activeTab, fetchLikes]);
+    }, [activeTab, fetchRequests, fetchLikes]);
+
+    const handleAcceptRequest = async (requestId) => {
+        setRequestActionLoading((prev) => ({ ...prev, [requestId]: "accepting" }));
+        try {
+            if (!acceptMatchRequest) return;
+            const res = await acceptMatchRequest(requestId);
+            setIncomingRequests((prev) => prev.filter((r) => r._id !== requestId));
+            if (res && res.match) {
+                setMatchedUserData(res.match.matchedUser);
+                setMatchedMatchData(res.match);
+                setMatchModalOpen(true);
+                fetchData();
+            }
+        } catch (err) {
+            console.error("Error accepting request:", err);
+        } finally {
+            setRequestActionLoading((prev) => ({ ...prev, [requestId]: null }));
+        }
+    };
+
+    const handleDeclineRequest = async (requestId) => {
+        setRequestActionLoading((prev) => ({ ...prev, [requestId]: "declining" }));
+        try {
+            if (!declineMatchRequest) return;
+            await declineMatchRequest(requestId);
+            setIncomingRequests((prev) => prev.filter((r) => r._id !== requestId));
+        } catch (err) {
+            console.error("Error declining request:", err);
+        } finally {
+            setRequestActionLoading((prev) => ({ ...prev, [requestId]: null }));
+        }
+    };
 
     const handleLikeBack = async (profile) => {
         try {
@@ -309,7 +375,7 @@ function MatchesPage() {
                     </Box>
                 )}
 
-                {/* Segmented Tab Control: Matches vs Likes You */}
+                {/* Segmented Tab Control: Matches vs Requests vs Likes You */}
                 <Stack direction="row" spacing={1.5} sx={{ mb: 2.5 }}>
                     <Button
                         fullWidth
@@ -319,7 +385,7 @@ function MatchesPage() {
                             py: 1.1,
                             borderRadius: "9999px",
                             fontWeight: activeTab === "matches" ? 800 : 600,
-                            fontSize: "0.88rem",
+                            fontSize: "0.85rem",
                             textTransform: "none",
                             bgcolor: activeTab === "matches" ? BRAND_COLORS.primaryGradient : "rgba(255, 255, 255, 0.05)",
                             border: `1px solid ${activeTab === "matches" ? "transparent" : BRAND_COLORS.surfaceDarkBorder}`,
@@ -336,13 +402,36 @@ function MatchesPage() {
                     </Button>
                     <Button
                         fullWidth
+                        onClick={() => handleTabChange("requests")}
+                        startIcon={<NotificationsRoundedIcon fontSize="small" />}
+                        sx={{
+                            py: 1.1,
+                            borderRadius: "9999px",
+                            fontWeight: activeTab === "requests" ? 800 : 600,
+                            fontSize: "0.85rem",
+                            textTransform: "none",
+                            bgcolor: activeTab === "requests" ? BRAND_COLORS.primaryGradient : "rgba(255, 255, 255, 0.05)",
+                            border: `1px solid ${activeTab === "requests" ? "transparent" : BRAND_COLORS.surfaceDarkBorder}`,
+                            color: activeTab === "requests" ? "#fff" : BRAND_COLORS.textSecondary,
+                            boxShadow: activeTab === "requests" ? "0 4px 16px rgba(253, 58, 115, 0.35)" : "none",
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                                bgcolor: activeTab === "requests" ? BRAND_COLORS.primaryGradientHover : "rgba(255, 255, 255, 0.08)",
+                                color: "#fff",
+                            },
+                        }}
+                    >
+                        Requests ({incomingRequests.length})
+                    </Button>
+                    <Button
+                        fullWidth
                         onClick={() => handleTabChange("likes")}
                         startIcon={<WhatshotRoundedIcon fontSize="small" />}
                         sx={{
                             py: 1.1,
                             borderRadius: "9999px",
                             fontWeight: activeTab === "likes" ? 800 : 600,
-                            fontSize: "0.88rem",
+                            fontSize: "0.85rem",
                             textTransform: "none",
                             bgcolor: activeTab === "likes" ? BRAND_COLORS.primaryGradient : "rgba(255, 255, 255, 0.05)",
                             border: `1px solid ${activeTab === "likes" ? "transparent" : BRAND_COLORS.surfaceDarkBorder}`,
@@ -682,7 +771,216 @@ function MatchesPage() {
                     </>
                 )}
 
-                {/* 2. LIKES YOU TAB CONTENT */}
+                {/* 2. MATCH REQUESTS TAB CONTENT */}
+                {activeTab === "requests" && (
+                    <Box>
+                        {requestsError && (
+                            <Box sx={{ mb: 2, p: 1.5, borderRadius: "16px", bgcolor: "rgba(239, 68, 68, 0.15)", color: "#EF4444", fontSize: "0.85rem" }}>
+                                {requestsError}
+                            </Box>
+                        )}
+
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 1.8 }}>
+                            <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                                Match Requests
+                            </Typography>
+                            {incomingRequests.length > 0 && (
+                                <Box
+                                    sx={{
+                                        width: 24,
+                                        height: 24,
+                                        borderRadius: "50%",
+                                        bgcolor: BRAND_COLORS.coralPink,
+                                        color: "#FFFFFF",
+                                        fontSize: "0.8rem",
+                                        fontWeight: 800,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        boxShadow: "0 2px 8px rgba(253, 58, 115, 0.5)",
+                                    }}
+                                >
+                                    {incomingRequests.length}
+                                </Box>
+                            )}
+                        </Box>
+                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 2.5 }}>
+                            Members who want to connect with you. Accept to establish a connection, start chatting and video calling!
+                        </Typography>
+
+                        {loadingRequests && (
+                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", md: "repeat(4, 1fr)" }, gap: 2 }}>
+                                {[1, 2, 3, 4].map((i) => (
+                                    <Skeleton key={i} variant="rounded" height={260} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)", borderRadius: "20px" }} />
+                                ))}
+                            </Box>
+                        )}
+
+                        {!loadingRequests && incomingRequests.length === 0 && (
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    p: 5,
+                                    textAlign: "center",
+                                    borderRadius: "24px",
+                                    bgcolor: "rgba(255, 255, 255, 0.02)",
+                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                    my: 4,
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: 72,
+                                        height: 72,
+                                        borderRadius: "50%",
+                                        bgcolor: "rgba(253, 58, 115, 0.12)",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        margin: "0 auto 16px",
+                                    }}
+                                >
+                                    <NotificationsRoundedIcon sx={{ fontSize: 36, color: BRAND_COLORS.coralPink }} />
+                                </Box>
+                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 1 }}>
+                                    No Pending Match Requests
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, maxWidth: 360, margin: "0 auto", mb: 3 }}>
+                                    When another member sends you a match request, it will appear here for your consent before any chat or calling can begin.
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    onClick={() => navigate("/discovery")}
+                                    sx={{
+                                        background: BRAND_COLORS.primaryGradient,
+                                        borderRadius: "9999px",
+                                        px: 3,
+                                        py: 1.2,
+                                        fontWeight: 700,
+                                        textTransform: "none",
+                                    }}
+                                >
+                                    Explore Discovery
+                                </Button>
+                            </Paper>
+                        )}
+
+                        {!loadingRequests && incomingRequests.length > 0 && (
+                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" }, gap: 2.5 }}>
+                                {incomingRequests.map((reqItem) => {
+                                    const sender = reqItem.sender;
+                                    if (!sender) return null;
+                                    const isAccepting = requestActionLoading[reqItem._id] === "accepting";
+                                    const isDeclining = requestActionLoading[reqItem._id] === "declining";
+
+                                    return (
+                                        <Paper
+                                            key={reqItem._id}
+                                            elevation={0}
+                                            sx={{
+                                                borderRadius: "20px",
+                                                overflow: "hidden",
+                                                bgcolor: "rgba(255, 255, 255, 0.03)",
+                                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                transition: "all 0.25s ease",
+                                                "&:hover": {
+                                                    borderColor: "rgba(253, 58, 115, 0.4)",
+                                                    transform: "translateY(-3px)",
+                                                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
+                                                },
+                                            }}
+                                        >
+                                            <Box sx={{ position: "relative", height: 220, bgcolor: "#111" }}>
+                                                <img
+                                                    src={sender.photos?.[0] || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80"}
+                                                    alt={sender.name}
+                                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                                />
+                                                <Box
+                                                    sx={{
+                                                        position: "absolute",
+                                                        bottom: 0,
+                                                        left: 0,
+                                                        right: 0,
+                                                        background: "linear-gradient(to top, rgba(9, 10, 16, 0.95), transparent)",
+                                                        p: 1.5,
+                                                    }}
+                                                >
+                                                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>
+                                                        {sender.name}{sender.age ? `, ${sender.age}` : ""}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+
+                                            <Box sx={{ p: 2, display: "flex", flexDirection: "column", flexGrow: 1, gap: 1.5 }}>
+                                                {reqItem.message && (
+                                                    <Box sx={{ p: 1.2, borderRadius: "12px", bgcolor: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
+                                                        <Typography variant="caption" sx={{ color: BRAND_COLORS.coralPink, fontWeight: 700, display: "block" }}>
+                                                            Personal Note
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{ color: "#eee", fontStyle: "italic", fontSize: "0.85rem" }}>
+                                                            "{reqItem.message}"
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+
+                                                {sender.bio && (
+                                                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "0.82rem", lineClamp: 2, overflow: "hidden" }}>
+                                                        {sender.bio}
+                                                    </Typography>
+                                                )}
+
+                                                <Stack direction="row" spacing={1.5} sx={{ mt: "auto", pt: 1 }}>
+                                                    <Button
+                                                        variant="contained"
+                                                        fullWidth
+                                                        disabled={isAccepting || isDeclining}
+                                                        onClick={() => handleAcceptRequest(reqItem._id)}
+                                                        sx={{
+                                                            background: BRAND_COLORS.primaryGradient,
+                                                            borderRadius: "12px",
+                                                            py: 1,
+                                                            fontWeight: 700,
+                                                            textTransform: "none",
+                                                            fontSize: "0.85rem",
+                                                        }}
+                                                    >
+                                                        {isAccepting ? "Connecting..." : "Accept"}
+                                                    </Button>
+                                                    <Button
+                                                        variant="outlined"
+                                                        fullWidth
+                                                        disabled={isAccepting || isDeclining}
+                                                        onClick={() => handleDeclineRequest(reqItem._id)}
+                                                        sx={{
+                                                            borderRadius: "12px",
+                                                            borderColor: "rgba(255, 255, 255, 0.15)",
+                                                            color: BRAND_COLORS.textSecondary,
+                                                            py: 1,
+                                                            fontWeight: 600,
+                                                            textTransform: "none",
+                                                            fontSize: "0.85rem",
+                                                            "&:hover": {
+                                                                borderColor: "rgba(239, 68, 68, 0.4)",
+                                                                color: "#EF4444",
+                                                            },
+                                                        }}
+                                                    >
+                                                        {isDeclining ? "Declining..." : "Decline"}
+                                                    </Button>
+                                                </Stack>
+                                            </Box>
+                                        </Paper>
+                                    );
+                                })}
+                            </Box>
+                        )}
+                    </Box>
+                )}
+
+                {/* 3. LIKES YOU TAB CONTENT */}
                 {activeTab === "likes" && (
                     <Box>
                         {likesError && (
@@ -1200,6 +1498,30 @@ function MatchesPage() {
                             }}
                         >
                             Send a Message
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            fullWidth
+                            size="large"
+                            startIcon={<VideocamRoundedIcon />}
+                            onClick={() => {
+                                setMatchModalOpen(false);
+                                navigate("/random-video");
+                            }}
+                            sx={{
+                                borderRadius: "9999px",
+                                py: 1.3,
+                                color: "#C4B5FD",
+                                borderColor: "rgba(139, 92, 246, 0.4)",
+                                fontWeight: 700,
+                                "&:hover": {
+                                    borderColor: BRAND_COLORS.violet,
+                                    bgcolor: "rgba(139, 92, 246, 0.1)",
+                                    color: "#fff",
+                                },
+                            }}
+                        >
+                            Start Video Call
                         </Button>
                         <Button
                             variant="outlined"

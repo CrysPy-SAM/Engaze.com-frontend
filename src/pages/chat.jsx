@@ -1822,9 +1822,7 @@ function ChatPage() {
                         size="large"
                         onClick={() => {
                             setShowVideoModal(false);
-                            if (activeConversation?._id) {
-                                navigate(`/${activeConversation._id}`);
-                            }
+                            navigate("/random-video");
                         }}
                         startIcon={<VideocamIcon />}
                         sx={{

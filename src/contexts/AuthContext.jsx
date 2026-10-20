@@ -431,6 +431,75 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    // 10b-1. SEND MATCH REQUEST (A -> B)
+    const sendMatchRequest = useCallback(async (targetUserId, message = "") => {
+        try {
+            const response = await api.post("/matches/requests", {
+                recipientId: targetUserId,
+                message,
+            });
+            return response.data;
+        } catch (e) {
+            console.error("Send match request error:", e);
+            throw new Error(e.response?.data?.message || "Failed to send match request");
+        }
+    }, []);
+
+    // 10b-2. GET INCOMING MATCH REQUESTS
+    const getIncomingMatchRequests = useCallback(async () => {
+        try {
+            const response = await api.get("/matches/requests/incoming");
+            return response.data;
+        } catch (e) {
+            console.error("Get incoming requests error:", e);
+            throw new Error(e.response?.data?.message || "Failed to load match requests");
+        }
+    }, []);
+
+    // 10b-3. GET OUTGOING MATCH REQUESTS
+    const getOutgoingMatchRequests = useCallback(async () => {
+        try {
+            const response = await api.get("/matches/requests/outgoing");
+            return response.data;
+        } catch (e) {
+            console.error("Get outgoing requests error:", e);
+            throw new Error(e.response?.data?.message || "Failed to load outgoing requests");
+        }
+    }, []);
+
+    // 10b-4. ACCEPT MATCH REQUEST
+    const acceptMatchRequest = useCallback(async (requestId) => {
+        try {
+            const response = await api.post(`/matches/requests/${requestId}/accept`);
+            return response.data;
+        } catch (e) {
+            console.error("Accept match request error:", e);
+            throw new Error(e.response?.data?.message || "Failed to accept match request");
+        }
+    }, []);
+
+    // 10b-5. DECLINE MATCH REQUEST
+    const declineMatchRequest = useCallback(async (requestId) => {
+        try {
+            const response = await api.post(`/matches/requests/${requestId}/decline`);
+            return response.data;
+        } catch (e) {
+            console.error("Decline match request error:", e);
+            throw new Error(e.response?.data?.message || "Failed to decline match request");
+        }
+    }, []);
+
+    // 10b-6. VERIFY CALL ACCESS PERMISSIONS
+    const verifyCallAccess = useCallback(async (targetUserId) => {
+        try {
+            const response = await api.get(`/webrtc/verify-access/${targetUserId}`);
+            return response.data;
+        } catch (e) {
+            console.error("Verify call access error:", e);
+            throw new Error(e.response?.data?.message || "Failed to verify call access");
+        }
+    }, []);
+
     // 10c. GET IN-APP NOTIFICATIONS
     const getNotifications = useCallback(async (page = 1, limit = 20, unreadOnly = false) => {
         try {
@@ -684,6 +753,12 @@ export const AuthProvider = ({ children }) => {
         resetDiscoveryFeed,
         getMatches,
         getLikesYou,
+        sendMatchRequest,
+        getIncomingMatchRequests,
+        getOutgoingMatchRequests,
+        acceptMatchRequest,
+        declineMatchRequest,
+        verifyCallAccess,
         getNotifications,
         getUnreadNotificationCount,
         markNotificationRead,
@@ -724,6 +799,12 @@ export const AuthProvider = ({ children }) => {
         resetDiscoveryFeed,
         getMatches,
         getLikesYou,
+        sendMatchRequest,
+        getIncomingMatchRequests,
+        getOutgoingMatchRequests,
+        acceptMatchRequest,
+        declineMatchRequest,
+        verifyCallAccess,
         getNotifications,
         getUnreadNotificationCount,
         markNotificationRead,

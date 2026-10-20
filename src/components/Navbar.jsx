@@ -103,12 +103,14 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
             await markNotificationRead(notif._id);
         }
         handleNotificationMenuClose();
-        if (notif.type === "match") {
+        if (notif.type === "match" || notif.type === "match_accepted") {
             if (notif.data?.conversationId) {
                 navigate(`/chat?conversationId=${notif.data.conversationId}`);
             } else {
                 navigate("/matches");
             }
+        } else if (notif.type === "match_request") {
+            navigate("/matches?tab=requests");
         } else if (notif.type === "like") {
             navigate("/matches?tab=likes");
         } else {
@@ -567,6 +569,10 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                             <Typography variant="body2" sx={{ fontWeight: notif.read ? 600 : 800, color: "#fff", lineHeight: 1.3 }}>
                                                                 {notif.type === "match"
                                                                     ? `🎉 You and ${notif.sender?.name} matched!`
+                                                                    : notif.type === "match_request"
+                                                                    ? `💌 ${notif.sender?.name} sent you a match request!`
+                                                                    : notif.type === "match_accepted"
+                                                                    ? `✨ ${notif.sender?.name} accepted your match request!`
                                                                     : `${notif.sender?.name} liked your profile`}
                                                             </Typography>
                                                         }
