@@ -548,10 +548,29 @@ export const DirectCallProvider = ({ children }) => {
         }
 
         const socket = io(server, {
-            auth: { token },
-            transports: ["websocket", "polling"],
+            auth: { token: localStorage.getItem("token") || token },
+            transports: ["polling", "websocket"],
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
+            timeout: 15000,
         });
         socketRef.current = socket;
+
+        socket.on("connect_error", (err) => {
+            console.warn("DirectCall socket connection error:", err.message);
+            const freshToken = localStorage.getItem("token");
+            if (freshToken) {
+                socket.auth = { token: freshToken };
+            }
+        });
+
+        socket.io.on("reconnect_attempt", () => {
+            const freshToken = localStorage.getItem("token");
+            if (freshToken) {
+                socket.auth = { token: freshToken };
+            }
+        });
 
         // 1. INCOMING CALL EVENT (Callee received call from partner)
         socket.on("call:incoming", ({ callId, caller, conversationId }) => {

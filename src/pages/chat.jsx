@@ -151,7 +151,7 @@ function ChatPage() {
     const [conversationsError, setConversationsError] = useState(null);
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [sending, setSending] = useState(false);
-    const [isConnected, setIsConnected] = useState(false);
+    const [connectionStatus, setConnectionStatus] = useState("connecting"); // "connecting" | "connected" | "reconnecting" | "offline"
     const [mobileShowChat, setMobileShowChat] = useState(false);
 
     // Interactive Extras
@@ -248,14 +248,19 @@ function ChatPage() {
         if (!token) return;
 
         const socket = io(server, {
-            auth: { token },
-            transports: ["websocket", "polling"],
+            auth: { token: localStorage.getItem("token") || token },
+            transports: ["polling", "websocket"],
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            timeout: 15000,
         });
 
         socketRef.current = socket;
 
         socket.on("connect", () => {
-            setIsConnected(true);
+            setConnectionStatus("connected");
             const activeConv = activeConvRef.current;
             if (activeConv?._id) {
                 socket.emit("chat:join", { conversationId: activeConv._id });
@@ -264,8 +269,43 @@ function ChatPage() {
             }
         });
 
-        socket.on("disconnect", () => {
-            setIsConnected(false);
+        socket.on("disconnect", (reason) => {
+            if (reason === "io client disconnect") {
+                setConnectionStatus("offline");
+            } else {
+                setConnectionStatus("reconnecting");
+            }
+        });
+
+        socket.on("connect_error", (error) => {
+            console.warn("Chat socket connection error:", error.message);
+            setConnectionStatus("reconnecting");
+            const freshToken = localStorage.getItem("token");
+            if (freshToken) {
+                socket.auth = { token: freshToken };
+            }
+        });
+
+        socket.io.on("reconnect_attempt", () => {
+            setConnectionStatus("reconnecting");
+            const freshToken = localStorage.getItem("token");
+            if (freshToken) {
+                socket.auth = { token: freshToken };
+            }
+        });
+
+        socket.io.on("reconnect", () => {
+            setConnectionStatus("connected");
+            const activeConv = activeConvRef.current;
+            if (activeConv?._id) {
+                socket.emit("chat:join", { conversationId: activeConv._id });
+                socket.emit("chat:read", { conversationId: activeConv._id });
+                recoverMissedMessages(activeConv._id);
+            }
+        });
+
+        socket.io.on("reconnect_failed", () => {
+            setConnectionStatus("offline");
         });
 
         // Incoming real-time message handler
@@ -740,12 +780,12 @@ function ChatPage() {
             {/* Unified Brand Navigation - Hidden on mobile if actively in 1-on-1 chat to ensure edge-to-edge view */}
             <Navbar hideBottomNav={isMobile && mobileShowChat} hideTopNav={isMobile && mobileShowChat} />
 
-            {/* Offline warning banner */}
-            {!isConnected && (
+            {/* Live Chat Connection Status Banner (Only visible on genuine disconnection/reconnection) */}
+            {(connectionStatus === "reconnecting" || connectionStatus === "offline") && (
                 <Box
                     sx={{
-                        bgcolor: "rgba(245, 158, 11, 0.15)",
-                        borderBottom: "1px solid rgba(245, 158, 11, 0.3)",
+                        bgcolor: connectionStatus === "offline" ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)",
+                        borderBottom: `1px solid ${connectionStatus === "offline" ? "rgba(239, 68, 68, 0.3)" : "rgba(245, 158, 11, 0.3)"}`,
                         py: 0.6,
                         px: 2,
                         display: "flex",
@@ -755,9 +795,11 @@ function ChatPage() {
                         zIndex: 10,
                     }}
                 >
-                    <WifiOffIcon sx={{ fontSize: 16, color: "#F59E0B" }} />
-                    <Typography variant="caption" sx={{ color: "#F59E0B", fontWeight: 600 }}>
-                        Reconnecting to live chat server... Messages will still send via HTTP fallback.
+                    <WifiOffIcon sx={{ fontSize: 16, color: connectionStatus === "offline" ? "#EF4444" : "#F59E0B" }} />
+                    <Typography variant="caption" sx={{ color: connectionStatus === "offline" ? "#EF4444" : "#F59E0B", fontWeight: 600 }}>
+                        {connectionStatus === "offline"
+                            ? "Live chat server unavailable. Messages will send via HTTP fallback."
+                            : "Reconnecting to live chat server... Messages will still send via HTTP fallback."}
                     </Typography>
                 </Box>
             )}
@@ -845,7 +887,21 @@ function ChatPage() {
                             },
                         }}
                     >
-                        {conversationsError && (
+                        {loadingConversations && (
+                            <Box sx={{ p: 1.5 }}>
+                                {[1, 2, 3, 4].map((n) => (
+                                    <Box key={n} sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                                        <Skeleton variant="circular" width={52} height={52} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
+                                        <Box sx={{ flex: 1 }}>
+                                             <Skeleton variant="text" width="60%" height={24} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
+                                            <Skeleton variant="text" width="85%" height={18} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
+                                        </Box>
+                                    </Box>
+                                ))}
+                            </Box>
+                        )}
+
+                        {!loadingConversations && conversationsError && (
                             <Box
                                 sx={{
                                     p: 2,
@@ -877,21 +933,8 @@ function ChatPage() {
                                 </Button>
                             </Box>
                         )}
-                        {loadingConversations && (
-                            <Box sx={{ p: 1.5 }}>
-                                {[1, 2, 3, 4].map((n) => (
-                                    <Box key={n} sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                                        <Skeleton variant="circular" width={52} height={52} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
-                                        <Box sx={{ flex: 1 }}>
-                                             <Skeleton variant="text" width="60%" height={24} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
-                                            <Skeleton variant="text" width="85%" height={18} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)" }} />
-                                        </Box>
-                                    </Box>
-                                ))}
-                            </Box>
-                        )}
 
-                        {!loadingConversations && filteredConversations.length === 0 && (
+                        {!loadingConversations && !conversationsError && filteredConversations.length === 0 && (
                             <Box sx={{ p: 4, textAlign: "center", color: BRAND_COLORS.textSecondary }}>
                                 <Box
                                     sx={{
