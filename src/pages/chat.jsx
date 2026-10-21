@@ -64,6 +64,8 @@ import {
     reconcileSingleMessage,
     reconcileBatchMessages,
     isStaleConversationResponse,
+    isOutgoingMessage,
+    normalizeEntityId,
 } from "../utils/chatHelpers";
 
 // Quick photo presets for engaging conversation
@@ -229,7 +231,7 @@ function ChatPage() {
 
                 // If any missed message is from partner, send read receipt
                 const hasPartnerMsg = missed.some(
-                    (m) => (m.sender?._id || m.sender) !== userData?._id
+                    (m) => !isOutgoingMessage(m, userData?._id)
                 );
                 if (hasPartnerMsg) {
                     if (socketRef.current?.connected) {
@@ -317,7 +319,7 @@ function ChatPage() {
                 scrollToBottom();
 
                 // If message from the other person, send read event
-                if (newMsg.sender?._id !== userData?._id && newMsg.sender !== userData?._id) {
+                if (!isOutgoingMessage(newMsg, userData?._id)) {
                     socket.emit("chat:read", { conversationId: currentConv._id });
                 }
             }
@@ -340,7 +342,7 @@ function ChatPage() {
                             lastMessageAt: newMsg.createdAt,
                             unreadCount: isCurrentActive
                                 ? 0
-                                : (conv.unreadCount || 0) + (newMsg.sender?._id !== userData?._id ? 1 : 0),
+                                : (conv.unreadCount || 0) + (!isOutgoingMessage(newMsg, userData?._id) ? 1 : 0),
                         };
                     }
                     return conv;
@@ -369,7 +371,7 @@ function ChatPage() {
 
         // Real-time partner typing indicator
         socket.on("chat:typing", ({ conversationId, userId, isTyping }) => {
-            if (activeConvRef.current?._id?.toString() === conversationId?.toString() && userId !== userData?._id) {
+            if (activeConvRef.current?._id?.toString() === conversationId?.toString() && normalizeEntityId(userId) !== normalizeEntityId(userData?._id)) {
                 setPartnerTyping(Boolean(isTyping));
                 if (isTyping) {
                     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -690,18 +692,19 @@ function ChatPage() {
         setShowEmojiPicker(false);
         setSending(true);
 
+        const currentUserId = normalizeEntityId(userData?._id) || (userData?._id ? String(userData._id) : "");
         const optimisticMessage = {
             _id: clientTempId,
             clientTempId,
             conversation: convId,
             sender: {
-                _id: userData?._id,
-                name: userData?.name,
-                photos: userData?.photos,
+                _id: currentUserId,
+                name: userData?.name || "Me",
+                photos: Array.isArray(userData?.photos) ? userData.photos : [],
             },
             content: trimmed,
             createdAt: new Date().toISOString(),
-            readBy: [userData?._id],
+            readBy: currentUserId ? [currentUserId] : [],
             status: "pending",
         };
 
@@ -1336,8 +1339,7 @@ function ChatPage() {
 
                                 {!loadingMessages &&
                                     messages.map((msg, index) => {
-                                        const senderId = msg.sender?._id || msg.sender;
-                                        const isMine = senderId === userData?._id;
+                                        const isMine = isOutgoingMessage(msg, userData?._id);
                                         const isRead = msg.readBy && msg.readBy.length > 1;
                                         const isImg = isImageContent(msg.content);
                                         const imgUrl = isImg ? extractImageUrl(msg.content) : null;
