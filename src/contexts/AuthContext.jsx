@@ -24,6 +24,10 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+// In-memory cache for ICE server configuration (5 min TTL)
+let cachedIceServers = null;
+let cachedIceServersExpiry = 0;
+
 export const AuthProvider = ({ children }) => {
     const [userData, setUserData] = useState(null);
     const [token, setToken] = useState(localStorage.getItem("token") || null);
@@ -207,6 +211,8 @@ export const AuthProvider = ({ children }) => {
     // 3. LOGOUT
     const handleLogout = useCallback(() => {
         localStorage.removeItem("token");
+        cachedIceServers = null;
+        cachedIceServersExpiry = 0;
         setToken(null);
         setUserData(null);
         router("/auth");
@@ -700,8 +706,15 @@ export const AuthProvider = ({ children }) => {
 
     // Fetch secure STUN/TURN ICE server configuration from authenticated backend
     const getIceServers = useCallback(async () => {
+        if (cachedIceServers && Date.now() < cachedIceServersExpiry) {
+            return cachedIceServers;
+        }
         try {
             const response = await api.get("/webrtc/ice-servers");
+            if (response.data && response.data.iceServers) {
+                cachedIceServers = response.data;
+                cachedIceServersExpiry = Date.now() + 5 * 60 * 1000;
+            }
             return response.data;
         } catch (err) {
             console.warn("Failed to fetch ICE servers from backend, falling back to STUN defaults:", err?.message);

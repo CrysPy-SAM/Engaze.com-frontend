@@ -73,17 +73,22 @@ function ProfilePage() {
         uploadPhotoBinary,
         confirmPhotoUpload,
         deleteProfilePhoto,
+        userData,
     } = useContext(AuthContext);
 
     // Profile form state
-    const [name, setName] = useState("");
-    const [username, setUsername] = useState("");
-    const [dob, setDob] = useState("");
-    const [gender, setGender] = useState("");
-    const [bio, setBio] = useState("");
-    const [photos, setPhotos] = useState([]);
+    const [name, setName] = useState(userData?.name || "");
+    const [username, setUsername] = useState(userData?.username || "");
+    const [dob, setDob] = useState(() => {
+        if (!userData?.dob) return "";
+        const d = new Date(userData.dob);
+        return !isNaN(d.getTime()) ? d.toISOString().split("T")[0] : "";
+    });
+    const [gender, setGender] = useState(userData?.gender || "");
+    const [bio, setBio] = useState(userData?.bio || "");
+    const [photos, setPhotos] = useState(userData?.photos || []);
     const [photoInput, setPhotoInput] = useState("");
-    const [interests, setInterests] = useState([]);
+    const [interests, setInterests] = useState(userData?.interests || []);
     const [interestInput, setInterestInput] = useState("");
     const [interestedIn, setInterestedIn] = useState(["everyone"]);
     const [ageRange, setAgeRange] = useState([18, 50]);
@@ -103,7 +108,7 @@ function ProfilePage() {
 
     // UI state
     const [activeTab, setActiveTab] = useState(0); // 0 = Edit, 1 = Live Match Card Preview
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!userData);
     const [saving, setSaving] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
     const [alertSeverity, setAlertSeverity] = useState("info");

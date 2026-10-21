@@ -642,7 +642,7 @@ function ChatPage() {
     const handleSendMessage = async (textToSend) => {
         const text = typeof textToSend === "string" ? textToSend : inputText;
         const trimmed = text.trim();
-        if (!trimmed || !activeConversation || sending) return;
+        if (!trimmed || !activeConversation) return;
 
         const convId = activeConversation._id;
         const clientTempId = `temp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -1616,7 +1616,7 @@ function ChatPage() {
                                 {/* Circular Pink Send Button */}
                                 <IconButton
                                     type="submit"
-                                    disabled={!inputText.trim() || sending}
+                                    disabled={!inputText.trim()}
                                     sx={{
                                         width: 44,
                                         height: 44,
@@ -1635,7 +1635,7 @@ function ChatPage() {
                                         },
                                     }}
                                 >
-                                    {sending ? <CircularProgress size={20} color="inherit" /> : <SendIcon fontSize="small" />}
+                                    {sending && !inputText.trim() ? <CircularProgress size={20} color="inherit" /> : <SendIcon fontSize="small" />}
                                 </IconButton>
                             </Box>
                         </>

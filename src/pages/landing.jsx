@@ -380,6 +380,8 @@ export default function LandingPage() {
                                     component="img"
                                     src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80"
                                     alt="Ananya Sharma on Engaze"
+                                    loading="eager"
+                                    fetchpriority="high"
                                     sx={{
                                         width: "100%",
                                         height: "100%",
