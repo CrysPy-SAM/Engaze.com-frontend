@@ -101,31 +101,75 @@ function RouteLoadingFallback() {
   );
 }
 
-function PageTitleManager() {
+function updateMetaTag(name, content) {
+  let meta = document.querySelector(`meta[name="${name}"]`);
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.setAttribute('name', name);
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute('content', content);
+}
+
+function updateCanonical(url) {
+  let link = document.querySelector('link[rel="canonical"]');
+  if (url) {
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      document.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
+  } else if (link) {
+    link.parentNode.removeChild(link);
+  }
+}
+
+export function PageTitleManager() {
   const location = useLocation();
 
   useEffect(() => {
     const path = location.pathname;
     if (path === '/') {
       document.title = 'Engaze — Dating & Live Video Connections';
+      updateMetaTag('robots', 'index, follow');
+      updateCanonical('https://www.engaze.date/');
     } else if (path === '/auth') {
       document.title = 'Sign In or Join — Engaze';
+      updateMetaTag('robots', 'noindex, follow');
+      updateCanonical('https://www.engaze.date/auth');
     } else if (path === '/discovery') {
       document.title = 'Discovery — Engaze';
+      updateMetaTag('robots', 'noindex, nofollow');
+      updateCanonical(null);
     } else if (path === '/search') {
       document.title = 'Search People — Engaze';
+      updateMetaTag('robots', 'noindex, nofollow');
+      updateCanonical(null);
     } else if (path === '/matches') {
       document.title = 'Your Matches — Engaze';
+      updateMetaTag('robots', 'noindex, nofollow');
+      updateCanonical(null);
     } else if (path.startsWith('/chat')) {
       document.title = 'Messages & Chat — Engaze';
+      updateMetaTag('robots', 'noindex, nofollow');
+      updateCanonical(null);
     } else if (path === '/random-video' || path === '/random-call') {
       document.title = 'Live 1-on-1 Video Dating — Engaze';
+      updateMetaTag('robots', 'noindex, nofollow');
+      updateCanonical(null);
     } else if (path === '/profile') {
       document.title = 'Profile & Settings — Engaze';
+      updateMetaTag('robots', 'noindex, nofollow');
+      updateCanonical(null);
     } else if (path === '/home') {
       document.title = 'Dashboard — Engaze';
+      updateMetaTag('robots', 'noindex, nofollow');
+      updateCanonical(null);
     } else {
       document.title = 'Page Not Found — Engaze';
+      updateMetaTag('robots', 'noindex, nofollow');
+      updateCanonical(null);
     }
   }, [location.pathname]);
 

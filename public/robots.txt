@@ -1,3 +1,28 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+
+# Allow crawling of public landing and authentication pages
+Allow: /
+Allow: /auth
+
+# Allow crawling of static assets and branding
+Allow: /favicon.ico
+Allow: /favicon.svg
+Allow: /logo192.png
+Allow: /logo512.png
+Allow: /manifest.json
+Allow: /static/
+
+# Disallow private, authenticated, dynamic session, and app-specific routes
+Disallow: /discovery
+Disallow: /chat
+Disallow: /chat/
+Disallow: /matches
+Disallow: /random-video
+Disallow: /random-call
+Disallow: /profile
+Disallow: /search
+Disallow: /home
+
+# Canonical XML Sitemap
+Sitemap: https://www.engaze.date/sitemap.xml
