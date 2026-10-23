@@ -7,6 +7,7 @@ import { useDirectCall } from "../contexts/DirectCallContext";
 import server from "../environment";
 import Navbar from "../components/Navbar";
 import { BRAND_COLORS } from "../theme";
+import { formatLastSeen } from "../utils/presenceFormatters";
 import "../App.css";
 import {
     Avatar,
@@ -387,6 +388,44 @@ function ChatPage() {
             if (loadConversationsRef.current) {
                 loadConversationsRef.current();
             }
+        });
+
+        // Real-time WhatsApp-style presence & last-seen updates
+        socket.on("presence:update", ({ userId, isOnline, lastSeenAt }) => {
+            if (!userId) return;
+            const uid = userId.toString();
+
+            setConversations((prev) =>
+                prev.map((c) => {
+                    const pId = c.otherParticipant?._id?.toString() || c.otherParticipant?.id?.toString();
+                    if (pId === uid) {
+                        return {
+                            ...c,
+                            otherParticipant: {
+                                ...c.otherParticipant,
+                                isOnline: Boolean(isOnline),
+                                lastSeenAt: lastSeenAt !== undefined ? lastSeenAt : c.otherParticipant.lastSeenAt,
+                            },
+                        };
+                    }
+                    return c;
+                })
+            );
+
+            setActiveConversation((prev) => {
+                const pId = prev?.otherParticipant?._id?.toString() || prev?.otherParticipant?.id?.toString();
+                if (pId === uid) {
+                    return {
+                        ...prev,
+                        otherParticipant: {
+                            ...prev.otherParticipant,
+                            isOnline: Boolean(isOnline),
+                            lastSeenAt: lastSeenAt !== undefined ? lastSeenAt : prev.otherParticipant?.lastSeenAt,
+                        },
+                    };
+                }
+                return prev;
+            });
         });
 
         // Real-time unmatch notification
@@ -1043,7 +1082,7 @@ function ChatPage() {
                                                             }}
                                                         />
                                                     </Badge>
-                                                    <Box className="online-indicator-dot" />
+                                                    {Boolean(other.isOnline) && <Box className="online-indicator-dot" />}
                                                 </ListItemAvatar>
                                                 <ListItemText
                                                     primary={
@@ -1154,7 +1193,7 @@ function ChatPage() {
                                                 boxShadow: "0 0 12px rgba(253, 58, 115, 0.35)",
                                             }}
                                         />
-                                        <Box className="online-indicator-dot" />
+                                        {Boolean(otherUser.isOnline) && <Box className="online-indicator-dot" />}
                                     </Box>
 
                                     {/* Partner Name, Verified Badge & Online Status */}
@@ -1177,26 +1216,40 @@ function ChatPage() {
                                                 {otherUser.name}{otherUser.age ? `, ${otherUser.age}` : ""}
                                             </Typography>
                                         </Stack>
-                                        <Stack direction="row" spacing={0.6} alignItems="center" sx={{ mt: 0.2 }}>
-                                            <Box
-                                                sx={{
-                                                    width: 7,
-                                                    height: 7,
-                                                    borderRadius: "50%",
-                                                    bgcolor: BRAND_COLORS.emerald,
-                                                }}
-                                            />
+                                        {Boolean(otherUser.isOnline) ? (
+                                            <Stack direction="row" spacing={0.6} alignItems="center" sx={{ mt: 0.2 }}>
+                                                <Box
+                                                    sx={{
+                                                        width: 7,
+                                                        height: 7,
+                                                        borderRadius: "50%",
+                                                        bgcolor: BRAND_COLORS.emerald,
+                                                    }}
+                                                />
+                                                <Typography
+                                                    variant="caption"
+                                                    sx={{
+                                                        color: BRAND_COLORS.emerald,
+                                                        fontWeight: 600,
+                                                        fontSize: "0.74rem",
+                                                    }}
+                                                >
+                                                    Online
+                                                </Typography>
+                                            </Stack>
+                                        ) : otherUser.lastSeenAt ? (
                                             <Typography
                                                 variant="caption"
                                                 sx={{
-                                                    color: BRAND_COLORS.emerald,
-                                                    fontWeight: 600,
+                                                    color: BRAND_COLORS.textMuted,
+                                                    fontWeight: 500,
                                                     fontSize: "0.74rem",
+                                                    mt: 0.2,
                                                 }}
                                             >
-                                                Online
+                                                {formatLastSeen(otherUser.lastSeenAt)}
                                             </Typography>
-                                        </Stack>
+                                        ) : null}
                                     </Box>
                                 </Stack>
 

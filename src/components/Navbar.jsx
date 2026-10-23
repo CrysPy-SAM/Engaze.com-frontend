@@ -39,6 +39,7 @@ import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import SecurityRoundedIcon from "@mui/icons-material/SecurityRounded";
 
 export default function Navbar({ hideBottomNav = false, hideTopNav = false, rightActions = null }) {
     const navigate = useNavigate();
@@ -429,6 +430,23 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                     <EditRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.coralPink }} />
                                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                         Edit Profile
+                                    </Typography>
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() => {
+                                        handleProfileMenuClose();
+                                        navigate("/profile?tab=privacy");
+                                    }}
+                                    sx={{
+                                        borderRadius: "12px",
+                                        gap: 1.5,
+                                        py: 1,
+                                        "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" },
+                                    }}
+                                >
+                                    <SecurityRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.coralPink }} />
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                        Privacy & Status
                                     </Typography>
                                 </MenuItem>
                                 <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder, my: 0.8 }} />

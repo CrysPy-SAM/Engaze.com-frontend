@@ -613,7 +613,7 @@ function MatchesPage() {
                                                     </Avatar>
                                                 </Box>
                                                 {/* Online Status Dot */}
-                                                <Box className="online-indicator-dot" />
+                                                {Boolean(other.isOnline) && <Box className="online-indicator-dot" />}
                                             </Box>
                                         </ListItemAvatar>
 

@@ -768,6 +768,34 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    // Privacy Settings API
+    const getPrivacySettings = useCallback(async () => {
+        try {
+            const response = await api.get("/users/privacy");
+            return response.data?.privacySettings;
+        } catch (err) {
+            const message = err.response?.data?.message || err.message || "Failed to fetch privacy settings";
+            const error = new Error(message);
+            error.status = err.response?.status;
+            throw error;
+        }
+    }, []);
+
+    const updatePrivacySettings = useCallback(async (settings) => {
+        try {
+            const response = await api.put("/users/privacy", settings);
+            if (response.data && response.data.privacySettings) {
+                setUserData((prev) => (prev ? { ...prev, privacySettings: response.data.privacySettings } : prev));
+            }
+            return response.data;
+        } catch (err) {
+            const message = err.response?.data?.message || err.message || "Failed to update privacy settings";
+            const error = new Error(message);
+            error.status = err.response?.status;
+            throw error;
+        }
+    }, []);
+
     const value = useMemo(() => ({
         userData,
         setUserData,
@@ -819,6 +847,8 @@ export const AuthProvider = ({ children }) => {
         uploadPhotoBinary,
         confirmPhotoUpload,
         deleteProfilePhoto,
+        getPrivacySettings,
+        updatePrivacySettings,
     }), [
         userData,
         token,
@@ -867,6 +897,8 @@ export const AuthProvider = ({ children }) => {
         uploadPhotoBinary,
         confirmPhotoUpload,
         deleteProfilePhoto,
+        getPrivacySettings,
+        updatePrivacySettings,
     ]);
 
     return (

@@ -26,6 +26,9 @@ import {
     Stack,
     Tab,
     Tabs,
+    Radio,
+    RadioGroup,
+    FormControlLabel,
     TextField,
     Typography,
 } from "@mui/material";
@@ -42,6 +45,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import CloseIcon from "@mui/icons-material/Close";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import SecurityIcon from "@mui/icons-material/Security";
 import {
     validatePhotoFile,
     formatFileSize,
@@ -73,6 +77,8 @@ function ProfilePage() {
         uploadPhotoBinary,
         confirmPhotoUpload,
         deleteProfilePhoto,
+        getPrivacySettings,
+        updatePrivacySettings,
         userData,
     } = useContext(AuthContext);
 
@@ -114,6 +120,56 @@ function ProfilePage() {
     const [alertSeverity, setAlertSeverity] = useState("info");
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [previewPhotoIndex, setPreviewPhotoIndex] = useState(0);
+
+    // WhatsApp-Style Privacy Settings State
+    const [privacySettings, setPrivacySettings] = useState({
+        lastSeen: "everyone",
+        lastSeenExceptions: [],
+        online: "everyone",
+    });
+    const [savingPrivacy, setSavingPrivacy] = useState(false);
+
+    useEffect(() => {
+        if (getPrivacySettings) {
+            getPrivacySettings()
+                .then((settings) => {
+                    if (settings) {
+                        setPrivacySettings({
+                            lastSeen: settings.lastSeen || "everyone",
+                            lastSeenExceptions: settings.lastSeenExceptions || [],
+                            online: settings.online || "everyone",
+                        });
+                    }
+                })
+                .catch((err) => {
+                    console.warn("Failed to load privacy settings:", err);
+                });
+        }
+    }, [getPrivacySettings]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("tab") === "privacy") {
+            setActiveTab(2);
+        }
+    }, []);
+
+    const handleSavePrivacy = async () => {
+        setSavingPrivacy(true);
+        try {
+            await updatePrivacySettings(privacySettings);
+            setAlertMessage("Privacy settings saved successfully!");
+            setAlertSeverity("success");
+            setOpenSnackbar(true);
+        } catch (err) {
+            setAlertMessage(err.message || "Failed to save privacy settings");
+            setAlertSeverity("error");
+            setOpenSnackbar(true);
+        } finally {
+            setSavingPrivacy(false);
+        }
+    };
+
 
     // Calculate age from dob string
     const calculateAge = (dobString) => {
@@ -595,6 +651,25 @@ function ProfilePage() {
                             icon={<PreviewIcon fontSize="small" />}
                             iconPosition="start"
                             label="Card Preview"
+                            sx={{
+                                borderRadius: "12px",
+                                textTransform: "none",
+                                fontWeight: 700,
+                                px: { xs: 1.5, sm: 3 },
+                                minHeight: 44,
+                                fontSize: { xs: "0.85rem", sm: "0.95rem" },
+                                color: BRAND_COLORS.textSecondary,
+                                "&.Mui-selected": {
+                                    background: BRAND_COLORS.primaryGradient,
+                                    color: "#FFFFFF",
+                                    boxShadow: "0 4px 15px rgba(253, 58, 115, 0.35)",
+                                },
+                            }}
+                        />
+                        <Tab
+                            icon={<SecurityIcon fontSize="small" />}
+                            iconPosition="start"
+                            label="Privacy & Status"
                             sx={{
                                 borderRadius: "12px",
                                 textTransform: "none",
@@ -1458,6 +1533,144 @@ function ProfilePage() {
                         </Card>
                     </Box>
                 )}
+            
+                {/* TAB 2: PRIVACY & ONLINE STATUS */}
+                {activeTab === 2 && (
+                    <Box sx={{ maxWidth: 760, mx: "auto" }}>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: { xs: 2.5, md: 4 },
+                                borderRadius: "24px",
+                                bgcolor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                            }}
+                        >
+                            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
+                                <SecurityIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 28 }} />
+                                <Box>
+                                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF" }}>
+                                        Last Seen & Online Privacy
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                        Control who can see your activity status on Engaze
+                                    </Typography>
+                                </Box>
+                            </Stack>
+
+                            <Box sx={{ borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`, my: 3 }} />
+
+                            {/* WHO CAN SEE MY LAST SEEN */}
+                            <Box sx={{ mb: 4 }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#FFFFFF", mb: 0.5 }}>
+                                    Who can see my Last Seen
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 2 }}>
+                                    Control who can view the last time you were active on Engaze.
+                                </Typography>
+
+                                <RadioGroup
+                                    value={privacySettings.lastSeen}
+                                    onChange={(e) => setPrivacySettings((prev) => ({ ...prev, lastSeen: e.target.value }))}
+                                >
+                                    <FormControlLabel
+                                        value="everyone"
+                                        control={<Radio sx={{ color: BRAND_COLORS.coralPink, '&.Mui-checked': { color: BRAND_COLORS.coralPink } }} />}
+                                        label={<Typography sx={{ color: "#FFFFFF", fontWeight: 600 }}>Everyone</Typography>}
+                                    />
+                                    <FormControlLabel
+                                        value="matches"
+                                        control={<Radio sx={{ color: BRAND_COLORS.coralPink, '&.Mui-checked': { color: BRAND_COLORS.coralPink } }} />}
+                                        label={<Typography sx={{ color: "#FFFFFF", fontWeight: 600 }}>My Matches</Typography>}
+                                    />
+                                    <FormControlLabel
+                                        value="nobody"
+                                        control={<Radio sx={{ color: BRAND_COLORS.coralPink, '&.Mui-checked': { color: BRAND_COLORS.coralPink } }} />}
+                                        label={<Typography sx={{ color: "#FFFFFF", fontWeight: 600 }}>Nobody</Typography>}
+                                    />
+                                </RadioGroup>
+
+                                <Alert
+                                    severity="info"
+                                    sx={{
+                                        mt: 2,
+                                        bgcolor: "rgba(139, 92, 246, 0.1)",
+                                        color: "#C4B5FD",
+                                        border: "1px solid rgba(139, 92, 246, 0.25)",
+                                        "& .MuiAlert-icon": { color: "#A78BFA" },
+                                    }}
+                                >
+                                    If you don't share your Last Seen, you won't be able to see other members' Last Seen timestamps.
+                                </Alert>
+                            </Box>
+
+                            <Box sx={{ borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`, my: 3 }} />
+
+                            {/* WHO CAN SEE WHEN I'M ONLINE */}
+                            <Box sx={{ mb: 4 }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#FFFFFF", mb: 0.5 }}>
+                                    Who can see when I'm Online
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 2 }}>
+                                    Control who can see your green Online status dot when you are actively connected.
+                                </Typography>
+
+                                <RadioGroup
+                                    value={privacySettings.online}
+                                    onChange={(e) => setPrivacySettings((prev) => ({ ...prev, online: e.target.value }))}
+                                >
+                                    <FormControlLabel
+                                        value="everyone"
+                                        control={<Radio sx={{ color: BRAND_COLORS.coralPink, '&.Mui-checked': { color: BRAND_COLORS.coralPink } }} />}
+                                        label={<Typography sx={{ color: "#FFFFFF", fontWeight: 600 }}>Everyone</Typography>}
+                                    />
+                                    <FormControlLabel
+                                        value="same_as_last_seen"
+                                        control={<Radio sx={{ color: BRAND_COLORS.coralPink, '&.Mui-checked': { color: BRAND_COLORS.coralPink } }} />}
+                                        label={<Typography sx={{ color: "#FFFFFF", fontWeight: 600 }}>Same as Last Seen</Typography>}
+                                    />
+                                </RadioGroup>
+
+                                <Alert
+                                    severity="info"
+                                    sx={{
+                                        mt: 2,
+                                        bgcolor: "rgba(139, 92, 246, 0.1)",
+                                        color: "#C4B5FD",
+                                        border: "1px solid rgba(139, 92, 246, 0.25)",
+                                        "& .MuiAlert-icon": { color: "#A78BFA" },
+                                    }}
+                                >
+                                    If you choose "Same as Last Seen" and hide your Last Seen, members who cannot see your Last Seen will also not see when you are Online.
+                                </Alert>
+                            </Box>
+
+                            {/* SAVE BUTTON */}
+                            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleSavePrivacy}
+                                    disabled={savingPrivacy}
+                                    startIcon={savingPrivacy ? <CircularProgress size={18} color="inherit" /> : null}
+                                    sx={{
+                                        background: BRAND_COLORS.primaryGradient,
+                                        color: "#FFFFFF",
+                                        fontWeight: 700,
+                                        px: 4,
+                                        py: 1.2,
+                                        borderRadius: "14px",
+                                        textTransform: "none",
+                                        fontSize: "0.95rem",
+                                        boxShadow: "0 4px 15px rgba(253, 58, 115, 0.35)",
+                                    }}
+                                >
+                                    {savingPrivacy ? "Saving..." : "Save Privacy Settings"}
+                                </Button>
+                            </Box>
+                        </Paper>
+                    </Box>
+                )}
+
             </Container>
 
             <Snackbar
