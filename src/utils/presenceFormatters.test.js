@@ -1,16 +1,14 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
-import { formatLastSeen, formatPresenceHeader } from "./presenceFormatters.js";
+import { formatLastSeen, formatPresenceHeader } from "./presenceFormatters";
 
 describe("presenceFormatters Unit Test Suite", () => {
     const referenceNow = new Date("2026-10-21T15:30:00.000Z");
 
     describe("formatLastSeen", () => {
         it("returns empty string for null, undefined, empty, or invalid input", () => {
-            assert.equal(formatLastSeen(null, referenceNow), "");
-            assert.equal(formatLastSeen(undefined, referenceNow), "");
-            assert.equal(formatLastSeen("", referenceNow), "");
-            assert.equal(formatLastSeen("not-a-valid-date", referenceNow), "");
+            expect(formatLastSeen(null, referenceNow)).toBe("");
+            expect(formatLastSeen(undefined, referenceNow)).toBe("");
+            expect(formatLastSeen("", referenceNow)).toBe("");
+            expect(formatLastSeen("not-a-valid-date", referenceNow)).toBe("");
         });
 
         it("formats timestamps from earlier today with 'last seen today at ...'", () => {
@@ -18,8 +16,8 @@ describe("presenceFormatters Unit Test Suite", () => {
             earlierToday.setHours(earlierToday.getHours() - 3);
 
             const result = formatLastSeen(earlierToday, referenceNow);
-            assert.ok(result.startsWith("last seen today at "));
-            assert.ok(result.length > "last seen today at ".length);
+            expect(result.startsWith("last seen today at ")).toBe(true);
+            expect(result.length).toBeGreaterThan("last seen today at ".length);
         });
 
         it("formats timestamps from yesterday with 'last seen yesterday at ...'", () => {
@@ -28,28 +26,28 @@ describe("presenceFormatters Unit Test Suite", () => {
             yesterday.setHours(18, 45, 0, 0);
 
             const result = formatLastSeen(yesterday, referenceNow);
-            assert.ok(result.startsWith("last seen yesterday at "));
-            assert.ok(result.length > "last seen yesterday at ".length);
+            expect(result.startsWith("last seen yesterday at ")).toBe(true);
+            expect(result.length).toBeGreaterThan("last seen yesterday at ".length);
         });
 
         it("formats timestamps from earlier in the same year with month and day", () => {
             const earlierThisYear = new Date(referenceNow);
-            earlierThisYear.setMonth(referenceNow.getMonth() - 2); // 2 months ago
+            earlierThisYear.setMonth(referenceNow.getMonth() - 2);
             earlierThisYear.setDate(10);
 
             const result = formatLastSeen(earlierThisYear, referenceNow);
-            assert.ok(result.startsWith("last seen "));
-            assert.ok(!result.includes("today"));
-            assert.ok(!result.includes("yesterday"));
-            assert.ok(result.includes(" at "));
+            expect(result.startsWith("last seen ")).toBe(true);
+            expect(result.includes("today")).toBe(false);
+            expect(result.includes("yesterday")).toBe(false);
+            expect(result.includes(" at ")).toBe(true);
         });
 
         it("formats timestamps from previous years with the year included", () => {
             const lastYear = new Date("2025-05-14T10:15:00.000Z");
             const result = formatLastSeen(lastYear, referenceNow);
-            assert.ok(result.startsWith("last seen "));
-            assert.ok(result.includes("2025"));
-            assert.ok(result.includes(" at "));
+            expect(result.startsWith("last seen ")).toBe(true);
+            expect(result.includes("2025")).toBe(true);
+            expect(result.includes(" at ")).toBe(true);
         });
     });
 
@@ -59,7 +57,7 @@ describe("presenceFormatters Unit Test Suite", () => {
             earlier.setHours(earlier.getHours() - 1);
 
             const res = formatPresenceHeader(true, earlier, referenceNow);
-            assert.deepEqual(res, { status: "online", text: "Online" });
+            expect(res).toEqual({ status: "online", text: "Online" });
         });
 
         it("returns status offline with formatted text when offline and lastSeenAt is present", () => {
@@ -67,13 +65,13 @@ describe("presenceFormatters Unit Test Suite", () => {
             earlier.setHours(earlier.getHours() - 1);
 
             const res = formatPresenceHeader(false, earlier, referenceNow);
-            assert.equal(res.status, "offline");
-            assert.ok(res.text.startsWith("last seen today at "));
+            expect(res.status).toBe("offline");
+            expect(res.text.startsWith("last seen today at ")).toBe(true);
         });
 
         it("returns status hidden with empty text when offline and lastSeenAt is null", () => {
             const res = formatPresenceHeader(false, null, referenceNow);
-            assert.deepEqual(res, { status: "hidden", text: "" });
+            expect(res).toEqual({ status: "hidden", text: "" });
         });
     });
 });

@@ -1,10 +1,3 @@
-import React from "react";
-import { render, screen, waitFor, act } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import "@testing-library/jest-dom";
-import ChatPage from "./chat";
-import { AuthContext } from "../contexts/AuthContext";
-
 jest.mock("axios", () => ({
     create: () => ({
         interceptors: {
@@ -23,31 +16,41 @@ jest.mock("axios", () => ({
 }));
 
 const mockSocketEvents = {};
+const mockIoEvents = {};
 let mockSocketInstance = null;
 
-jest.mock("socket.io-client", () => {
-    const fn = jest.fn(() => {
-        mockSocketInstance = {
-            connected: true,
+const mockCreateSocket = () => {
+    mockSocketInstance = {
+        connected: true,
+        on: jest.fn((event, cb) => {
+            mockSocketEvents[event] = cb;
+        }),
+        off: jest.fn((event) => {
+            delete mockSocketEvents[event];
+        }),
+        emit: jest.fn((event, data, cb) => {
+            if (event === "presence:get" && typeof cb === "function") {
+                cb({ success: true, userId: data?.targetUserId, isOnline: false, lastSeenAt: null });
+            }
+        }),
+        removeAllListeners: jest.fn(() => {
+            Object.keys(mockSocketEvents).forEach((k) => delete mockSocketEvents[k]);
+        }),
+        disconnect: jest.fn(),
+        io: {
             on: jest.fn((event, cb) => {
-                mockSocketEvents[event] = cb;
+                mockIoEvents[event] = cb;
             }),
             off: jest.fn((event) => {
-                delete mockSocketEvents[event];
+                delete mockIoEvents[event];
             }),
-            emit: jest.fn((event, data, cb) => {
-                if (event === "presence:get" && typeof cb === "function") {
-                    cb({ success: true, userId: data?.targetUserId, isOnline: false, lastSeenAt: null });
-                }
-            }),
-            removeAllListeners: jest.fn(() => {
-                Object.keys(mockSocketEvents).forEach((k) => delete mockSocketEvents[k]);
-            }),
-            disconnect: jest.fn(),
-            io: { on: jest.fn(), off: jest.fn() },
-        };
-        return mockSocketInstance;
-    });
+        },
+    };
+    return mockSocketInstance;
+};
+
+jest.mock("socket.io-client", () => {
+    const fn = jest.fn(() => mockCreateSocket());
     fn.default = fn;
     fn.io = fn;
     fn.connect = fn;
@@ -59,6 +62,14 @@ jest.mock("../contexts/DirectCallContext", () => ({
         initiateDirectCall: jest.fn(),
     }),
 }));
+
+import React from "react";
+import { render, screen, waitFor, act } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import "@testing-library/jest-dom";
+import io from "socket.io-client";
+import { AuthContext } from "../contexts/AuthContext";
+import ChatPage from "./chat";
 
 const mockUser = {
     _id: "user_me_123",
@@ -79,7 +90,7 @@ const mockPartnerOffline = {
     name: "Ananya Sen",
     photos: ["https://example.com/ananya.jpg"],
     isOnline: false,
-    lastSeenAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 mins ago
+    lastSeenAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
 };
 
 const mockPartnerHidden = {
@@ -93,6 +104,8 @@ const mockPartnerHidden = {
 const createMockAuthContext = (overrides = {}) => ({
     userData: mockUser,
     token: "mock-valid-jwt",
+    loading: false,
+    isAuthenticated: true,
     getConversations: jest.fn().mockResolvedValue({
         conversations: [
             {
@@ -105,14 +118,19 @@ const createMockAuthContext = (overrides = {}) => ({
         ],
     }),
     getConversationMessages: jest.fn().mockResolvedValue({ messages: [] }),
+    markConversationRead: jest.fn().mockResolvedValue({ success: true }),
     getProfile: jest.fn().mockResolvedValue({ profile: mockUser }),
     ...overrides,
 });
 
 describe("Engaze Chat WhatsApp-Style Presence & Last Seen UI Tests", () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        window.HTMLElement.prototype.scrollIntoView = jest.fn();
+        window.Element.prototype.scrollIntoView = jest.fn();
+        io.mockImplementation(() => mockCreateSocket());
         Object.keys(mockSocketEvents).forEach((k) => delete mockSocketEvents[k]);
+        Object.keys(mockIoEvents).forEach((k) => delete mockIoEvents[k]);
+        jest.clearAllMocks();
     });
 
     test("1. Renders 'Online' and green status indicator when partner is genuinely online", async () => {
@@ -127,7 +145,7 @@ describe("Engaze Chat WhatsApp-Style Presence & Last Seen UI Tests", () => {
         );
 
         await waitFor(() => {
-            expect(screen.getByText("Riya Sharma")).toBeInTheDocument();
+            expect(screen.getAllByText("Riya Sharma").length).toBeGreaterThan(0);
         });
 
         // Header shows "Online"
@@ -164,7 +182,7 @@ describe("Engaze Chat WhatsApp-Style Presence & Last Seen UI Tests", () => {
         );
 
         await waitFor(() => {
-            expect(screen.getByText("Ananya Sen")).toBeInTheDocument();
+            expect(screen.getAllByText("Ananya Sen").length).toBeGreaterThan(0);
         });
 
         // Must NOT render "Online"
@@ -204,7 +222,7 @@ describe("Engaze Chat WhatsApp-Style Presence & Last Seen UI Tests", () => {
         );
 
         await waitFor(() => {
-            expect(screen.getByText("Sneha Roy")).toBeInTheDocument();
+            expect(screen.getAllByText("Sneha Roy").length).toBeGreaterThan(0);
         });
 
         // Neither "Online" nor "last seen" is displayed
