@@ -379,9 +379,14 @@ export default function LandingPage() {
                                 <Box
                                     component="img"
                                     src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80"
+                                    srcSet="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=400&q=75 400w, https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80 800w"
+                                    sizes="(max-width: 600px) 360px, 400px"
                                     alt="Ananya Sharma on Engaze"
                                     loading="eager"
                                     fetchpriority="high"
+                                    decoding="async"
+                                    width={360}
+                                    height={540}
                                     sx={{
                                         width: "100%",
                                         height: "100%",

@@ -7,7 +7,7 @@ import React, {
     useRef,
     useState,
 } from "react";
-import io from "socket.io-client";
+// socket.io-client loaded dynamically when authenticated
 import server from "../environment";
 import { AuthContext } from "./AuthContext";
 
@@ -547,15 +547,48 @@ export const DirectCallProvider = ({ children }) => {
             return;
         }
 
-        const socket = io(server, {
-            auth: { token: localStorage.getItem("token") || token },
-            transports: ["polling", "websocket"],
-            reconnection: true,
-            reconnectionAttempts: 10,
-            reconnectionDelay: 1000,
-            timeout: 15000,
+        let isMounted = true;
+        let socket = null;
+        let idleId = null;
+        let timerId = null;
+
+        import("socket.io-client").then((socketModule) => {
+            if (!isMounted) return;
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+                socketRef.current = null;
+            }
+            const ioConnect = socketModule.default || socketModule.io || socketModule;
+            socket = ioConnect(server, {
+                auth: { token: localStorage.getItem("token") || token },
+                transports: ["polling", "websocket"],
+                reconnection: true,
+                reconnectionAttempts: 10,
+                reconnectionDelay: 1000,
+                timeout: 15000,
+            });
+            socketRef.current = socket;
+            bindSocketEvents(socket);
+
+            // Safe, cancellable prefetch of DirectVideoCallModal for authenticated users
+            // Compatible with Safari, iOS Safari, Chrome, and Firefox
+            if (typeof window !== "undefined") {
+                const runPrefetch = () => {
+                    if (!isMounted) return;
+                    import("../components/DirectVideoCallModal").catch(() => {});
+                };
+
+                if (typeof window.requestIdleCallback === "function") {
+                    idleId = window.requestIdleCallback(runPrefetch, { timeout: 3000 });
+                } else {
+                    timerId = window.setTimeout(runPrefetch, 1500);
+                }
+            }
+        }).catch((err) => {
+            console.warn("[DirectCall] Could not load socket.io-client:", err);
         });
-        socketRef.current = socket;
+
+        const bindSocketEvents = (socket) => {
 
         socket.on("connect_error", (err) => {
             console.warn("DirectCall socket connection error:", err.message);
@@ -726,9 +759,25 @@ export const DirectCallProvider = ({ children }) => {
             }
         });
 
+        }; // end bindSocketEvents
+
         return () => {
-            socket.disconnect();
-            socketRef.current = null;
+            isMounted = false;
+            if (idleId !== null && typeof window !== "undefined" && typeof window.cancelIdleCallback === "function") {
+                window.cancelIdleCallback(idleId);
+                idleId = null;
+            }
+            if (timerId !== null && typeof window !== "undefined") {
+                window.clearTimeout(timerId);
+                timerId = null;
+            }
+            if (socket) {
+                socket.disconnect();
+            }
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+                socketRef.current = null;
+            }
         };
     }, [
         token,

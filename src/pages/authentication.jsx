@@ -21,7 +21,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import VideocamIcon from "@mui/icons-material/Videocam";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import EngazeLogo from "../components/EngazeLogo";
 
 export default function Authentication() {
@@ -511,7 +511,8 @@ export default function Authentication() {
 
                         {/* Continue with Google */}
                         {googleClientId ? (
-                            <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                            <GoogleOAuthProvider clientId={googleClientId}>
+<Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
                                 <GoogleLogin
                                     onSuccess={handleGoogleSuccess}
                                     onError={handleGoogleError}
@@ -522,6 +523,7 @@ export default function Authentication() {
                                     width="100%"
                                 />
                             </Box>
+                            </GoogleOAuthProvider>
                         ) : (
                             <Button
                                 variant="outlined"
