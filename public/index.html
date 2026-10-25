@@ -38,12 +38,39 @@
     />
     <meta name="twitter:image" content="https://www.engaze.date/logo512.png" />
 
-    <!-- Preconnect Fonts -->
+    <!-- Preconnect CDNs for Fonts & Hero Media -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <link rel="dns-prefetch" href="https://images.unsplash.com" />
+
+    <!-- Non-Render-Blocking Google Fonts Loading -->
     <link
+      rel="preload"
+      as="style"
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap"
+    />
+    <link
       rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap"
+      />
+    </noscript>
+
+    <!-- Preload Hero Showcase Image for Instant LCP -->
+    <link
+      rel="preload"
+      as="image"
+      href="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=400&q=75"
+      imagesrcset="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=400&q=75 400w, https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80 800w"
+      imagesizes="(max-width: 600px) 360px, 400px"
+      fetchpriority="high"
     />
 
     <title>Engaze — Dating & Live Video Connections</title>

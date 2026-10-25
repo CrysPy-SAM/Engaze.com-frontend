@@ -6,8 +6,8 @@ import theme from './theme';
 import LandingPage from './pages/landing';
 import { AuthProvider } from './contexts/AuthContext';
 import { DirectCallProvider } from './contexts/DirectCallContext';
-import DirectVideoCallModal from './components/DirectVideoCallModal';
-import { GoogleOAuthProvider } from '@react-oauth/google';
+const DirectVideoCallModal = lazy(() => import('./components/DirectVideoCallModal'));
+// GoogleOAuthProvider loaded lazily inside Authentication route
 
 // Route Code-Splitting for Optimal Initial Bundle Size & TTI
 const Authentication = lazy(() => import('./pages/authentication'));
@@ -20,7 +20,7 @@ const ChatPage = lazy(() => import('./pages/chat'));
 const RandomVideoPage = lazy(() => import('./pages/randomVideo'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
+
 
 class RouteErrorBoundary extends React.Component {
   constructor(props) {
@@ -203,21 +203,15 @@ function App() {
                   </Routes>
                 </Suspense>
               </RouteErrorBoundary>
-              <DirectVideoCallModal />
+              <Suspense fallback={null}>
+                <DirectVideoCallModal />
+              </Suspense>
             </DirectCallProvider>
           </AuthProvider>
         </Router>
       </div>
     </ThemeProvider>
   );
-
-  if (GOOGLE_CLIENT_ID) {
-    return (
-      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        {appContent}
-      </GoogleOAuthProvider>
-    );
-  }
 
   return appContent;
 }
