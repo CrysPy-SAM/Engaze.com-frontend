@@ -5,9 +5,11 @@ User-agent: *
 Allow: /
 Allow: /auth
 
-# Allow crawling of static assets and branding
+# Allow crawling of static assets and branding (including Google Favicon bot)
 Allow: /favicon.ico
 Allow: /favicon.svg
+Allow: /favicon-48x48.png
+Allow: /apple-touch-icon.png
 Allow: /logo192.png
 Allow: /logo512.png
 Allow: /manifest.json
