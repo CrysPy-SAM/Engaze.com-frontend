@@ -1,9 +1,8 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 
-# Allow crawling of public landing and authentication pages
+# Allow crawling of public landing page
 Allow: /
-Allow: /auth
 
 # Allow crawling of static assets and branding (including Google Favicon bot)
 Allow: /favicon.ico

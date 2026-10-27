@@ -206,7 +206,7 @@ export default function LandingPage() {
                                     mb: 3,
                                 }}
                             >
-                                Where Real Sparks{" "}
+                                Engaze Dating — Where Real Sparks{" "}
                                 <br />
                                 <span className="gradient-text">Become Real Connections.</span>
                             </Typography>
