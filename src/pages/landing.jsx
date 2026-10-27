@@ -30,6 +30,8 @@ import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
+import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
 
 export default function LandingPage() {
     const navigate = useNavigate();
@@ -1266,10 +1268,10 @@ export default function LandingPage() {
                             </Stack>
                         </Grid>
 
-                        {/* Legal & Policy */}
-                        <Grid item xs={12} sm={4} md={3}>
+                        {/* Legal & Policies */}
+                        <Grid item xs={6} sm={4} md={2.5}>
                             <Typography variant="subtitle2" sx={{ color: "#FFFFFF", fontWeight: 800, mb: 2.5, letterSpacing: "0.05em" }}>
-                                LEGAL & CONTACT
+                                LEGAL & PRIVACY
                             </Typography>
                             <Stack spacing={1.6}>
                                 <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
@@ -1279,8 +1281,66 @@ export default function LandingPage() {
                                     Cookie Preferences
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                    Support: <span style={{ color: "#FFFFFF" }}>support@engaze.com</span>
+                                    Security & Encryption
                                 </Typography>
+                            </Stack>
+                        </Grid>
+
+                        {/* Contact & Support Section */}
+                        <Grid item xs={12} sm={4} md={3}>
+                            <Typography variant="subtitle2" sx={{ color: "#FFFFFF", fontWeight: 800, mb: 2.5, letterSpacing: "0.05em" }}>
+                                CONTACT & SUPPORT
+                            </Typography>
+                            <Stack spacing={2}>
+                                <Box>
+                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, display: "block", mb: 0.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                                        Customer Support & Help
+                                    </Typography>
+                                    <Box
+                                        component="a"
+                                        href="mailto:support@engaze.date"
+                                        aria-label="Contact Customer Support at support@engaze.date"
+                                        sx={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: 1,
+                                            color: "#FFFFFF",
+                                            textDecoration: "none",
+                                            fontSize: "0.9rem",
+                                            fontWeight: 600,
+                                            transition: "color 0.2s ease",
+                                            "&:hover": { color: BRAND_COLORS.coralPink },
+                                        }}
+                                    >
+                                        <SupportAgentRoundedIcon sx={{ fontSize: 18, color: BRAND_COLORS.coralPink }} />
+                                        support@engaze.date
+                                    </Box>
+                                </Box>
+
+                                <Box>
+                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, display: "block", mb: 0.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                                        General Enquiries & Business
+                                    </Typography>
+                                    <Box
+                                        component="a"
+                                        href="mailto:contact@engaze.date"
+                                        aria-label="Contact General Enquiries at contact@engaze.date"
+                                        sx={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: 1,
+                                            color: "#FFFFFF",
+                                            textDecoration: "none",
+                                            fontSize: "0.9rem",
+                                            fontWeight: 600,
+                                            transition: "color 0.2s ease",
+                                            "&:hover": { color: BRAND_COLORS.violet },
+                                        }}
+                                    >
+                                        <EmailRoundedIcon sx={{ fontSize: 18, color: BRAND_COLORS.violet }} />
+                                        contact@engaze.date
+                                    </Box>
+                                </Box>
                             </Stack>
                         </Grid>
                     </Grid>
