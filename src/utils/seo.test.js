@@ -174,6 +174,8 @@ describe('Technical SEO & Static Crawler Verification', () => {
       if (canonical) canonical.parentNode.removeChild(canonical);
       const robots = document.querySelector('meta[name="robots"]');
       if (robots) robots.parentNode.removeChild(robots);
+      const desc = document.querySelector('meta[name="description"]');
+      if (desc) desc.parentNode.removeChild(desc);
     });
 
     test('homepage (/) sets canonical to https://www.engaze.date/ and robots to index, follow', () => {
@@ -186,6 +188,7 @@ describe('Technical SEO & Static Crawler Verification', () => {
       expect(document.title).toBe('Engaze — Dating Platform & Live 1-on-1 Video Connections');
       expect(document.querySelector('meta[name="robots"]').getAttribute('content')).toBe('index, follow');
       expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://www.engaze.date/');
+      expect(document.querySelector('meta[name="description"]').getAttribute('content')).toContain('Engaze is a modern dating platform');
     });
 
     test('privacy policy (/privacy) sets robots to index, follow and canonical to https://www.engaze.date/privacy', () => {
@@ -198,6 +201,7 @@ describe('Technical SEO & Static Crawler Verification', () => {
       expect(document.title).toBe('Privacy Policy — Engaze');
       expect(document.querySelector('meta[name="robots"]').getAttribute('content')).toBe('index, follow');
       expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://www.engaze.date/privacy');
+      expect(document.querySelector('meta[name="description"]').getAttribute('content')).toContain('Privacy Policy');
     });
 
     test('terms of service (/terms) sets robots to index, follow and canonical to https://www.engaze.date/terms', () => {
@@ -210,6 +214,7 @@ describe('Technical SEO & Static Crawler Verification', () => {
       expect(document.title).toBe('Terms of Service — Engaze');
       expect(document.querySelector('meta[name="robots"]').getAttribute('content')).toBe('index, follow');
       expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://www.engaze.date/terms');
+      expect(document.querySelector('meta[name="description"]').getAttribute('content')).toContain('Terms of Service');
     });
 
     test('safety center (/safety) sets robots to index, follow and canonical to https://www.engaze.date/safety', () => {
@@ -222,6 +227,7 @@ describe('Technical SEO & Static Crawler Verification', () => {
       expect(document.title).toBe('Safety Tips & Community Guidelines — Engaze');
       expect(document.querySelector('meta[name="robots"]').getAttribute('content')).toBe('index, follow');
       expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://www.engaze.date/safety');
+      expect(document.querySelector('meta[name="description"]').getAttribute('content')).toContain('dating safety tips');
     });
 
     test('/auth route sets robots to noindex, follow and isolates canonical', () => {
@@ -234,6 +240,7 @@ describe('Technical SEO & Static Crawler Verification', () => {
       expect(document.title).toBe('Sign In or Join — Engaze');
       expect(document.querySelector('meta[name="robots"]').getAttribute('content')).toBe('noindex, follow');
       expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://www.engaze.date/auth');
+      expect(document.querySelector('meta[name="description"]').getAttribute('content')).toContain('Sign in or join Engaze');
     });
 
     test('authenticated route (/discovery) sets robots to noindex, nofollow and removes homepage canonical', () => {

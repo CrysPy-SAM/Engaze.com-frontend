@@ -81,7 +81,7 @@ export default function PrivacyPolicy() {
 
             {/* Document Header */}
             <Container maxWidth="md" sx={{ pt: { xs: 6, md: 9 }, pb: { xs: 6, md: 10 } }}>
-                <Box sx={{ mb: 5 }}>
+                <Box sx={{ mb: 4 }}>
                     <Box
                         sx={{
                             display: "inline-flex",
@@ -109,6 +109,24 @@ export default function PrivacyPolicy() {
                     </Typography>
                 </Box>
 
+                {/* Notice of Draft Status / Entity Details Pending */}
+                <Paper
+                    sx={{
+                        p: 2.5,
+                        mb: 4,
+                        borderRadius: "16px",
+                        backgroundColor: "rgba(234, 179, 8, 0.08)",
+                        border: "1px solid rgba(234, 179, 8, 0.25)",
+                    }}
+                >
+                    <Typography variant="subtitle2" sx={{ color: BRAND_COLORS.amberGold, fontWeight: 800, mb: 0.5 }}>
+                        Notice: Preliminary Operational Policy Draft
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.8)", fontSize: "0.85rem", lineHeight: 1.6 }}>
+                        This document details the current technical and data protection practices of the Engaze platform (https://www.engaze.date/). Designated corporate entity registration details, registered agent contact, and specific governing legal jurisdiction are subject to formal confirmation upon corporate filing by the platform administration. Inquiries may be directed to contact@engaze.date.
+                    </Typography>
+                </Paper>
+
                 {/* Content Paper */}
                 <Paper
                     sx={{
@@ -128,7 +146,7 @@ export default function PrivacyPolicy() {
                                 Engaze ("we", "us", or "our"), accessible at <strong>https://www.engaze.date/</strong>, provides an online dating and live video connection service. We respect your personal privacy and are committed to safeguarding the information you share while using our platform. This Privacy Policy details what information we collect, how it is used, and the privacy controls available to you.
                             </Typography>
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textMuted, mt: 1 }}>
-                                <em>Operator Entity: [Insert Legal Entity Name, e.g. Engaze Operating Entity] | Governing Jurisdiction: [Insert Jurisdiction, e.g. Delaware, USA / India]</em>
+                                <em>Service Operator: Engaze Dating Platform &bull; Corporate filing details and designated legal jurisdiction are maintained under platform administration and available via contact@engaze.date.</em>
                             </Typography>
                         </Box>
 
@@ -242,8 +260,8 @@ export default function PrivacyPolicy() {
                                 <Typography variant="body2" sx={{ color: BRAND_COLORS.violet, fontWeight: 700 }}>
                                     General Enquiries: contact@engaze.date
                                 </Typography>
-                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, mt: 1 }}>
-                                    Postal Address: [Insert Registered Business Address, City, Country]
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, mt: 1, display: "block" }}>
+                                    Physical business correspondence address is available upon verified written request to contact@engaze.date.
                                 </Typography>
                             </Stack>
                         </Box>

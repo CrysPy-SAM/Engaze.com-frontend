@@ -81,7 +81,7 @@ export default function TermsOfService() {
 
             {/* Document Header */}
             <Container maxWidth="md" sx={{ pt: { xs: 6, md: 9 }, pb: { xs: 6, md: 10 } }}>
-                <Box sx={{ mb: 5 }}>
+                <Box sx={{ mb: 4 }}>
                     <Box
                         sx={{
                             display: "inline-flex",
@@ -109,6 +109,24 @@ export default function TermsOfService() {
                     </Typography>
                 </Box>
 
+                {/* Notice of Draft Status / Entity Details Pending */}
+                <Paper
+                    sx={{
+                        p: 2.5,
+                        mb: 4,
+                        borderRadius: "16px",
+                        backgroundColor: "rgba(234, 179, 8, 0.08)",
+                        border: "1px solid rgba(234, 179, 8, 0.25)",
+                    }}
+                >
+                    <Typography variant="subtitle2" sx={{ color: BRAND_COLORS.amberGold, fontWeight: 800, mb: 0.5 }}>
+                        Notice: Preliminary Terms of Service Draft
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.8)", fontSize: "0.85rem", lineHeight: 1.6 }}>
+                        These terms define the current user agreement and operational rules for the Engaze dating platform (https://www.engaze.date/). Formally designated operating corporate entity details and governing legal jurisdiction are subject to corporate filing by the platform administration. Inquiries may be directed to contact@engaze.date.
+                    </Typography>
+                </Paper>
+
                 {/* Content Paper */}
                 <Paper
                     sx={{
@@ -128,7 +146,7 @@ export default function TermsOfService() {
                                 By creating an account, accessing, or using Engaze (available at <strong>https://www.engaze.date/</strong>), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to all provisions of these Terms, you may not access or use the platform.
                             </Typography>
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textMuted, mt: 1 }}>
-                                <em>Operating Entity: [Insert Legal Entity Name, e.g. Engaze Operating Entity] | Jurisdiction: [Insert Jurisdiction, e.g. Delaware, USA / India]</em>
+                                <em>Operating Entity: Engaze Dating Platform &bull; Corporate filing details and governing jurisdiction are maintained under platform administration and available via contact@engaze.date.</em>
                             </Typography>
                         </Box>
 
@@ -227,6 +245,9 @@ export default function TermsOfService() {
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.violet, fontWeight: 700 }}>
                                 Legal / Business Enquiries: contact@engaze.date
                             </Typography>
+                            <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, mt: 1, display: "block" }}>
+                                Physical business correspondence address is available upon verified written request to contact@engaze.date.
+                            </Typography>
                         </Box>
                     </Stack>
                 </Paper>
@@ -249,4 +270,3 @@ export default function TermsOfService() {
         </Box>
     );
 }
-

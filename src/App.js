@@ -136,22 +136,27 @@ export function PageTitleManager() {
     if (path === '/') {
       document.title = 'Engaze — Dating Platform & Live 1-on-1 Video Connections';
       updateMetaTag('robots', 'index, follow');
+      updateMetaTag('description', 'Engaze is a modern dating platform for genuine singles. Discover compatible profiles, chat with mutual matches, and connect safely via 1-on-1 video dates.');
       updateCanonical('https://www.engaze.date/');
     } else if (path === '/privacy') {
       document.title = 'Privacy Policy — Engaze';
       updateMetaTag('robots', 'index, follow');
+      updateMetaTag('description', 'Review the Engaze Privacy Policy to understand how account details, mutual chats, and browser video connections are protected.');
       updateCanonical('https://www.engaze.date/privacy');
     } else if (path === '/terms') {
       document.title = 'Terms of Service — Engaze';
       updateMetaTag('robots', 'index, follow');
+      updateMetaTag('description', 'Read the Engaze Terms of Service, member eligibility guidelines, acceptable conduct, and platform rules.');
       updateCanonical('https://www.engaze.date/terms');
     } else if (path === '/safety') {
       document.title = 'Safety Tips & Community Guidelines — Engaze';
       updateMetaTag('robots', 'index, follow');
+      updateMetaTag('description', 'Explore dating safety tips, community guidelines, mutual-like protection, and reporting procedures on Engaze.');
       updateCanonical('https://www.engaze.date/safety');
     } else if (path === '/auth') {
       document.title = 'Sign In or Join — Engaze';
       updateMetaTag('robots', 'noindex, follow');
+      updateMetaTag('description', 'Sign in or join Engaze to meet compatible singles through mutual matching, chat, and live video dates.');
       updateCanonical('https://www.engaze.date/auth');
     } else if (path === '/discovery') {
       document.title = 'Discovery — Engaze';
