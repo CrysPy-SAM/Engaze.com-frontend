@@ -131,7 +131,7 @@ export function PageTitleManager() {
   useEffect(() => {
     const path = location.pathname;
     if (path === '/') {
-      document.title = 'Engaze — Dating & Live Video Connections';
+      document.title = 'Engaze — Dating Platform & Live 1-on-1 Video Connections';
       updateMetaTag('robots', 'index, follow');
       updateCanonical('https://www.engaze.date/');
     } else if (path === '/auth') {

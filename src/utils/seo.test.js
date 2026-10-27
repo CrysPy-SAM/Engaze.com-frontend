@@ -155,7 +155,7 @@ describe('Technical SEO & Static Crawler Verification', () => {
         </MemoryRouter>
       );
 
-      expect(document.title).toBe('Engaze — Dating & Live Video Connections');
+      expect(document.title).toBe('Engaze — Dating Platform & Live 1-on-1 Video Connections');
       expect(document.querySelector('meta[name="robots"]').getAttribute('content')).toBe('index, follow');
       expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://www.engaze.date/');
     });
