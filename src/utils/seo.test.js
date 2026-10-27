@@ -39,9 +39,12 @@ describe('Technical SEO & Static Crawler Verification', () => {
       expect(content).toContain('</urlset>');
     });
 
-    test('sitemap.xml includes only high-value public landing page and strictly excludes /auth', () => {
+    test('sitemap.xml includes public landing and trust pages and strictly excludes /auth', () => {
       const content = fs.readFileSync(sitemapPath, 'utf8');
       expect(content).toContain('<loc>https://www.engaze.date/</loc>');
+      expect(content).toContain('<loc>https://www.engaze.date/safety</loc>');
+      expect(content).toContain('<loc>https://www.engaze.date/privacy</loc>');
+      expect(content).toContain('<loc>https://www.engaze.date/terms</loc>');
       // Utility auth forms have no organic search value and must not be submitted in sitemap
       expect(content).not.toContain('<loc>https://www.engaze.date/auth</loc>');
       expect(content).not.toContain('/auth');
@@ -69,7 +72,7 @@ describe('Technical SEO & Static Crawler Verification', () => {
     test('all loc URLs in sitemap use canonical https://www.engaze.date hostname', () => {
       const content = fs.readFileSync(sitemapPath, 'utf8');
       const locMatches = content.match(/<loc>(.*?)<\/loc>/g) || [];
-      expect(locMatches.length).toBe(1);
+      expect(locMatches.length).toBe(4);
 
       locMatches.forEach((locTag) => {
         const url = locTag.replace(/<\/?loc>/g, '');
@@ -117,7 +120,7 @@ describe('Technical SEO & Static Crawler Verification', () => {
     });
   });
 
-  describe('index.html metadata and canonical tags', () => {
+  describe('index.html metadata, canonical tags, and structured data', () => {
     const htmlPath = path.join(publicDir, 'index.html');
 
     test('index.html contains canonical URL pointing to https://www.engaze.date/', () => {
@@ -136,6 +139,31 @@ describe('Technical SEO & Static Crawler Verification', () => {
       expect(content).toContain('<meta property="og:image" content="https://www.engaze.date/logo512.png" />');
       expect(content).toContain('<meta name="twitter:url" content="https://www.engaze.date/" />');
       expect(content).toContain('<meta name="twitter:image" content="https://www.engaze.date/logo512.png" />');
+    });
+
+    test('index.html contains valid Organization, WebSite, WebApplication, and FAQPage JSON-LD schemas', () => {
+      const content = fs.readFileSync(htmlPath, 'utf8');
+      const jsonLdMatch = content.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+      expect(jsonLdMatch).toBeTruthy();
+
+      const parsed = JSON.parse(jsonLdMatch[1]);
+      expect(parsed['@context']).toBe('https://schema.org');
+      expect(Array.isArray(parsed['@graph'])).toBe(true);
+
+      const org = parsed['@graph'].find((item) => item['@type'] === 'Organization');
+      expect(org).toBeTruthy();
+      expect(org.name).toBe('Engaze');
+      expect(org.contactPoint).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ email: 'support@engaze.date' }),
+          expect.objectContaining({ email: 'contact@engaze.date' }),
+        ])
+      );
+
+      const faq = parsed['@graph'].find((item) => item['@type'] === 'FAQPage');
+      expect(faq).toBeTruthy();
+      expect(Array.isArray(faq.mainEntity)).toBe(true);
+      expect(faq.mainEntity.length).toBeGreaterThanOrEqual(5);
     });
   });
 
@@ -160,6 +188,42 @@ describe('Technical SEO & Static Crawler Verification', () => {
       expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://www.engaze.date/');
     });
 
+    test('privacy policy (/privacy) sets robots to index, follow and canonical to https://www.engaze.date/privacy', () => {
+      render(
+        <MemoryRouter initialEntries={['/privacy']}>
+          <PageTitleManager />
+        </MemoryRouter>
+      );
+
+      expect(document.title).toBe('Privacy Policy — Engaze');
+      expect(document.querySelector('meta[name="robots"]').getAttribute('content')).toBe('index, follow');
+      expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://www.engaze.date/privacy');
+    });
+
+    test('terms of service (/terms) sets robots to index, follow and canonical to https://www.engaze.date/terms', () => {
+      render(
+        <MemoryRouter initialEntries={['/terms']}>
+          <PageTitleManager />
+        </MemoryRouter>
+      );
+
+      expect(document.title).toBe('Terms of Service — Engaze');
+      expect(document.querySelector('meta[name="robots"]').getAttribute('content')).toBe('index, follow');
+      expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://www.engaze.date/terms');
+    });
+
+    test('safety center (/safety) sets robots to index, follow and canonical to https://www.engaze.date/safety', () => {
+      render(
+        <MemoryRouter initialEntries={['/safety']}>
+          <PageTitleManager />
+        </MemoryRouter>
+      );
+
+      expect(document.title).toBe('Safety Tips & Community Guidelines — Engaze');
+      expect(document.querySelector('meta[name="robots"]').getAttribute('content')).toBe('index, follow');
+      expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://www.engaze.date/safety');
+    });
+
     test('/auth route sets robots to noindex, follow and isolates canonical', () => {
       render(
         <MemoryRouter initialEntries={['/auth']}>
@@ -173,7 +237,6 @@ describe('Technical SEO & Static Crawler Verification', () => {
     });
 
     test('authenticated route (/discovery) sets robots to noindex, nofollow and removes homepage canonical', () => {
-      // Pre-seed canonical to simulate SPA navigation from homepage
       const preCanonical = document.createElement('link');
       preCanonical.setAttribute('rel', 'canonical');
       preCanonical.setAttribute('href', 'https://www.engaze.date/');

@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { BRAND_COLORS } from "../theme";
 import "../App.css";
 import {
@@ -12,6 +12,9 @@ import {
     Typography,
     Chip,
     IconButton,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
 } from "@mui/material";
 import EngazeLogo from "../components/EngazeLogo";
 
@@ -32,6 +35,7 @@ import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
 import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
+import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
 
 export default function LandingPage() {
     const navigate = useNavigate();
@@ -63,91 +67,122 @@ export default function LandingPage() {
                 }}
             >
                 {/* Official Brand Logo */}
-                <EngazeLogo
-                    size={38}
-                    fontSize="1.5rem"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                />
+                <Box
+                    component={Link}
+                    to="/"
+                    aria-label="Engaze Dating Platform Homepage"
+                    sx={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}
+                >
+                    <EngazeLogo size={38} fontSize="1.5rem" />
+                </Box>
 
                 {/* Desktop Anchor Navigation */}
                 <Stack
+                    component="nav"
+                    aria-label="Main Navigation"
                     direction="row"
                     spacing={3.5}
                     sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}
                 >
-                    <Typography
-                        variant="body2"
-                        onClick={() => scrollToSection("features")}
+                    <Box
+                        component="a"
+                        href="#features"
+                        onClick={(e) => { e.preventDefault(); scrollToSection("features"); }}
                         sx={{
                             color: "rgba(255, 255, 255, 0.75)",
                             fontWeight: 600,
-                            cursor: "pointer",
+                            textDecoration: "none",
+                            fontSize: "0.875rem",
                             transition: "color 0.2s ease",
                             "&:hover": { color: "#FFFFFF" },
                         }}
                     >
                         Features
-                    </Typography>
-                    <Typography
-                        variant="body2"
-                        onClick={() => scrollToSection("video-dating")}
+                    </Box>
+                    <Box
+                        component="a"
+                        href="#video-dating"
+                        onClick={(e) => { e.preventDefault(); scrollToSection("video-dating"); }}
                         sx={{
                             color: "rgba(255, 255, 255, 0.75)",
                             fontWeight: 600,
-                            cursor: "pointer",
+                            textDecoration: "none",
+                            fontSize: "0.875rem",
                             transition: "color 0.2s ease",
                             "&:hover": { color: "#FFFFFF" },
                         }}
                     >
                         Live Video Dating
-                    </Typography>
-                    <Typography
-                        variant="body2"
-                        onClick={() => scrollToSection("difference")}
+                    </Box>
+                    <Box
+                        component="a"
+                        href="#difference"
+                        onClick={(e) => { e.preventDefault(); scrollToSection("difference"); }}
                         sx={{
                             color: "rgba(255, 255, 255, 0.75)",
                             fontWeight: 600,
-                            cursor: "pointer",
+                            textDecoration: "none",
+                            fontSize: "0.875rem",
                             transition: "color 0.2s ease",
                             "&:hover": { color: "#FFFFFF" },
                         }}
                     >
                         Why Engaze
-                    </Typography>
-                    <Typography
-                        variant="body2"
-                        onClick={() => scrollToSection("safety")}
+                    </Box>
+                    <Box
+                        component="a"
+                        href="#safety"
+                        onClick={(e) => { e.preventDefault(); scrollToSection("safety"); }}
                         sx={{
                             color: "rgba(255, 255, 255, 0.75)",
                             fontWeight: 600,
-                            cursor: "pointer",
+                            textDecoration: "none",
+                            fontSize: "0.875rem",
                             transition: "color 0.2s ease",
                             "&:hover": { color: "#FFFFFF" },
                         }}
                     >
                         Safety & Trust
-                    </Typography>
+                    </Box>
+                    <Box
+                        component="a"
+                        href="#faq"
+                        onClick={(e) => { e.preventDefault(); scrollToSection("faq"); }}
+                        sx={{
+                            color: "rgba(255, 255, 255, 0.75)",
+                            fontWeight: 600,
+                            textDecoration: "none",
+                            fontSize: "0.875rem",
+                            transition: "color 0.2s ease",
+                            "&:hover": { color: "#FFFFFF" },
+                        }}
+                    >
+                        FAQ
+                    </Box>
                 </Stack>
 
                 {/* Right Action Buttons */}
                 <Stack direction="row" spacing={{ xs: 1.2, sm: 2 }} alignItems="center">
                     <Button
+                        component={Link}
+                        to="/auth"
                         variant="text"
-                        onClick={() => navigate("/auth")}
                         sx={{
                             color: "rgba(255, 255, 255, 0.85)",
                             borderRadius: 9999,
                             px: { xs: 1.5, sm: 2.5 },
                             fontSize: { xs: "0.85rem", sm: "0.92rem" },
                             fontWeight: 700,
+                            textTransform: "none",
                             "&:hover": { color: "#FFFFFF", bgcolor: "rgba(255,255,255,0.06)" },
                         }}
                     >
                         Sign In
                     </Button>
                     <Button
+                        component={Link}
+                        to="/auth"
                         variant="contained"
-                        onClick={() => navigate("/auth")}
                         sx={{
                             background: BRAND_COLORS.primaryGradient,
                             borderRadius: 9999,
@@ -155,6 +190,7 @@ export default function LandingPage() {
                             py: { xs: 0.9, sm: 1.1 },
                             fontSize: { xs: "0.85rem", sm: "0.95rem" },
                             fontWeight: 800,
+                            textTransform: "none",
                             boxShadow: "0 4px 20px rgba(253, 58, 115, 0.4)",
                             transition: "transform 0.2s ease, box-shadow 0.2s ease",
                             "&:hover": {
@@ -228,16 +264,18 @@ export default function LandingPage() {
                             {/* CTAs */}
                             <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 4.5 }}>
                                 <Button
+                                    component={Link}
+                                    to="/auth"
                                     variant="contained"
                                     size="large"
                                     endIcon={<ArrowForwardRoundedIcon />}
-                                    onClick={() => navigate("/auth")}
                                     sx={{
                                         background: BRAND_COLORS.primaryGradient,
                                         py: { xs: 1.6, sm: 1.9 },
                                         px: { xs: 3.5, sm: 4.5 },
                                         fontSize: "1.05rem",
                                         fontWeight: 800,
+                                        textTransform: "none",
                                         borderRadius: 9999,
                                         boxShadow: "0 8px 30px rgba(253, 58, 115, 0.45)",
                                         transition: "transform 0.2s ease, box-shadow 0.2s ease",
@@ -250,10 +288,12 @@ export default function LandingPage() {
                                     Start Discovering Free
                                 </Button>
                                 <Button
+                                    component="a"
+                                    href="#video-dating"
+                                    onClick={(e) => { e.preventDefault(); scrollToSection("video-dating"); }}
                                     variant="outlined"
                                     size="large"
                                     startIcon={<VideocamRoundedIcon />}
-                                    onClick={() => navigate("/auth")}
                                     sx={{
                                         borderColor: "rgba(255, 255, 255, 0.2)",
                                         color: "#FFFFFF",
@@ -261,6 +301,7 @@ export default function LandingPage() {
                                         px: { xs: 3, sm: 4 },
                                         fontSize: "1.02rem",
                                         fontWeight: 700,
+                                        textTransform: "none",
                                         borderRadius: 9999,
                                         backgroundColor: "rgba(255, 255, 255, 0.03)",
                                         backdropFilter: "blur(8px)",
@@ -1096,6 +1137,169 @@ export default function LandingPage() {
                 </Container>
             </Box>
 
+            {/* Frequently Asked Questions (FAQ) Section */}
+            <Box id="faq" sx={{ py: { xs: 8, md: 12 }, borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
+                <Container maxWidth="md" sx={{ px: { xs: 2.5, sm: 4 } }}>
+                    <Box sx={{ textAlign: "center", mb: { xs: 5, md: 7 } }}>
+                        <Typography
+                            variant="overline"
+                            sx={{ color: BRAND_COLORS.skyBlue, fontWeight: 800, letterSpacing: "0.15em", fontSize: "0.85rem" }}
+                        >
+                            GOT QUESTIONS?
+                        </Typography>
+                        <Typography
+                            variant="h2"
+                            sx={{
+                                fontWeight: 900,
+                                fontSize: { xs: "2rem", sm: "2.8rem" },
+                                letterSpacing: "-0.03em",
+                                mt: 1,
+                                mb: 2,
+                            }}
+                        >
+                            Frequently Asked Questions
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "1.05rem" }}>
+                            Everything you need to know about how Engaze works, dating features, and community safety.
+                        </Typography>
+                    </Box>
+
+                    <Stack spacing={2}>
+                        <Accordion
+                            sx={{
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                borderRadius: "16px !important",
+                                color: "#FFFFFF",
+                                "&:before": { display: "none" },
+                                boxShadow: "none",
+                            }}
+                        >
+                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
+                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
+                                    What is Engaze?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
+                                    Engaze is an online dating platform designed for genuine singles. It combines portrait card discovery, real-time mutual chat, and browser-based 1-on-1 video dates to help you discover authentic chemistry.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion
+                            sx={{
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                borderRadius: "16px !important",
+                                color: "#FFFFFF",
+                                "&:before": { display: "none" },
+                                boxShadow: "none",
+                            }}
+                        >
+                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
+                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
+                                    How does matching work on Engaze?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
+                                    Matching is strictly based on mutual opt-in. Both you and another member must like each other before either person can start a conversation or request a video call. This prevents cold messages and unsolicited spam.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion
+                            sx={{
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                borderRadius: "16px !important",
+                                color: "#FFFFFF",
+                                "&:before": { display: "none" },
+                                boxShadow: "none",
+                            }}
+                        >
+                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
+                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
+                                    Does Engaze support live video dating?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
+                                    Yes. Engaze provides encrypted 1-on-1 WebRTC video dating right in your web browser. You can test real-world chemistry and vibe before deciding whether to exchange phone numbers or social media handles. Video and audio streams are peer-to-peer and are never recorded.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion
+                            sx={{
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                borderRadius: "16px !important",
+                                color: "#FFFFFF",
+                                "&:before": { display: "none" },
+                                boxShadow: "none",
+                            }}
+                        >
+                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
+                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
+                                    Is Engaze free to use?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
+                                    Yes. Account creation, profile discovery, mutual matching, real-time chat, and 1-on-1 video calls on Engaze are completely free.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion
+                            sx={{
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                borderRadius: "16px !important",
+                                color: "#FFFFFF",
+                                "&:before": { display: "none" },
+                                boxShadow: "none",
+                            }}
+                        >
+                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
+                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
+                                    Who is eligible to join Engaze?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
+                                    Engaze is strictly reserved for adults aged 18 and older. Age confirmation is required during the onboarding and profile creation process.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion
+                            sx={{
+                                backgroundColor: BRAND_COLORS.surfaceDark,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                borderRadius: "16px !important",
+                                color: "#FFFFFF",
+                                "&:before": { display: "none" },
+                                boxShadow: "none",
+                            }}
+                        >
+                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
+                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
+                                    How do I contact customer support or report an issue?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
+                                    You can reach customer support at <strong>support@engaze.date</strong> or send general enquiries to <strong>contact@engaze.date</strong>. In-app reporting and blocking features are also accessible directly on member profiles and during live calls.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+                    </Stack>
+                </Container>
+            </Box>
+
             {/* Bottom Call to Action Banner */}
             <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 }, px: { xs: 2.5, sm: 4 } }}>
                 <Paper
@@ -1184,7 +1388,14 @@ export default function LandingPage() {
                     <Grid container spacing={{ xs: 5, md: 8 }}>
                         {/* Brand Column */}
                         <Grid item xs={12} md={4}>
-                            <EngazeLogo size={36} fontSize="1.45rem" sx={{ mb: 2 }} />
+                            <Box
+                                component={Link}
+                                to="/"
+                                aria-label="Engaze Homepage"
+                                sx={{ display: "inline-block", mb: 2, textDecoration: "none" }}
+                            >
+                                <EngazeLogo size={36} fontSize="1.45rem" />
+                            </Box>
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, maxWidth: 340, mb: 3 }}>
                                 Engaze connects genuine singles through intuitive card discovery, instant mutual messaging, and encrypted 1-on-1 video dates.
                             </Typography>
@@ -1200,34 +1411,35 @@ export default function LandingPage() {
                                 DISCOVERY
                             </Typography>
                             <Stack spacing={1.6}>
-                                <Typography
-                                    variant="body2"
-                                    onClick={() => navigate("/discovery")}
-                                    sx={{ color: BRAND_COLORS.textSecondary, cursor: "pointer", "&:hover": { color: "#FFFFFF" } }}
+                                <Box
+                                    component={Link}
+                                    to="/auth"
+                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
                                 >
                                     Card Discovery
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    onClick={() => navigate("/matches")}
-                                    sx={{ color: BRAND_COLORS.textSecondary, cursor: "pointer", "&:hover": { color: "#FFFFFF" } }}
+                                </Box>
+                                <Box
+                                    component={Link}
+                                    to="/auth"
+                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
                                 >
                                     Mutual Matches
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    onClick={() => navigate("/random-video")}
-                                    sx={{ color: BRAND_COLORS.textSecondary, cursor: "pointer", "&:hover": { color: "#FFFFFF" } }}
+                                </Box>
+                                <Box
+                                    component="a"
+                                    href="#video-dating"
+                                    onClick={(e) => { e.preventDefault(); scrollToSection("video-dating"); }}
+                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
                                 >
                                     1-on-1 Video Dating
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    onClick={() => navigate("/auth")}
-                                    sx={{ color: BRAND_COLORS.textSecondary, cursor: "pointer", "&:hover": { color: "#FFFFFF" } }}
+                                </Box>
+                                <Box
+                                    component={Link}
+                                    to="/auth"
+                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
                                 >
                                     Sign In / Register
-                                </Typography>
+                                </Box>
                             </Stack>
                         </Grid>
 
@@ -1237,34 +1449,34 @@ export default function LandingPage() {
                                 TRUST & SAFETY
                             </Typography>
                             <Stack spacing={1.6}>
-                                <Typography
-                                    variant="body2"
-                                    onClick={() => scrollToSection("safety")}
-                                    sx={{ color: BRAND_COLORS.textSecondary, cursor: "pointer", "&:hover": { color: "#FFFFFF" } }}
+                                <Box
+                                    component={Link}
+                                    to="/safety"
+                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
                                 >
                                     Community Guidelines
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    onClick={() => scrollToSection("safety")}
-                                    sx={{ color: BRAND_COLORS.textSecondary, cursor: "pointer", "&:hover": { color: "#FFFFFF" } }}
+                                </Box>
+                                <Box
+                                    component={Link}
+                                    to="/safety"
+                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
                                 >
                                     Safety Tips
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    onClick={() => scrollToSection("safety")}
-                                    sx={{ color: BRAND_COLORS.textSecondary, cursor: "pointer", "&:hover": { color: "#FFFFFF" } }}
+                                </Box>
+                                <Box
+                                    component={Link}
+                                    to="/safety"
+                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
                                 >
-                                    Profile Verification
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    onClick={() => scrollToSection("safety")}
-                                    sx={{ color: BRAND_COLORS.textSecondary, cursor: "pointer", "&:hover": { color: "#FFFFFF" } }}
+                                    Profile Safety
+                                </Box>
+                                <Box
+                                    component={Link}
+                                    to="/safety"
+                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
                                 >
                                     Anti-Harassment Policy
-                                </Typography>
+                                </Box>
                             </Stack>
                         </Grid>
 
@@ -1274,15 +1486,27 @@ export default function LandingPage() {
                                 LEGAL & PRIVACY
                             </Typography>
                             <Stack spacing={1.6}>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                    Privacy Policy &bull; Terms of Service
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                    Cookie Preferences
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                    Security & Encryption
-                                </Typography>
+                                <Box
+                                    component={Link}
+                                    to="/privacy"
+                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
+                                >
+                                    Privacy Policy
+                                </Box>
+                                <Box
+                                    component={Link}
+                                    to="/terms"
+                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
+                                >
+                                    Terms of Service
+                                </Box>
+                                <Box
+                                    component={Link}
+                                    to="/safety"
+                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
+                                >
+                                    Safety Center
+                                </Box>
                             </Stack>
                         </Grid>
 

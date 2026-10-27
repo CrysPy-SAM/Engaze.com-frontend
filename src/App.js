@@ -18,6 +18,9 @@ const MatchesPage = lazy(() => import('./pages/matches'));
 const SearchPage = lazy(() => import('./pages/search'));
 const ChatPage = lazy(() => import('./pages/chat'));
 const RandomVideoPage = lazy(() => import('./pages/randomVideo'));
+const PrivacyPolicy = lazy(() => import('./pages/privacy'));
+const TermsOfService = lazy(() => import('./pages/terms'));
+const SafetyCenter = lazy(() => import('./pages/safety'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 
@@ -134,6 +137,18 @@ export function PageTitleManager() {
       document.title = 'Engaze — Dating Platform & Live 1-on-1 Video Connections';
       updateMetaTag('robots', 'index, follow');
       updateCanonical('https://www.engaze.date/');
+    } else if (path === '/privacy') {
+      document.title = 'Privacy Policy — Engaze';
+      updateMetaTag('robots', 'index, follow');
+      updateCanonical('https://www.engaze.date/privacy');
+    } else if (path === '/terms') {
+      document.title = 'Terms of Service — Engaze';
+      updateMetaTag('robots', 'index, follow');
+      updateCanonical('https://www.engaze.date/terms');
+    } else if (path === '/safety') {
+      document.title = 'Safety Tips & Community Guidelines — Engaze';
+      updateMetaTag('robots', 'index, follow');
+      updateCanonical('https://www.engaze.date/safety');
     } else if (path === '/auth') {
       document.title = 'Sign In or Join — Engaze';
       updateMetaTag('robots', 'noindex, follow');
@@ -189,6 +204,9 @@ function App() {
                 <Suspense fallback={<RouteLoadingFallback />}>
                   <Routes>
                     <Route path='/' element={<LandingPage />} />
+                    <Route path='/privacy' element={<PrivacyPolicy />} />
+                    <Route path='/terms' element={<TermsOfService />} />
+                    <Route path='/safety' element={<SafetyCenter />} />
                     <Route path='/auth' element={<Authentication />} />
                     <Route path='/home' element={<HomeComponent />} />
                     <Route path='/discovery' element={<DiscoveryPage />} />

@@ -43,7 +43,7 @@
     <meta name="twitter:image" content="https://www.engaze.date/logo512.png" />
     <meta name="twitter:image:alt" content="Engaze Dating and Live Video Brand Logo" />
 
-    <!-- JSON-LD Structured Data: Organization, WebSite & WebApplication Schemas -->
+    <!-- JSON-LD Structured Data: Organization, WebSite, WebApplication & FAQPage Schemas -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -63,7 +63,19 @@
             "height": "512"
           },
           "image": "https://www.engaze.date/logo512.png",
-          "description": "Engaze is an online dating platform connecting genuine singles through profile discovery cards, mutual chat, and 1-on-1 video dates."
+          "description": "Engaze is an online dating platform connecting genuine singles through profile discovery cards, mutual chat, and 1-on-1 video dates.",
+          "contactPoint": [
+            {
+              "@type": "ContactPoint",
+              "contactType": "customer support",
+              "email": "support@engaze.date"
+            },
+            {
+              "@type": "ContactPoint",
+              "contactType": "general inquiries",
+              "email": "contact@engaze.date"
+            }
+          ]
         },
         {
           "@type": "WebSite",
@@ -82,6 +94,60 @@
           "applicationCategory": "DatingApplication",
           "operatingSystem": "All modern web browsers",
           "description": "Online dating application featuring compatible candidate discovery, instant messaging with mutual matches, and direct 1-on-1 live video calls."
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://www.engaze.date/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is Engaze?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Engaze is an online dating platform designed for genuine singles. It combines portrait card discovery, real-time mutual chat, and browser-based 1-on-1 video dates to help you discover authentic chemistry."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does matching work on Engaze?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Matching is strictly based on mutual opt-in. Both you and another member must like each other before either person can start a conversation or request a video call. This prevents cold messages and unsolicited spam."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does Engaze support live video dating?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Engaze provides encrypted 1-on-1 WebRTC video dating right in your web browser. You can test real-world chemistry and vibe before deciding whether to exchange phone numbers or social media handles. Video and audio streams are peer-to-peer and are never recorded."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is Engaze free to use?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Account creation, profile discovery, mutual matching, real-time chat, and 1-on-1 video calls on Engaze are completely free."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Who is eligible to join Engaze?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Engaze is strictly reserved for adults aged 18 and older. Age confirmation is required during the onboarding and profile creation process."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I contact customer support or report an issue?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You can reach customer support at support@engaze.date or send general enquiries to contact@engaze.date. In-app reporting and blocking features are also accessible directly on member profiles and during live calls."
+              }
+            }
+          ]
         }
       ]
     }
