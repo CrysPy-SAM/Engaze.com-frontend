@@ -38,6 +38,8 @@ import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRou
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
+import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
 
 function HomeComponent() {
     const navigate = useNavigate();
@@ -510,7 +512,7 @@ function HomeComponent() {
                         borderRadius: "28px",
                         bgcolor: BRAND_COLORS.surfaceDark,
                         border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                        maxWidth: 400,
+                        maxWidth: 440,
                         width: "100%",
                         p: { xs: 2.5, sm: 3.5 },
                         boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
@@ -527,39 +529,119 @@ function HomeComponent() {
                         </IconButton>
                     </Stack>
 
-                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
-                        Need help with your account, reporting safety concerns, or video meet? Our support team is here 24/7.
+                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3, lineHeight: 1.6 }}>
+                        Have questions about your profile, reporting safety concerns, or video meetups? Reach out directly via our official channels:
                     </Typography>
 
-                    <Stack spacing={1.5}>
-                        <Button
-                            variant="outlined"
-                            fullWidth
-                            onClick={() => window.open("mailto:support@engaze.com", "_blank")}
+                    <Stack spacing={2} sx={{ mb: 3 }}>
+                        {/* Customer Support */}
+                        <Box
+                            component="a"
+                            href="mailto:support@engaze.date"
                             sx={{
-                                borderRadius: "9999px",
-                                py: 1.2,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                                p: 2,
+                                borderRadius: "16px",
+                                bgcolor: "rgba(255, 255, 255, 0.03)",
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                textDecoration: "none",
                                 color: "#FFFFFF",
-                                borderColor: BRAND_COLORS.surfaceDarkBorder,
-                                fontWeight: 700,
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                    bgcolor: "rgba(253, 58, 115, 0.08)",
+                                    borderColor: BRAND_COLORS.coralPink,
+                                    transform: "translateY(-1px)",
+                                },
                             }}
                         >
-                            Email Support: support@engaze.com
-                        </Button>
-                        <Button
-                            variant="contained"
-                            fullWidth
-                            onClick={() => setSupportModalOpen(false)}
+                            <Box
+                                sx={{
+                                    width: 42,
+                                    height: 42,
+                                    borderRadius: "12px",
+                                    bgcolor: "rgba(253, 58, 115, 0.15)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    flexShrink: 0,
+                                }}
+                            >
+                                <SupportAgentRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 24 }} />
+                            </Box>
+                            <Box sx={{ minWidth: 0, flex: 1 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.2 }}>
+                                    Customer Support & Help
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>
+                                    support@engaze.date
+                                </Typography>
+                            </Box>
+                        </Box>
+
+                        {/* General Enquiries */}
+                        <Box
+                            component="a"
+                            href="mailto:contact@engaze.date"
                             sx={{
-                                background: BRAND_COLORS.primaryGradient,
-                                borderRadius: "9999px",
-                                py: 1.2,
-                                fontWeight: 700,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                                p: 2,
+                                borderRadius: "16px",
+                                bgcolor: "rgba(255, 255, 255, 0.03)",
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                textDecoration: "none",
+                                color: "#FFFFFF",
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                    bgcolor: "rgba(139, 92, 246, 0.08)",
+                                    borderColor: BRAND_COLORS.violet,
+                                    transform: "translateY(-1px)",
+                                },
                             }}
                         >
-                            Close
-                        </Button>
+                            <Box
+                                sx={{
+                                    width: 42,
+                                    height: 42,
+                                    borderRadius: "12px",
+                                    bgcolor: "rgba(139, 92, 246, 0.15)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    flexShrink: 0,
+                                }}
+                            >
+                                <EmailRoundedIcon sx={{ color: BRAND_COLORS.violet, fontSize: 22 }} />
+                            </Box>
+                            <Box sx={{ minWidth: 0, flex: 1 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.2 }}>
+                                    General & Business Enquiries
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>
+                                    contact@engaze.date
+                                </Typography>
+                            </Box>
+                        </Box>
                     </Stack>
+
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={() => setSupportModalOpen(false)}
+                        sx={{
+                            background: BRAND_COLORS.primaryGradient,
+                            borderRadius: "9999px",
+                            py: 1.2,
+                            fontWeight: 700,
+                            textTransform: "none",
+                            fontSize: "0.95rem",
+                        }}
+                    >
+                        Close
+                    </Button>
                 </DialogContent>
             </Dialog>
         </Box>
