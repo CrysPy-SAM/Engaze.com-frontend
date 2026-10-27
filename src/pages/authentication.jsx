@@ -568,6 +568,31 @@ export default function Authentication() {
                         >
                             By continuing, you agree to Engaze's Terms of Service & Privacy Policy.
                         </Typography>
+
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                color: BRAND_COLORS.textMuted,
+                                textAlign: "center",
+                                display: "block",
+                                mt: 1.5,
+                            }}
+                        >
+                            Need assistance with your account?{" "}
+                            <Box
+                                component="a"
+                                href="mailto:support@engaze.date"
+                                aria-label="Email Customer Support at support@engaze.date"
+                                sx={{
+                                    color: BRAND_COLORS.coralPink,
+                                    textDecoration: "none",
+                                    fontWeight: 600,
+                                    "&:hover": { textDecoration: "underline" },
+                                }}
+                            >
+                                Contact Support
+                            </Box>
+                        </Typography>
                     </Box>
                 </Box>
             </Grid>

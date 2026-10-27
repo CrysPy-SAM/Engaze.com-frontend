@@ -40,6 +40,7 @@ import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownR
 import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import SecurityRoundedIcon from "@mui/icons-material/SecurityRounded";
+import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 
 export default function Navbar({ hideBottomNav = false, hideTopNav = false, rightActions = null }) {
     const navigate = useNavigate();
@@ -447,6 +448,25 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                     <SecurityRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.coralPink }} />
                                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                         Privacy & Status
+                                    </Typography>
+                                </MenuItem>
+                                <MenuItem
+                                    component="a"
+                                    href="mailto:support@engaze.date"
+                                    aria-label="Email Customer Support at support@engaze.date"
+                                    onClick={handleProfileMenuClose}
+                                    sx={{
+                                        borderRadius: "12px",
+                                        gap: 1.5,
+                                        py: 1,
+                                        color: "inherit",
+                                        textDecoration: "none",
+                                        "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" },
+                                    }}
+                                >
+                                    <HelpOutlineRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.violet }} />
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                        Help & Support
                                     </Typography>
                                 </MenuItem>
                                 <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder, my: 0.8 }} />
