@@ -20,8 +20,51 @@ import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import EngazeLogo from "../components/EngazeLogo";
+
+// Subtle hand-drawn SVG doodles matching the Engaze Sky Blue brand identity
+const BurstLines = ({ sx = {}, rotation = 0, color = "#0A6CFF" }) => (
+    <Box
+        component="svg"
+        viewBox="0 0 44 44"
+        sx={{
+            width: 32,
+            height: 32,
+            transform: `rotate(${rotation}deg)`,
+            pointerEvents: "none",
+            userSelect: "none",
+            ...sx,
+        }}
+    >
+        <path d="M8 8L16 16M22 4V14M36 8L28 16" stroke={color} strokeWidth="3" strokeLinecap="round" />
+    </Box>
+);
+
+const HeartDoodle = ({ sx = {}, rotation = 0, color = "#F06C9B" }) => (
+    <Box
+        component="svg"
+        viewBox="0 0 48 48"
+        sx={{
+            width: 34,
+            height: 34,
+            transform: `rotate(${rotation}deg)`,
+            pointerEvents: "none",
+            userSelect: "none",
+            ...sx,
+        }}
+    >
+        <path
+            d="M24 37.5C24 37.5 10 27.5 10 18.5C10 13.5 14 9.5 19 9.5C22 9.5 24 11.5 24 11.5C24 11.5 26 9.5 29 9.5C34 9.5 38 13.5 38 18.5C38 27.5 24 37.5 24 37.5Z"
+            stroke={color}
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+        />
+    </Box>
+);
 
 export default function Authentication() {
     const navigate = useNavigate();
@@ -118,131 +161,222 @@ export default function Authentication() {
             component="main"
             sx={{
                 minHeight: "100vh",
-                bgcolor: "#FFFDF9",
+                bgcolor: "#FFFFFF",
                 overflow: "hidden",
             }}
         >
             <CssBaseline />
 
-            {/* Left Hero Storytelling Panel (Desktop) */}
+            {/* Left Hero Storytelling Panel (Desktop / Tablet sm+) */}
             <Grid
                 item
                 xs={false}
                 sm={5}
                 md={6}
-                lg={7}
+                lg={6.5}
                 sx={{
                     position: "relative",
-                    backgroundColor: "#FD2E7A",
-                    color: "#FFFFFF",
+                    background: "linear-gradient(145deg, #E8F4FD 0%, #DCEEFC 100%)",
+                    color: "#0A1A4A",
                     display: { xs: "none", sm: "flex" },
                     flexDirection: "column",
                     justifyContent: "space-between",
-                    p: { sm: 4, md: 7, lg: 9 },
+                    p: { sm: 4, md: 6, lg: 8 },
                     overflow: "hidden",
-                    borderRight: "3px solid #0D0E15",
+                    borderRight: "1px solid rgba(10, 26, 74, 0.08)",
                 }}
             >
-                {/* Top Brand Logo */}
-                <Box sx={{ zIndex: 3 }}>
+                {/* Soft Organic Background Blobs */}
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: -90,
+                        left: -90,
+                        width: 320,
+                        height: 320,
+                        borderRadius: "50%",
+                        background: "radial-gradient(circle, rgba(205, 230, 250, 0.7) 0%, rgba(232, 244, 253, 0) 70%)",
+                        pointerEvents: "none",
+                    }}
+                />
+                <Box
+                    sx={{
+                        position: "absolute",
+                        bottom: -100,
+                        right: -100,
+                        width: 360,
+                        height: 360,
+                        borderRadius: "50%",
+                        background: "radial-gradient(circle, rgba(205, 230, 250, 0.7) 0%, rgba(232, 244, 253, 0) 70%)",
+                        pointerEvents: "none",
+                    }}
+                />
+
+                {/* Decorative Doodles */}
+                <BurstLines sx={{ position: "absolute", top: 40, right: 60 }} rotation={25} />
+                <HeartDoodle sx={{ position: "absolute", bottom: 120, right: 80 }} rotation={-12} />
+
+                {/* Top Navigation Row */}
+                <Box sx={{ zIndex: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <EngazeLogo
-                        size={36}
-                        fontSize="1.6rem"
-                        textColor="#FFFFFF"
+                        size={34}
+                        fontSize="1.45rem"
+                        textColor="#0A1A4A"
                         onClick={() => navigate("/")}
                     />
+                    <Box
+                        component={Link}
+                        to="/"
+                        sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.6,
+                            color: "#0A6CFF",
+                            fontWeight: 700,
+                            fontSize: "0.85rem",
+                            textDecoration: "none",
+                            py: 0.6,
+                            px: 1.6,
+                            borderRadius: "9999px",
+                            bgcolor: "rgba(255, 255, 255, 0.8)",
+                            border: "1px solid rgba(10, 108, 255, 0.15)",
+                            boxShadow: "0 2px 8px rgba(10, 108, 255, 0.08)",
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                                bgcolor: "#FFFFFF",
+                                transform: "translateX(-2px)",
+                                boxShadow: "0 4px 12px rgba(10, 108, 255, 0.14)",
+                            },
+                        }}
+                    >
+                        <ArrowBackRoundedIcon sx={{ fontSize: 16 }} />
+                        <span>Back to home</span>
+                    </Box>
                 </Box>
 
-                {/* Floating Conversational Bubbles (Neo-Pop) */}
-                <Box
-                    className="pop-bubble"
-                    sx={{
-                        position: "absolute",
-                        top: "16%",
-                        right: "8%",
-                        backgroundColor: "#FFD233",
-                        color: "#0D0E15",
-                        zIndex: 2,
-                    }}
-                >
-                    <span>Free tonight for a video date? 📹</span>
-                </Box>
-
-                <Box
-                    className="pop-bubble"
-                    sx={{
-                        position: "absolute",
-                        bottom: "22%",
-                        left: "6%",
-                        backgroundColor: "#24C5F7",
-                        color: "#0D0E15",
-                        zIndex: 2,
-                    }}
-                >
-                    <span>Instant match unlocked! ✨</span>
-                </Box>
-
-                {/* Central Value Copy & Visual Highlights */}
-                <Box sx={{ maxWidth: 580, my: "auto", zIndex: 2, position: "relative" }}>
+                {/* Central Brand Storytelling & Value Highlights */}
+                <Box sx={{ maxWidth: 540, my: "auto", zIndex: 2, position: "relative", py: 4 }}>
+                    {/* Badge */}
                     <Box
                         sx={{
-                            display: "inline-block",
-                            backgroundColor: "#0D0E15",
-                            color: "#FFFFFF",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.8,
+                            bgcolor: "#FFFFFF",
+                            color: "#0A6CFF",
                             px: 2,
-                            py: 0.6,
+                            py: 0.65,
                             borderRadius: "9999px",
                             fontSize: "0.78rem",
-                            fontWeight: 900,
-                            letterSpacing: "0.08em",
+                            fontWeight: 800,
+                            letterSpacing: "0.06em",
                             textTransform: "uppercase",
+                            border: "1px solid rgba(10, 108, 255, 0.2)",
+                            boxShadow: "0 4px 14px rgba(10, 108, 255, 0.08)",
                             mb: 3,
                         }}
                     >
-                        THE ENGAZE THIRD SPACE
+                        <span>✨ A Modern Dating Platform</span>
                     </Box>
 
+                    {/* Headline */}
                     <Typography
                         variant="h2"
                         sx={{
                             fontFamily: "'Plus Jakarta Sans', sans-serif",
-                            fontSize: { sm: "2.8rem", md: "3.8rem", lg: "4.5rem" },
+                            fontSize: { sm: "2.6rem", md: "3.4rem", lg: "4.0rem" },
                             fontWeight: 900,
-                            lineHeight: 1.05,
+                            lineHeight: 1.08,
                             letterSpacing: "-0.04em",
-                            color: "#FFFFFF",
-                            mb: 2.5,
+                            color: "#0A1A4A",
+                            mb: 2.2,
                         }}
                     >
                         Real sparks.
-                        <Box component="span" sx={{ color: "#0D0E15", display: "block" }}>
-                            Feel heard.
+                        <Box component="span" sx={{ color: "#0A6CFF", display: "block" }}>
+                            Feel connected.
                         </Box>
                     </Typography>
 
                     <Typography
-                        variant="body1"
                         sx={{
-                            color: "#FFFFFF",
-                            fontSize: "1.15rem",
+                            color: "#5B6475",
+                            fontSize: "1.05rem",
                             fontWeight: 600,
                             lineHeight: 1.6,
-                            mb: 4.5,
-                            maxWidth: 500,
+                            mb: 4,
+                            maxWidth: 480,
                         }}
                     >
-                        Join genuine singles testing real-world vibes through mutual likes, real-time messaging, and secure 1-on-1 video dates.
+                        Join thousands of genuine singles testing real-world chemistry through mutual likes, live browser video vibe checks, and secure conversations.
                     </Typography>
 
-                    {/* Features checklist pills */}
-                    <Stack spacing={2}>
+                    {/* Non-colliding Social Vibe Snippet */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1.8,
+                            bgcolor: "#FFFFFF",
+                            p: 1.8,
+                            borderRadius: "20px",
+                            border: "1px solid rgba(10, 26, 74, 0.08)",
+                            boxShadow: "0 10px 30px rgba(10, 108, 255, 0.10)",
+                            mb: 3.5,
+                            maxWidth: 460,
+                        }}
+                    >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <Box
+                                component="img"
+                                src={process.env.PUBLIC_URL + "/images/hero-1.png"}
+                                alt="Member"
+                                sx={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: "50%",
+                                    border: "2px solid #FFFFFF",
+                                    bgcolor: "#8FA8FF",
+                                    objectFit: "cover",
+                                }}
+                            />
+                            <Box
+                                component="img"
+                                src={process.env.PUBLIC_URL + "/images/hero-2.png"}
+                                alt="Member"
+                                sx={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: "50%",
+                                    border: "2px solid #FFFFFF",
+                                    bgcolor: "#A98BFF",
+                                    objectFit: "cover",
+                                    ml: -1.4,
+                                }}
+                            />
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mb: 0.3 }}>
+                                <Typography sx={{ fontWeight: 800, fontSize: "0.88rem", color: "#0A1A4A" }}>
+                                    Live Video Vibe Check
+                                </Typography>
+                                <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#10B981" }} />
+                            </Box>
+                            <Typography sx={{ fontWeight: 600, fontSize: "0.78rem", color: "#62748A" }}>
+                                “Coffee & banter this weekend?” ☕
+                            </Typography>
+                        </Box>
+                    </Box>
+
+                    {/* Features checklist pills (Clean vertical stack with zero collisions) */}
+                    <Stack spacing={1.5}>
                         {[
                             {
-                                icon: <FavoriteIcon sx={{ color: "#FD2E7A", fontSize: 18 }} />,
+                                icon: <FavoriteIcon sx={{ color: "#F06C9B", fontSize: 18 }} />,
                                 text: "Mutual match discovery — zero unsolicited cold spam",
                             },
                             {
-                                icon: <VideocamIcon sx={{ color: "#7C5CFC", fontSize: 18 }} />,
+                                icon: <VideocamIcon sx={{ color: "#0A6CFF", fontSize: 18 }} />,
                                 text: "Encrypted 1-on-1 browser video dating before phone numbers",
                             },
                             {
@@ -255,16 +389,16 @@ export default function Authentication() {
                                 sx={{
                                     display: "inline-flex",
                                     alignItems: "center",
-                                    gap: 1.5,
-                                    backgroundColor: "rgba(255, 255, 255, 0.92)",
-                                    border: "2px solid #0D0E15",
-                                    boxShadow: "3px 3px 0px #0D0E15",
+                                    gap: 1.2,
+                                    backgroundColor: "rgba(255, 255, 255, 0.90)",
+                                    border: "1px solid rgba(10, 26, 74, 0.08)",
+                                    boxShadow: "0 4px 12px rgba(10, 108, 255, 0.05)",
                                     borderRadius: "9999px",
-                                    px: 2.2,
-                                    py: 1,
-                                    color: "#0D0E15",
-                                    fontWeight: 800,
-                                    fontSize: "0.9rem",
+                                    px: 2,
+                                    py: 0.85,
+                                    color: "#0A1A4A",
+                                    fontWeight: 700,
+                                    fontSize: "0.85rem",
                                     width: "fit-content",
                                 }}
                             >
@@ -276,75 +410,125 @@ export default function Authentication() {
                 </Box>
 
                 {/* Footer caption */}
-                <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.8)", zIndex: 2, fontWeight: 700 }}>
+                <Typography variant="caption" sx={{ color: "#62748A", zIndex: 2, fontWeight: 600 }}>
                     © {new Date().getFullYear()} Engaze. All rights reserved. Strictly 18+ adult dating platform.
                 </Typography>
             </Grid>
 
-            {/* Right Form Card Section */}
+            {/* Right Form Card Section (Desktop + Mobile) */}
             <Grid
                 item
                 xs={12}
                 sm={7}
                 md={6}
-                lg={5}
+                lg={5.5}
                 sx={{
-                    bgcolor: "#FFFDF9",
+                    bgcolor: { xs: "#F7FAFE", sm: "#FFFFFF" },
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
-                    p: { xs: 3, sm: 5, md: 7, lg: 8 },
+                    alignItems: "center",
+                    minHeight: "100vh",
+                    p: { xs: 2.5, sm: 4, md: 6, lg: 8 },
                 }}
             >
-                <Box sx={{ maxWidth: 440, width: "100%", mx: "auto" }}>
-                    {/* Mobile Logo Header */}
+                <Box
+                    sx={{
+                        maxWidth: 440,
+                        width: "100%",
+                        bgcolor: "#FFFFFF",
+                        p: { xs: 3, sm: 4 },
+                        borderRadius: { xs: "24px", sm: "28px" },
+                        boxShadow: {
+                            xs: "0 10px 30px rgba(10, 108, 255, 0.08)",
+                            sm: "none",
+                        },
+                        border: {
+                            xs: "1px solid rgba(10, 26, 74, 0.08)",
+                            sm: "none",
+                        },
+                    }}
+                >
+                    {/* Mobile Brand Header */}
                     <Box
                         sx={{
                             display: { xs: "flex", sm: "none" },
-                            justifyContent: "center",
-                            mb: 4,
+                            flexDirection: "column",
+                            alignItems: "center",
+                            mb: 3,
                         }}
                     >
-                        <EngazeLogo
-                            size={34}
-                            fontSize="1.5rem"
-                            textColor="#0D0E15"
-                            onClick={() => navigate("/")}
-                        />
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", mb: 2 }}>
+                            <EngazeLogo
+                                size={32}
+                                fontSize="1.35rem"
+                                textColor="#0A1A4A"
+                                onClick={() => navigate("/")}
+                            />
+                            <Box
+                                component={Link}
+                                to="/"
+                                sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                    color: "#0A6CFF",
+                                    fontWeight: 700,
+                                    fontSize: "0.80rem",
+                                    textDecoration: "none",
+                                }}
+                            >
+                                <ArrowBackRoundedIcon sx={{ fontSize: 14 }} />
+                                <span>Home</span>
+                            </Box>
+                        </Box>
+                        <Box
+                            sx={{
+                                bgcolor: "rgba(10, 108, 255, 0.08)",
+                                color: "#0A6CFF",
+                                px: 1.6,
+                                py: 0.45,
+                                borderRadius: "9999px",
+                                fontSize: "0.75rem",
+                                fontWeight: 800,
+                                letterSpacing: "0.04em",
+                            }}
+                        >
+                            Real Connections • Mutual Matches Only
+                        </Box>
                     </Box>
 
-                    {/* Form Title & Switcher */}
-                    <Box sx={{ mb: 4 }}>
+                    {/* Form Title & Description */}
+                    <Box sx={{ mb: 3 }}>
                         <Typography
                             variant="h3"
                             sx={{
                                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                                 fontWeight: 900,
-                                color: "#0D0E15",
-                                fontSize: { xs: "2rem", md: "2.4rem" },
+                                color: "#0A1A4A",
+                                fontSize: { xs: "1.75rem", sm: "2.1rem" },
                                 letterSpacing: "-0.03em",
-                                mb: 1,
+                                mb: 0.8,
                             }}
                         >
                             {formState === 0 ? "Welcome back!" : "Create account"}
                         </Typography>
-                        <Typography variant="body2" sx={{ color: "#4B4E63", fontSize: "0.95rem", fontWeight: 600 }}>
+                        <Typography variant="body2" sx={{ color: "#62748A", fontSize: "0.90rem", fontWeight: 600, lineHeight: 1.5 }}>
                             {formState === 0
                                 ? "Enter your credentials to access your matches and live video dates."
                                 : "Join Engaze today to find genuine connections with mutual likes."}
                         </Typography>
                     </Box>
 
-                    {/* Tactile Neo-Pop Segmented Tab Switcher */}
+                    {/* Clean Segmented Tab Switcher */}
                     <Box
                         sx={{
                             display: "flex",
                             p: 0.6,
                             borderRadius: "9999px",
-                            bgcolor: "#FFFFFF",
-                            border: "2.5px solid #0D0E15",
-                            boxShadow: "3px 3px 0px #0D0E15",
-                            mb: 3.5,
+                            bgcolor: "rgba(10, 26, 74, 0.04)",
+                            border: "1px solid rgba(10, 26, 74, 0.08)",
+                            mb: 3,
                         }}
                     >
                         <Button
@@ -354,15 +538,17 @@ export default function Authentication() {
                                 setError("");
                             }}
                             sx={{
-                                py: 1.1,
+                                py: 0.95,
                                 borderRadius: "9999px",
-                                fontWeight: 900,
-                                fontSize: "0.92rem",
+                                fontWeight: 800,
+                                fontSize: "0.88rem",
                                 textTransform: "none",
-                                background: formState === 0 ? "#0D0E15" : "transparent",
-                                color: formState === 0 ? "#FFFFFF" : "#0D0E15",
+                                background: formState === 0 ? "#0A1A4A" : "transparent",
+                                color: formState === 0 ? "#FFFFFF" : "#62748A",
+                                boxShadow: formState === 0 ? "0 4px 12px rgba(10, 26, 74, 0.15)" : "none",
+                                transition: "all 0.2s ease",
                                 "&:hover": {
-                                    background: formState === 0 ? "#1C1D2B" : "rgba(13, 14, 21, 0.05)",
+                                    background: formState === 0 ? "#08153B" : "rgba(10, 26, 74, 0.05)",
                                 },
                             }}
                         >
@@ -375,15 +561,17 @@ export default function Authentication() {
                                 setError("");
                             }}
                             sx={{
-                                py: 1.1,
+                                py: 0.95,
                                 borderRadius: "9999px",
-                                fontWeight: 900,
-                                fontSize: "0.92rem",
+                                fontWeight: 800,
+                                fontSize: "0.88rem",
                                 textTransform: "none",
-                                background: formState === 1 ? "#FD2E7A" : "transparent",
-                                color: formState === 1 ? "#FFFFFF" : "#0D0E15",
+                                background: formState === 1 ? "#0A6CFF" : "transparent",
+                                color: formState === 1 ? "#FFFFFF" : "#62748A",
+                                boxShadow: formState === 1 ? "0 4px 14px rgba(10, 108, 255, 0.25)" : "none",
+                                transition: "all 0.2s ease",
                                 "&:hover": {
-                                    background: formState === 1 ? "#E61C68" : "rgba(13, 14, 21, 0.05)",
+                                    background: formState === 1 ? "#0857D0" : "rgba(10, 26, 74, 0.05)",
                                 },
                             }}
                         >
@@ -391,157 +579,220 @@ export default function Authentication() {
                         </Button>
                     </Box>
 
-                    {/* Form Inputs */}
+                    {/* Form Inputs (with dedicated top labels to prevent notched clipping) */}
                     <Box component="form" noValidate sx={{ width: "100%" }}>
                         {formState === 1 && (
+                            <Box sx={{ mb: 2 }}>
+                                <Typography
+                                    component="label"
+                                    htmlFor="name"
+                                    sx={{
+                                        display: "block",
+                                        fontWeight: 700,
+                                        fontSize: "0.84rem",
+                                        color: "#0A1A4A",
+                                        mb: 0.7,
+                                    }}
+                                >
+                                    Full Name <Box component="span" sx={{ color: "#0A6CFF" }}>*</Box>
+                                </Typography>
+                                <TextField
+                                    required
+                                    fullWidth
+                                    id="name"
+                                    name="name"
+                                    value={name}
+                                    autoComplete="name"
+                                    autoFocus={formState === 1}
+                                    onChange={(e) => setName(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    disabled={loading}
+                                    placeholder="e.g. Alex Morgan"
+                                    sx={{
+                                        "& .MuiOutlinedInput-root": {
+                                            borderRadius: "14px",
+                                            bgcolor: "#FFFFFF",
+                                            border: "1.5px solid rgba(10, 26, 74, 0.14)",
+                                            fontSize: "0.92rem",
+                                            fontWeight: 600,
+                                            color: "#0A1A4A",
+                                            transition: "all 0.2s ease",
+                                            "&:hover": { borderColor: "rgba(10, 108, 255, 0.5)" },
+                                            "&.Mui-focused": {
+                                                borderColor: "#0A6CFF",
+                                                boxShadow: "0 0 0 4px rgba(10, 108, 255, 0.12)",
+                                            },
+                                        },
+                                        "& fieldset": { border: "none" },
+                                    }}
+                                />
+                            </Box>
+                        )}
+
+                        <Box sx={{ mb: 2 }}>
+                            <Typography
+                                component="label"
+                                htmlFor="username"
+                                sx={{
+                                    display: "block",
+                                    fontWeight: 700,
+                                    fontSize: "0.84rem",
+                                    color: "#0A1A4A",
+                                    mb: 0.7,
+                                }}
+                            >
+                                Username <Box component="span" sx={{ color: "#0A6CFF" }}>*</Box>
+                            </Typography>
                             <TextField
-                                margin="normal"
                                 required
                                 fullWidth
-                                id="name"
-                                label="Full Name"
-                                name="name"
-                                value={name}
-                                autoComplete="name"
-                                autoFocus={formState === 1}
-                                onChange={(e) => setName(e.target.value)}
+                                id="username"
+                                name="username"
+                                value={username}
+                                autoComplete="username"
+                                autoFocus={formState === 0}
+                                onChange={(e) => setUsername(e.target.value)}
                                 onKeyPress={handleKeyPress}
                                 disabled={loading}
-                                placeholder="Alex Morgan"
+                                placeholder="e.g. alex_m"
                                 sx={{
                                     "& .MuiOutlinedInput-root": {
-                                        borderRadius: "16px",
+                                        borderRadius: "14px",
                                         bgcolor: "#FFFFFF",
-                                        border: "2px solid #0D0E15",
-                                        fontWeight: 700,
-                                        "&:hover fieldset": { borderColor: "transparent" },
-                                        "&.Mui-focused fieldset": { borderColor: "transparent" },
+                                        border: "1.5px solid rgba(10, 26, 74, 0.14)",
+                                        fontSize: "0.92rem",
+                                        fontWeight: 600,
+                                        color: "#0A1A4A",
+                                        transition: "all 0.2s ease",
+                                        "&:hover": { borderColor: "rgba(10, 108, 255, 0.5)" },
+                                        "&.Mui-focused": {
+                                            borderColor: "#0A6CFF",
+                                            boxShadow: "0 0 0 4px rgba(10, 108, 255, 0.12)",
+                                        },
                                     },
                                     "& fieldset": { border: "none" },
                                 }}
                             />
-                        )}
+                        </Box>
 
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="username"
-                            label="Username"
-                            name="username"
-                            value={username}
-                            autoComplete="username"
-                            autoFocus={formState === 0}
-                            onChange={(e) => setUsername(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                            disabled={loading}
-                            placeholder="alex_m"
-                            sx={{
-                                "& .MuiOutlinedInput-root": {
-                                    borderRadius: "16px",
-                                    bgcolor: "#FFFFFF",
-                                    border: "2px solid #0D0E15",
+                        <Box sx={{ mb: 2 }}>
+                            <Typography
+                                component="label"
+                                htmlFor="password"
+                                sx={{
+                                    display: "block",
                                     fontWeight: 700,
-                                    "&:hover fieldset": { borderColor: "transparent" },
-                                    "&.Mui-focused fieldset": { borderColor: "transparent" },
-                                },
-                                "& fieldset": { border: "none" },
-                            }}
-                        />
-
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="password"
-                            label="Password"
-                            value={password}
-                            type={showPassword ? "text" : "password"}
-                            onChange={(e) => setPassword(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                            id="password"
-                            autoComplete="current-password"
-                            disabled={loading}
-                            placeholder="••••••••"
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            edge="end"
-                                            sx={{ color: "#0D0E15" }}
-                                        >
-                                            {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                            sx={{
-                                "& .MuiOutlinedInput-root": {
-                                    borderRadius: "16px",
-                                    bgcolor: "#FFFFFF",
-                                    border: "2px solid #0D0E15",
-                                    fontWeight: 700,
-                                    "&:hover fieldset": { borderColor: "transparent" },
-                                    "&.Mui-focused fieldset": { borderColor: "transparent" },
-                                },
-                                "& fieldset": { border: "none" },
-                            }}
-                        />
+                                    fontSize: "0.84rem",
+                                    color: "#0A1A4A",
+                                    mb: 0.7,
+                                }}
+                            >
+                                Password <Box component="span" sx={{ color: "#0A6CFF" }}>*</Box>
+                            </Typography>
+                            <TextField
+                                required
+                                fullWidth
+                                name="password"
+                                value={password}
+                                type={showPassword ? "text" : "password"}
+                                onChange={(e) => setPassword(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                id="password"
+                                autoComplete="current-password"
+                                disabled={loading}
+                                placeholder="••••••••"
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                edge="end"
+                                                sx={{ color: "#62748A", "&:hover": { color: "#0A6CFF" } }}
+                                            >
+                                                {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                                sx={{
+                                    "& .MuiOutlinedInput-root": {
+                                        borderRadius: "14px",
+                                        bgcolor: "#FFFFFF",
+                                        border: "1.5px solid rgba(10, 26, 74, 0.14)",
+                                        fontSize: "0.92rem",
+                                        fontWeight: 600,
+                                        color: "#0A1A4A",
+                                        transition: "all 0.2s ease",
+                                        "&:hover": { borderColor: "rgba(10, 108, 255, 0.5)" },
+                                        "&.Mui-focused": {
+                                            borderColor: "#0A6CFF",
+                                            boxShadow: "0 0 0 4px rgba(10, 108, 255, 0.12)",
+                                        },
+                                    },
+                                    "& fieldset": { border: "none" },
+                                }}
+                            />
+                        </Box>
 
                         {error && (
                             <Alert
                                 severity="error"
                                 variant="filled"
                                 sx={{
-                                    mt: 2.5,
-                                    borderRadius: "14px",
+                                    mt: 2,
+                                    mb: 1,
+                                    borderRadius: "12px",
                                     fontWeight: 700,
-                                    fontSize: "0.88rem",
+                                    fontSize: "0.85rem",
                                     backgroundColor: "#EF4444",
-                                    border: "2px solid #0D0E15",
-                                    boxShadow: "2px 2px 0px #0D0E15",
                                 }}
                             >
                                 {error}
                             </Alert>
                         )}
 
+                        {/* Primary Submit Button */}
                         <Button
                             type="button"
                             fullWidth
-                            className="pop-pill"
                             variant="contained"
                             sx={{
-                                mt: 3.5,
+                                mt: 2.5,
                                 mb: 2,
-                                py: 1.6,
-                                backgroundColor: "#FD2E7A",
+                                py: 1.35,
+                                backgroundColor: "#0A6CFF",
                                 color: "#FFFFFF",
-                                fontWeight: 900,
-                                fontSize: "1.05rem",
+                                borderRadius: "9999px",
+                                fontWeight: 800,
+                                fontSize: "0.95rem",
                                 textTransform: "none",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                gap: 1.2,
-                                "&:hover": { backgroundColor: "#E61C68" },
+                                gap: 1,
+                                boxShadow: "0 6px 20px rgba(10, 108, 255, 0.28)",
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                    backgroundColor: "#0857D0",
+                                    transform: "translateY(-1px)",
+                                    boxShadow: "0 8px 24px rgba(10, 108, 255, 0.35)",
+                                },
                             }}
                             onClick={handleAuth}
                             disabled={loading}
-                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+                            startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}
                         >
                             <span>{loading ? "Authenticating..." : formState === 0 ? "Sign In to Engaze" : "Create My Account"}</span>
-                            {!loading && <ArrowForwardRoundedIcon sx={{ fontSize: 20 }} />}
+                            {!loading && <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />}
                         </Button>
 
                         {/* Divider OR */}
-                        <Box sx={{ display: "flex", alignItems: "center", my: 2.5 }}>
-                            <Box sx={{ flex: 1, height: "1.5px", bgcolor: "#E5E7EB" }} />
-                            <Typography variant="caption" sx={{ px: 2, color: "#6B7280", fontWeight: 800, letterSpacing: "1px" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", my: 2.2 }}>
+                            <Box sx={{ flex: 1, height: "1px", bgcolor: "rgba(10, 26, 74, 0.10)" }} />
+                            <Typography variant="caption" sx={{ px: 1.8, color: "#94A3B8", fontWeight: 800, letterSpacing: "1px" }}>
                                 OR
                             </Typography>
-                            <Box sx={{ flex: 1, height: "1.5px", bgcolor: "#E5E7EB" }} />
+                            <Box sx={{ flex: 1, height: "1px", bgcolor: "rgba(10, 26, 74, 0.10)" }} />
                         </Box>
 
                         {/* Continue with Google */}
@@ -563,9 +814,8 @@ export default function Authentication() {
                             <Button
                                 variant="outlined"
                                 fullWidth
-                                className="pop-pill"
                                 startIcon={
-                                    <svg width="20" height="20" viewBox="0 0 24 24">
+                                    <svg width="18" height="18" viewBox="0 0 24 24">
                                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
@@ -576,14 +826,17 @@ export default function Authentication() {
                                     setError("Google Client ID is not configured. Please set REACT_APP_GOOGLE_CLIENT_ID in your environment.");
                                 }}
                                 sx={{
-                                    py: 1.3,
+                                    py: 1.15,
                                     backgroundColor: "#FFFFFF",
-                                    color: "#0D0E15",
-                                    fontWeight: 800,
+                                    color: "#0A1A4A",
+                                    border: "1.5px solid rgba(10, 26, 74, 0.14)",
+                                    borderRadius: "9999px",
+                                    fontWeight: 700,
                                     textTransform: "none",
-                                    fontSize: "0.95rem",
+                                    fontSize: "0.90rem",
                                     "&:hover": {
-                                        backgroundColor: "#F9FAFB",
+                                        backgroundColor: "#F7FAFE",
+                                        borderColor: "#0A6CFF",
                                     },
                                 }}
                             >
@@ -594,27 +847,27 @@ export default function Authentication() {
                         <Typography
                             variant="caption"
                             sx={{
-                                color: "#6B7280",
+                                color: "#62748A",
                                 textAlign: "center",
                                 display: "block",
-                                mt: 3,
+                                mt: 2.5,
                                 fontWeight: 500,
                                 lineHeight: 1.5,
                             }}
                         >
                             By continuing, you agree to Engaze's{" "}
-                            <Box component={Link} to="/terms" sx={{ color: "#FD2E7A", fontWeight: 700, textDecoration: "none" }}>Terms of Service</Box>
+                            <Box component={Link} to="/terms" sx={{ color: "#0A6CFF", fontWeight: 700, textDecoration: "none" }}>Terms of Service</Box>
                             {" "}and{" "}
-                            <Box component={Link} to="/privacy" sx={{ color: "#FD2E7A", fontWeight: 700, textDecoration: "none" }}>Privacy Policy</Box>.
+                            <Box component={Link} to="/privacy" sx={{ color: "#0A6CFF", fontWeight: 700, textDecoration: "none" }}>Privacy Policy</Box>.
                         </Typography>
 
                         <Typography
                             variant="caption"
                             sx={{
-                                color: "#9CA3AF",
+                                color: "#94A3B8",
                                 textAlign: "center",
                                 display: "block",
-                                mt: 1.5,
+                                mt: 1.2,
                                 fontWeight: 500,
                             }}
                         >
@@ -624,7 +877,7 @@ export default function Authentication() {
                                 href="mailto:support@engaze.date"
                                 aria-label="Email Customer Support at support@engaze.date"
                                 sx={{
-                                    color: "#FD2E7A",
+                                    color: "#0A6CFF",
                                     textDecoration: "none",
                                     fontWeight: 700,
                                     "&:hover": { textDecoration: "underline" },
