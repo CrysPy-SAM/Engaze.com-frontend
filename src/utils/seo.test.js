@@ -126,6 +126,19 @@ describe('Technical SEO & Static Crawler Verification', () => {
     test('index.html contains canonical URL pointing to https://www.engaze.date/', () => {
       const content = fs.readFileSync(htmlPath, 'utf8');
       expect(content).toContain('<link rel="canonical" href="https://www.engaze.date/" />');
+      expect(content).toContain('<title>Engaze — Dating & Live Video Connections</title>');
+      expect(content).toContain('Meet new people on Engaze');
+    });
+
+    test('index.html contains compliant Google 48x48 square favicon hierarchy without alternate icon', () => {
+      const content = fs.readFileSync(htmlPath, 'utf8');
+      // Googlebot-Image requires a multiple of 48px square PNG/ICO with standard rel="icon"
+      expect(content).toContain('<link rel="icon" type="image/png" sizes="48x48" href="%PUBLIC_URL%/favicon-48x48.png" />');
+      expect(content).toContain('<link rel="icon" href="%PUBLIC_URL%/favicon.ico" sizes="48x48 32x32 16x16" />');
+      expect(content).toContain('<link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />');
+      expect(content).toContain('<link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />');
+      // rel="alternate icon" is not recognized by Googlebot and must not be used
+      expect(content).not.toContain('rel="alternate icon"');
     });
 
     test('index.html contains robots meta tag allowing indexing and link following for root', () => {
@@ -136,8 +149,10 @@ describe('Technical SEO & Static Crawler Verification', () => {
     test('index.html contains Open Graph and Twitter metadata with absolute URLs', () => {
       const content = fs.readFileSync(htmlPath, 'utf8');
       expect(content).toContain('<meta property="og:url" content="https://www.engaze.date/" />');
+      expect(content).toContain('<meta property="og:title" content="Engaze — Dating & Live Video Connections" />');
       expect(content).toContain('<meta property="og:image" content="https://www.engaze.date/logo512.png" />');
       expect(content).toContain('<meta name="twitter:url" content="https://www.engaze.date/" />');
+      expect(content).toContain('<meta name="twitter:title" content="Engaze — Dating & Live Video Connections" />');
       expect(content).toContain('<meta name="twitter:image" content="https://www.engaze.date/logo512.png" />');
     });
 
@@ -149,6 +164,12 @@ describe('Technical SEO & Static Crawler Verification', () => {
       const parsed = JSON.parse(jsonLdMatch[1]);
       expect(parsed['@context']).toBe('https://schema.org');
       expect(Array.isArray(parsed['@graph'])).toBe(true);
+
+      const website = parsed['@graph'].find((item) => item['@type'] === 'WebSite');
+      expect(website).toBeTruthy();
+      expect(website.name).toBe('Engaze');
+      expect(website.alternateName).toEqual(expect.arrayContaining(['Engaze Dating', 'Engaze.date']));
+      expect(website.url).toBe('https://www.engaze.date/');
 
       const org = parsed['@graph'].find((item) => item['@type'] === 'Organization');
       expect(org).toBeTruthy();
@@ -185,10 +206,10 @@ describe('Technical SEO & Static Crawler Verification', () => {
         </MemoryRouter>
       );
 
-      expect(document.title).toBe('Engaze — Dating Platform & Live 1-on-1 Video Connections');
+      expect(document.title).toBe('Engaze — Dating & Live Video Connections');
       expect(document.querySelector('meta[name="robots"]').getAttribute('content')).toBe('index, follow');
       expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe('https://www.engaze.date/');
-      expect(document.querySelector('meta[name="description"]').getAttribute('content')).toContain('Engaze is a modern dating platform');
+      expect(document.querySelector('meta[name="description"]').getAttribute('content')).toContain('Meet new people on Engaze');
     });
 
     test('privacy policy (/privacy) sets robots to index, follow and canonical to https://www.engaze.date/privacy', () => {

@@ -105,10 +105,14 @@ function RouteLoadingFallback() {
 }
 
 function updateMetaTag(name, content) {
-  let meta = document.querySelector(`meta[name="${name}"]`);
+  let meta = document.querySelector(`meta[name="${name}"], meta[property="${name}"]`);
   if (!meta) {
     meta = document.createElement('meta');
-    meta.setAttribute('name', name);
+    if (name.startsWith('og:')) {
+      meta.setAttribute('property', name);
+    } else {
+      meta.setAttribute('name', name);
+    }
     document.head.appendChild(meta);
   }
   meta.setAttribute('content', content);
@@ -134,9 +138,13 @@ export function PageTitleManager() {
   useEffect(() => {
     const path = location.pathname;
     if (path === '/') {
-      document.title = 'Engaze — Dating Platform & Live 1-on-1 Video Connections';
+      document.title = 'Engaze — Dating & Live Video Connections';
       updateMetaTag('robots', 'index, follow');
-      updateMetaTag('description', 'Engaze is a modern dating platform for genuine singles. Discover compatible profiles, chat with mutual matches, and connect safely via 1-on-1 video dates.');
+      updateMetaTag('description', 'Meet new people on Engaze, a modern dating platform for discovering profiles, instant messaging, and secure 1-on-1 video calls. Find genuine connections online.');
+      updateMetaTag('og:title', 'Engaze — Dating & Live Video Connections');
+      updateMetaTag('og:description', 'Meet new people on Engaze, a modern dating platform for discovering profiles, instant messaging, and secure 1-on-1 video calls. Find genuine connections online.');
+      updateMetaTag('twitter:title', 'Engaze — Dating & Live Video Connections');
+      updateMetaTag('twitter:description', 'Meet new people on Engaze, a modern dating platform for discovering profiles, instant messaging, and secure 1-on-1 video calls. Find genuine connections online.');
       updateCanonical('https://www.engaze.date/');
     } else if (path === '/privacy') {
       document.title = 'Privacy Policy — Engaze';
