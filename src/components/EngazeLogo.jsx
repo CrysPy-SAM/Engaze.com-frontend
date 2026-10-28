@@ -22,6 +22,7 @@ export default function EngazeLogo({
     size = 32,
     showWordmark = true,
     fontSize = "1.35rem",
+    textColor = "#FFFFFF",
     onClick,
     sx = {},
 }) {
@@ -120,7 +121,7 @@ export default function EngazeLogo({
                         fontSize: fontSize,
                         letterSpacing: "-0.025em",
                         lineHeight: 1,
-                        color: "#FFFFFF",
+                        color: textColor,
                         display: "inline-flex",
                         alignItems: "center",
                         position: "relative",

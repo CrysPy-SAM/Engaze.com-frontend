@@ -385,19 +385,20 @@ function MatchesPage() {
                         onClick={() => handleTabChange("matches")}
                         startIcon={<FavoriteRoundedIcon fontSize="small" />}
                         sx={{
-                            py: 1.1,
+                            py: 1.2,
                             borderRadius: "9999px",
-                            fontWeight: activeTab === "matches" ? 800 : 600,
+                            fontWeight: activeTab === "matches" ? 900 : 700,
                             fontSize: "0.85rem",
                             textTransform: "none",
-                            bgcolor: activeTab === "matches" ? BRAND_COLORS.primaryGradient : "rgba(255, 255, 255, 0.05)",
-                            border: `1px solid ${activeTab === "matches" ? "transparent" : BRAND_COLORS.surfaceDarkBorder}`,
-                            color: activeTab === "matches" ? "#fff" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "matches" ? "0 4px 16px rgba(253, 58, 115, 0.35)" : "none",
-                            transition: "all 0.2s ease",
+                            bgcolor: activeTab === "matches" ? (BRAND_COLORS.hotPink || "#FD2E7A") : "#141624",
+                            border: activeTab === "matches" ? "2.5px solid #0D0E15" : "2px solid rgba(255, 255, 255, 0.12)",
+                            color: activeTab === "matches" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
+                            boxShadow: activeTab === "matches" ? "3px 3px 0px #0D0E15" : "none",
+                            transition: "all 0.18s ease",
                             "&:hover": {
-                                bgcolor: activeTab === "matches" ? BRAND_COLORS.primaryGradientHover : "rgba(255, 255, 255, 0.08)",
-                                color: "#fff",
+                                bgcolor: activeTab === "matches" ? "#E61A68" : "rgba(255, 255, 255, 0.08)",
+                                color: "#FFFFFF",
+                                transform: "translateY(-1px)",
                             },
                         }}
                     >
@@ -408,19 +409,20 @@ function MatchesPage() {
                         onClick={() => handleTabChange("requests")}
                         startIcon={<NotificationsRoundedIcon fontSize="small" />}
                         sx={{
-                            py: 1.1,
+                            py: 1.2,
                             borderRadius: "9999px",
-                            fontWeight: activeTab === "requests" ? 800 : 600,
+                            fontWeight: activeTab === "requests" ? 900 : 700,
                             fontSize: "0.85rem",
                             textTransform: "none",
-                            bgcolor: activeTab === "requests" ? BRAND_COLORS.primaryGradient : "rgba(255, 255, 255, 0.05)",
-                            border: `1px solid ${activeTab === "requests" ? "transparent" : BRAND_COLORS.surfaceDarkBorder}`,
-                            color: activeTab === "requests" ? "#fff" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "requests" ? "0 4px 16px rgba(253, 58, 115, 0.35)" : "none",
-                            transition: "all 0.2s ease",
+                            bgcolor: activeTab === "requests" ? (BRAND_COLORS.hotPink || "#FD2E7A") : "#141624",
+                            border: activeTab === "requests" ? "2.5px solid #0D0E15" : "2px solid rgba(255, 255, 255, 0.12)",
+                            color: activeTab === "requests" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
+                            boxShadow: activeTab === "requests" ? "3px 3px 0px #0D0E15" : "none",
+                            transition: "all 0.18s ease",
                             "&:hover": {
-                                bgcolor: activeTab === "requests" ? BRAND_COLORS.primaryGradientHover : "rgba(255, 255, 255, 0.08)",
-                                color: "#fff",
+                                bgcolor: activeTab === "requests" ? "#E61A68" : "rgba(255, 255, 255, 0.08)",
+                                color: "#FFFFFF",
+                                transform: "translateY(-1px)",
                             },
                         }}
                     >
@@ -431,19 +433,20 @@ function MatchesPage() {
                         onClick={() => handleTabChange("likes")}
                         startIcon={<WhatshotRoundedIcon fontSize="small" />}
                         sx={{
-                            py: 1.1,
+                            py: 1.2,
                             borderRadius: "9999px",
-                            fontWeight: activeTab === "likes" ? 800 : 600,
+                            fontWeight: activeTab === "likes" ? 900 : 700,
                             fontSize: "0.85rem",
                             textTransform: "none",
-                            bgcolor: activeTab === "likes" ? BRAND_COLORS.primaryGradient : "rgba(255, 255, 255, 0.05)",
-                            border: `1px solid ${activeTab === "likes" ? "transparent" : BRAND_COLORS.surfaceDarkBorder}`,
-                            color: activeTab === "likes" ? "#fff" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "likes" ? "0 4px 16px rgba(253, 58, 115, 0.35)" : "none",
-                            transition: "all 0.2s ease",
+                            bgcolor: activeTab === "likes" ? (BRAND_COLORS.hotPink || "#FD2E7A") : "#141624",
+                            border: activeTab === "likes" ? "2.5px solid #0D0E15" : "2px solid rgba(255, 255, 255, 0.12)",
+                            color: activeTab === "likes" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
+                            boxShadow: activeTab === "likes" ? "3px 3px 0px #0D0E15" : "none",
+                            transition: "all 0.18s ease",
                             "&:hover": {
-                                bgcolor: activeTab === "likes" ? BRAND_COLORS.primaryGradientHover : "rgba(255, 255, 255, 0.08)",
-                                color: "#fff",
+                                bgcolor: activeTab === "likes" ? "#E61A68" : "rgba(255, 255, 255, 0.08)",
+                                color: "#FFFFFF",
+                                transform: "translateY(-1px)",
                             },
                         }}
                     >
@@ -584,16 +587,21 @@ function MatchesPage() {
                             const unread = conv.unreadCount > 0;
 
                             return (
-                                <ListItem key={conv._id} disablePadding sx={{ mb: 0.8 }}>
+                                <ListItem key={conv._id} disablePadding sx={{ mb: 1.2 }}>
                                     <ListItemButton
                                         onClick={() => openChatByConversation(conv)}
                                         sx={{
-                                            py: 1.4,
-                                            px: { xs: 1.5, sm: 2 },
+                                            py: 1.5,
+                                            px: { xs: 1.8, sm: 2.2 },
                                             borderRadius: "20px",
-                                            transition: "all 0.2s ease",
+                                            bgcolor: "#141624",
+                                            border: "2px solid rgba(255, 255, 255, 0.08)",
+                                            transition: "all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1)",
                                             "&:hover": {
-                                                bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                bgcolor: "#1A1D2E",
+                                                border: "2px solid #0D0E15",
+                                                boxShadow: "3px 3px 0px #0D0E15",
+                                                transform: "translateY(-1.5px)",
                                             },
                                         }}
                                     >
@@ -727,47 +735,61 @@ function MatchesPage() {
                     <Paper
                         elevation={0}
                         sx={{
-                            p: 4,
+                            p: 4.5,
                             textAlign: "center",
                             borderRadius: "24px",
-                            bgcolor: BRAND_COLORS.surfaceDark,
-                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                            bgcolor: "#141624",
+                            border: "2.5px solid #0D0E15",
+                            boxShadow: "5px 5px 0px #0D0E15",
                             mt: 3,
                         }}
                     >
                         <Box
                             sx={{
-                                width: 72,
-                                height: 72,
+                                width: 76,
+                                height: 76,
                                 borderRadius: "50%",
-                                bgcolor: "rgba(253, 58, 115, 0.15)",
+                                bgcolor: "rgba(253, 46, 122, 0.15)",
+                                border: "2px solid #FD2E7A",
+                                boxShadow: "2.5px 2.5px 0px #0D0E15",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 mx: "auto",
-                                mb: 2,
+                                mb: 2.2,
                             }}
                         >
-                            <FavoriteRoundedIcon sx={{ fontSize: 36, color: BRAND_COLORS.coralPink }} />
+                            <FavoriteRoundedIcon sx={{ fontSize: 38, color: BRAND_COLORS.hotPink || "#FD2E7A" }} />
                         </Box>
-                        <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 1 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF", mb: 1, letterSpacing: "-0.01em" }}>
                             No Matches Yet
                         </Typography>
-                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>
+                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3, maxWidth: 360, mx: "auto", lineHeight: 1.6 }}>
                             Start swiping in Discovery to find your mutual sparks and start chatting!
                         </Typography>
                         <Button
                             variant="contained"
                             onClick={() => navigate("/discovery")}
                             sx={{
-                                background: BRAND_COLORS.primaryGradient,
+                                bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
+                                color: "#FFFFFF",
+                                border: "2.5px solid #0D0E15",
+                                boxShadow: "3.5px 3.5px 0px #0D0E15",
                                 borderRadius: "9999px",
                                 px: 4,
-                                py: 1.2,
-                                fontWeight: 800,
+                                py: 1.3,
+                                fontWeight: 900,
+                                textTransform: "none",
+                                fontSize: "0.95rem",
+                                transition: "all 0.15s ease",
+                                "&:hover": {
+                                    bgcolor: "#E61A68",
+                                    boxShadow: "5px 5px 0px #0D0E15",
+                                    transform: "translate(-2px, -2px)",
+                                },
                             }}
                         >
-                            Go to Discovery
+                            Go to Discovery ↗
                         </Button>
                     </Paper>
                 )}

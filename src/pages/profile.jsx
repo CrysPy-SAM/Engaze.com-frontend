@@ -545,8 +545,9 @@ function ProfilePage() {
                         p: { xs: 2.5, md: 3 },
                         mb: 3.5,
                         borderRadius: "24px",
-                        bgcolor: BRAND_COLORS.surfaceDark,
-                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        bgcolor: "#141624",
+                        border: "2.5px solid #0D0E15",
+                        boxShadow: "4px 4px 0px #0D0E15",
                         display: "flex",
                         flexDirection: { xs: "column", sm: "row" },
                         alignItems: { xs: "flex-start", sm: "center" },
@@ -621,10 +622,11 @@ function ProfilePage() {
                         value={activeTab}
                         onChange={(_, val) => setActiveTab(val)}
                         sx={{
-                            bgcolor: BRAND_COLORS.surfaceDark,
-                            p: 0.5,
-                            borderRadius: "16px",
-                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                            bgcolor: "#141624",
+                            p: 0.8,
+                            borderRadius: "9999px",
+                            border: "2.5px solid #0D0E15",
+                            boxShadow: "3px 3px 0px #0D0E15",
                             "& .MuiTabs-indicator": { display: "none" },
                         }}
                     >
@@ -633,17 +635,19 @@ function ProfilePage() {
                             iconPosition="start"
                             label="Edit Profile"
                             sx={{
-                                borderRadius: "12px",
+                                borderRadius: "9999px",
                                 textTransform: "none",
-                                fontWeight: 700,
-                                px: { xs: 1.5, sm: 3 },
+                                fontWeight: 800,
+                                px: { xs: 2, sm: 3.5 },
                                 minHeight: 44,
                                 fontSize: { xs: "0.85rem", sm: "0.95rem" },
                                 color: BRAND_COLORS.textSecondary,
+                                transition: "all 0.15s ease",
                                 "&.Mui-selected": {
-                                    background: BRAND_COLORS.primaryGradient,
+                                    bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
                                     color: "#FFFFFF",
-                                    boxShadow: "0 4px 15px rgba(253, 58, 115, 0.35)",
+                                    border: "2px solid #0D0E15",
+                                    boxShadow: "2px 2px 0px #0D0E15",
                                 },
                             }}
                         />
@@ -652,17 +656,19 @@ function ProfilePage() {
                             iconPosition="start"
                             label="Card Preview"
                             sx={{
-                                borderRadius: "12px",
+                                borderRadius: "9999px",
                                 textTransform: "none",
-                                fontWeight: 700,
-                                px: { xs: 1.5, sm: 3 },
+                                fontWeight: 800,
+                                px: { xs: 2, sm: 3.5 },
                                 minHeight: 44,
                                 fontSize: { xs: "0.85rem", sm: "0.95rem" },
                                 color: BRAND_COLORS.textSecondary,
+                                transition: "all 0.15s ease",
                                 "&.Mui-selected": {
-                                    background: BRAND_COLORS.primaryGradient,
+                                    bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
                                     color: "#FFFFFF",
-                                    boxShadow: "0 4px 15px rgba(253, 58, 115, 0.35)",
+                                    border: "2px solid #0D0E15",
+                                    boxShadow: "2px 2px 0px #0D0E15",
                                 },
                             }}
                         />
@@ -671,17 +677,19 @@ function ProfilePage() {
                             iconPosition="start"
                             label="Privacy & Status"
                             sx={{
-                                borderRadius: "12px",
+                                borderRadius: "9999px",
                                 textTransform: "none",
-                                fontWeight: 700,
-                                px: { xs: 1.5, sm: 3 },
+                                fontWeight: 800,
+                                px: { xs: 2, sm: 3.5 },
                                 minHeight: 44,
                                 fontSize: { xs: "0.85rem", sm: "0.95rem" },
                                 color: BRAND_COLORS.textSecondary,
+                                transition: "all 0.15s ease",
                                 "&.Mui-selected": {
-                                    background: BRAND_COLORS.primaryGradient,
+                                    bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
                                     color: "#FFFFFF",
-                                    boxShadow: "0 4px 15px rgba(253, 58, 115, 0.35)",
+                                    border: "2px solid #0D0E15",
+                                    boxShadow: "2px 2px 0px #0D0E15",
                                 },
                             }}
                         />
@@ -963,17 +971,26 @@ function ProfilePage() {
                                         onClick={handleSaveProfile}
                                         disabled={saving}
                                         sx={{
-                                            background: BRAND_COLORS.primaryGradient,
+                                            bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
                                             color: "#FFFFFF",
-                                            fontWeight: 800,
-                                            borderRadius: "14px",
+                                            fontWeight: 900,
+                                            borderRadius: "9999px",
+                                            border: "2.5px solid #0D0E15",
+                                            boxShadow: "3.5px 3.5px 0px #0D0E15",
                                             px: 5,
                                             py: 1.5,
-                                            boxShadow: "0 6px 20px rgba(253, 58, 115, 0.4)",
+                                            textTransform: "none",
+                                            fontSize: "1rem",
+                                            transition: "all 0.15s ease",
+                                            "&:hover": {
+                                                bgcolor: "#E61A68",
+                                                boxShadow: "5px 5px 0px #0D0E15",
+                                                transform: "translate(-2px, -2px)",
+                                            },
                                         }}
                                         startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SparklesIcon />}
                                     >
-                                        {saving ? "Saving Changes..." : "Save Profile"}
+                                        {saving ? "Saving Changes..." : "Save Profile ↗"}
                                     </Button>
                                 </Box>
                             </Paper>

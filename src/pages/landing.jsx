@@ -1,6 +1,5 @@
-import React from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { BRAND_COLORS } from "../theme";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import "../App.css";
 import {
     Box,
@@ -10,11 +9,15 @@ import {
     Paper,
     Stack,
     Typography,
-    Chip,
     IconButton,
     Accordion,
     AccordionSummary,
     AccordionDetails,
+    Drawer,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
 } from "@mui/material";
 import EngazeLogo from "../components/EngazeLogo";
 
@@ -22,25 +25,90 @@ import EngazeLogo from "../components/EngazeLogo";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
-import ReplayRoundedIcon from "@mui/icons-material/ReplayRounded";
 import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
-import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
+import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
-import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
-import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
+import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import LocalCafeRoundedIcon from "@mui/icons-material/LocalCafeRounded";
 import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
 import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
-import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import VerifiedUserRoundedIcon from "@mui/icons-material/VerifiedUserRounded";
+
+// Hand-drawn SVG Doodles matching Sky Blue Hero styling
+const BurstLines = ({ sx = {}, rotation = 0, color = "#0A6CFF" }) => (
+    <Box
+        component="svg"
+        viewBox="0 0 44 44"
+        sx={{
+            width: 36,
+            height: 36,
+            transform: `rotate(${rotation}deg)`,
+            pointerEvents: "none",
+            userSelect: "none",
+            ...sx,
+        }}
+    >
+        <path d="M8 8L16 16M22 4V14M36 8L28 16" stroke={color} strokeWidth="3" strokeLinecap="round" />
+    </Box>
+);
+
+const HeartDoodle = ({ sx = {}, rotation = 0, color = "#F06C9B" }) => (
+    <Box
+        component="svg"
+        viewBox="0 0 48 48"
+        sx={{
+            width: 38,
+            height: 38,
+            transform: `rotate(${rotation}deg)`,
+            pointerEvents: "none",
+            userSelect: "none",
+            ...sx,
+        }}
+    >
+        <path
+            d="M24 37.5C24 37.5 10 27.5 10 18.5C10 13.5 14 9.5 19 9.5C22 9.5 24 11.5 24 11.5C24 11.5 26 9.5 29 9.5C34 9.5 38 13.5 38 18.5C38 27.5 24 37.5 24 37.5Z"
+            stroke={color}
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+        />
+    </Box>
+);
+
+const SquiggleDoodle = ({ sx = {}, color = "#8FA8FF" }) => (
+    <Box
+        component="svg"
+        viewBox="0 0 64 110"
+        sx={{
+            width: 40,
+            height: 70,
+            pointerEvents: "none",
+            userSelect: "none",
+            ...sx,
+        }}
+    >
+        <path
+            d="M18 10C34 25 36 38 22 52C8 66 12 82 28 92C36 97 42 102 38 106"
+            stroke={color}
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray="4 7"
+            fill="none"
+        />
+    </Box>
+);
 
 export default function LandingPage() {
-    const navigate = useNavigate();
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const scrollToSection = (id) => {
+        setMobileMenuOpen(false);
         const elem = document.getElementById(id);
         if (elem) {
             elem.scrollIntoView({ behavior: "smooth" });
@@ -48,977 +116,1727 @@ export default function LandingPage() {
     };
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: BRAND_COLORS.bgDark, color: "#FFFFFF", overflowX: "hidden" }}>
-            {/* Top Navigation Bar */}
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#FFFDF9", color: "#0D0E15", overflowX: "hidden" }}>
+            {/* ============================================================
+                1. FLOATING PILL NAVIGATION BAR
+                Clean, rounded pill with 2.5px dark border & pop shadow.
+                ============================================================ */}
             <Box
                 component="header"
                 sx={{
-                    px: { xs: 2, sm: 4, md: 8 },
-                    py: { xs: 1.8, md: 2.2 },
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                    backgroundColor: "rgba(11, 13, 23, 0.8)",
-                    backdropFilter: "blur(20px)",
                     position: "sticky",
-                    top: 0,
-                    zIndex: 100,
+                    top: { xs: 8, md: 16 },
+                    zIndex: 1100,
+                    px: { xs: 2, sm: 3, md: 4 },
+                    display: "flex",
+                    justifyContent: "center",
+                    pointerEvents: "none",
                 }}
             >
-                {/* Official Brand Logo */}
-                <Box
-                    component={Link}
-                    to="/"
-                    aria-label="Engaze Dating Platform Homepage"
-                    sx={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}
+                <Paper
+                    elevation={0}
+                    sx={{
+                        pointerEvents: "auto",
+                        width: "100%",
+                        maxWidth: 1040,
+                        backgroundColor: "#FFFFFF",
+                        border: "1.5px solid rgba(10, 26, 74, 0.08)",
+                        borderRadius: "9999px",
+                        boxShadow: "0 8px 24px rgba(10, 108, 255, 0.10)",
+                        px: { xs: 2, sm: 3, md: 3.5 },
+                        py: { xs: 0.75, md: 1.0 },
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                    }}
                 >
-                    <EngazeLogo size={38} fontSize="1.5rem" />
-                </Box>
-
-                {/* Desktop Anchor Navigation */}
-                <Stack
-                    component="nav"
-                    aria-label="Main Navigation"
-                    direction="row"
-                    spacing={3.5}
-                    sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}
-                >
+                    {/* Official Brand Logo */}
                     <Box
-                        component="a"
-                        href="#features"
-                        onClick={(e) => { e.preventDefault(); scrollToSection("features"); }}
-                        sx={{
-                            color: "rgba(255, 255, 255, 0.75)",
-                            fontWeight: 600,
-                            textDecoration: "none",
-                            fontSize: "0.875rem",
-                            transition: "color 0.2s ease",
-                            "&:hover": { color: "#FFFFFF" },
-                        }}
-                    >
-                        Features
-                    </Box>
-                    <Box
-                        component="a"
-                        href="#video-dating"
-                        onClick={(e) => { e.preventDefault(); scrollToSection("video-dating"); }}
-                        sx={{
-                            color: "rgba(255, 255, 255, 0.75)",
-                            fontWeight: 600,
-                            textDecoration: "none",
-                            fontSize: "0.875rem",
-                            transition: "color 0.2s ease",
-                            "&:hover": { color: "#FFFFFF" },
-                        }}
-                    >
-                        Live Video Dating
-                    </Box>
-                    <Box
-                        component="a"
-                        href="#difference"
-                        onClick={(e) => { e.preventDefault(); scrollToSection("difference"); }}
-                        sx={{
-                            color: "rgba(255, 255, 255, 0.75)",
-                            fontWeight: 600,
-                            textDecoration: "none",
-                            fontSize: "0.875rem",
-                            transition: "color 0.2s ease",
-                            "&:hover": { color: "#FFFFFF" },
-                        }}
-                    >
-                        Why Engaze
-                    </Box>
-                    <Box
-                        component="a"
-                        href="#safety"
-                        onClick={(e) => { e.preventDefault(); scrollToSection("safety"); }}
-                        sx={{
-                            color: "rgba(255, 255, 255, 0.75)",
-                            fontWeight: 600,
-                            textDecoration: "none",
-                            fontSize: "0.875rem",
-                            transition: "color 0.2s ease",
-                            "&:hover": { color: "#FFFFFF" },
-                        }}
-                    >
-                        Safety & Trust
-                    </Box>
-                    <Box
-                        component="a"
-                        href="#faq"
-                        onClick={(e) => { e.preventDefault(); scrollToSection("faq"); }}
-                        sx={{
-                            color: "rgba(255, 255, 255, 0.75)",
-                            fontWeight: 600,
-                            textDecoration: "none",
-                            fontSize: "0.875rem",
-                            transition: "color 0.2s ease",
-                            "&:hover": { color: "#FFFFFF" },
-                        }}
-                    >
-                        FAQ
-                    </Box>
-                </Stack>
-
-                {/* Right Action Buttons */}
-                <Stack direction="row" spacing={{ xs: 1.2, sm: 2 }} alignItems="center">
-                    <Button
                         component={Link}
-                        to="/auth"
-                        variant="text"
-                        sx={{
-                            color: "rgba(255, 255, 255, 0.85)",
-                            borderRadius: 9999,
-                            px: { xs: 1.5, sm: 2.5 },
-                            fontSize: { xs: "0.85rem", sm: "0.92rem" },
-                            fontWeight: 700,
-                            textTransform: "none",
-                            "&:hover": { color: "#FFFFFF", bgcolor: "rgba(255,255,255,0.06)" },
-                        }}
+                        to="/"
+                        aria-label="Engaze Dating Platform Homepage"
+                        sx={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}
                     >
-                        Sign In
-                    </Button>
+                        <EngazeLogo size={30} fontSize="1.3rem" textColor="#0A1A4A" />
+                    </Box>
+
+                    {/* Desktop Navigation Links */}
+                    <Stack
+                        component="nav"
+                        aria-label="Main Navigation"
+                        direction="row"
+                        spacing={3}
+                        sx={{ display: { xs: "none", lg: "flex" }, alignItems: "center" }}
+                    >
+                        {[
+                            { label: "Features", id: "features" },
+                            { label: "Live Video", id: "video-dating" },
+                            { label: "Why Engaze", id: "difference" },
+                            { label: "Safety & Trust", id: "safety" },
+                            { label: "FAQ", id: "faq" },
+                        ].map((link) => (
+                            <Box
+                                key={link.id}
+                                component="a"
+                                href={`#${link.id}`}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    scrollToSection(link.id);
+                                }}
+                                sx={{
+                                    color: "#0A1A4A",
+                                    fontWeight: 700,
+                                    textDecoration: "none",
+                                    fontSize: "0.88rem",
+                                    letterSpacing: "-0.01em",
+                                    transition: "color 0.18s ease",
+                                    "&:hover": { color: "#0A6CFF" },
+                                }}
+                            >
+                                {link.label}
+                            </Box>
+                        ))}
+                    </Stack>
+
+                    {/* Right Action CTA Buttons */}
+                    <Stack direction="row" spacing={1.2} alignItems="center">
+                        <Button
+                            component={Link}
+                            to="/auth"
+                            variant="text"
+                            sx={{
+                                display: { xs: "none", sm: "inline-flex" },
+                                color: "#0A1A4A",
+                                fontWeight: 800,
+                                fontSize: "0.88rem",
+                                textTransform: "none",
+                                px: { sm: 1.8 },
+                                "&:hover": { color: "#0A6CFF", backgroundColor: "transparent" },
+                            }}
+                        >
+                            Sign In
+                        </Button>
+
+                        <Button
+                            component={Link}
+                            to="/auth"
+                            className="engaze-btn-primary"
+                            variant="contained"
+                            sx={{
+                                backgroundColor: "#0A6CFF",
+                                color: "#FFFFFF",
+                                px: { xs: 2.2, sm: 2.8 },
+                                py: { xs: 0.75, sm: 0.95 },
+                                fontSize: { xs: "0.82rem", sm: "0.90rem" },
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 0.8,
+                                textTransform: "none",
+                                borderRadius: "9999px",
+                                boxShadow: "0 6px 18px rgba(10, 108, 255, 0.28)",
+                                "&:hover": {
+                                    backgroundColor: "#0857D0",
+                                    transform: "translateY(-1px)",
+                                },
+                            }}
+                        >
+                            <span>Get Started</span>
+                            <Box
+                                component="span"
+                                sx={{
+                                    width: 20,
+                                    height: 20,
+                                    borderRadius: "50%",
+                                    backgroundColor: "#FFFFFF",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#0A6CFF",
+                                    fontSize: "0.80rem",
+                                    lineHeight: 1,
+                                    fontWeight: 900,
+                                }}
+                            >
+                                →
+                            </Box>
+                        </Button>
+
+                        {/* Mobile Menu Hamburger */}
+                        <IconButton
+                            aria-label="Open navigation menu"
+                            onClick={() => setMobileMenuOpen(true)}
+                            sx={{
+                                display: { xs: "inline-flex", lg: "none" },
+                                color: "#0A1A4A",
+                                p: 0.6,
+                            }}
+                        >
+                            <MenuRoundedIcon sx={{ fontSize: 24 }} />
+                        </IconButton>
+                    </Stack>
+                </Paper>
+            </Box>
+
+            {/* Mobile Navigation Drawer */}
+            <Drawer
+                anchor="top"
+                open={mobileMenuOpen}
+                onClose={() => setMobileMenuOpen(false)}
+                PaperProps={{
+                    sx: {
+                        backgroundColor: "#FFFFFF",
+                        borderBottom: "2px solid rgba(20, 43, 69, 0.1)",
+                        p: 3,
+                    },
+                }}
+            >
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                    <EngazeLogo size={32} fontSize="1.35rem" textColor="#142B45" />
+                    <IconButton onClick={() => setMobileMenuOpen(false)}>
+                        <CloseRoundedIcon sx={{ fontSize: 28, color: "#142B45" }} />
+                    </IconButton>
+                </Box>
+                <List sx={{ mb: 2 }}>
+                    {[
+                        { label: "Features", id: "features" },
+                        { label: "Live Video Dating", id: "video-dating" },
+                        { label: "Why Engaze", id: "difference" },
+                        { label: "Safety & Trust", id: "safety" },
+                        { label: "FAQ", id: "faq" },
+                    ].map((item) => (
+                        <ListItem key={item.id} disablePadding sx={{ mb: 1 }}>
+                            <ListItemButton
+                                onClick={() => scrollToSection(item.id)}
+                                sx={{
+                                    borderRadius: 3,
+                                    border: "1.5px solid rgba(20, 43, 69, 0.08)",
+                                    boxShadow: "0 2px 8px rgba(20, 43, 69, 0.04)",
+                                    fontWeight: 800,
+                                    py: 1.2,
+                                    color: "#142B45",
+                                }}
+                            >
+                                <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: 800, color: "#142B45" }} />
+                            </ListItemButton>
+                        </ListItem>
+                    ))}
+                </List>
+                <Stack spacing={1.5}>
                     <Button
                         component={Link}
                         to="/auth"
                         variant="contained"
+                        className="engaze-btn-primary"
                         sx={{
-                            background: BRAND_COLORS.primaryGradient,
-                            borderRadius: 9999,
-                            px: { xs: 2.2, sm: 3.5 },
-                            py: { xs: 0.9, sm: 1.1 },
-                            fontSize: { xs: "0.85rem", sm: "0.95rem" },
-                            fontWeight: 800,
+                            backgroundColor: "#2589D8",
+                            color: "#FFFFFF",
+                            py: 1.4,
+                            fontSize: "1rem",
                             textTransform: "none",
-                            boxShadow: "0 4px 20px rgba(253, 58, 115, 0.4)",
-                            transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                            "&:hover": {
-                                transform: "translateY(-1px)",
-                                boxShadow: "0 6px 25px rgba(253, 58, 115, 0.6)",
-                            },
+                            borderRadius: "9999px",
+                            "&:hover": { backgroundColor: "#1E73B9" },
                         }}
                     >
-                        Join Free
+                        Create Free Account
+                    </Button>
+                    <Button
+                        component={Link}
+                        to="/auth"
+                        variant="outlined"
+                        className="engaze-btn-secondary"
+                        sx={{
+                            backgroundColor: "#FFFFFF",
+                            color: "#142B45",
+                            borderColor: "rgba(20, 43, 69, 0.16)",
+                            py: 1.2,
+                            fontSize: "1rem",
+                            textTransform: "none",
+                            borderRadius: "9999px",
+                            "&:hover": { borderColor: "#142B45", backgroundColor: "#F7FAFE" },
+                        }}
+                    >
+                        Sign In
                     </Button>
                 </Stack>
-            </Box>
+            </Drawer>
 
-            {/* Hero Section */}
-            <Container maxWidth="xl" sx={{ pt: { xs: 6, sm: 8, md: 12 }, pb: { xs: 8, md: 12 }, px: { xs: 2.5, sm: 4, md: 6 } }}>
-                <Grid container spacing={{ xs: 6, md: 8 }} alignItems="center">
-                    {/* Left Column: Headlines & Call to Action */}
-                    <Grid item xs={12} md={7}>
-                        <Box sx={{ maxWidth: 660 }}>
-                            {/* Eyebrow Pill */}
-                            <Box
-                                sx={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 1.2,
-                                    px: 2.2,
-                                    py: 0.9,
-                                    borderRadius: 9999,
-                                    bgcolor: "rgba(253, 58, 115, 0.12)",
-                                    border: "1px solid rgba(253, 58, 115, 0.3)",
-                                    color: BRAND_COLORS.coralPink,
-                                    fontSize: "0.85rem",
-                                    fontWeight: 700,
-                                    mb: 3,
-                                }}
-                            >
-                                <AutoAwesomeRoundedIcon sx={{ fontSize: 18 }} />
-                                The Modern Standard for Dating & Live Video
-                            </Box>
+            {/* ============================================================
+                2. HERO SECTION
+                Soft sky blue background with circular profile portraits framing
+                the deep navy headline, playful chat bubbles & clear CTAs.
+                ============================================================ */}
+            <Box
+                component="section"
+                sx={{
+                    position: "relative",
+                    background: "linear-gradient(180deg, #E8F4FD 0%, #DCEEFC 100%)",
+                    color: "#0A1A4A",
+                    pt: { xs: 4, sm: 6, md: 8 },
+                    pb: { xs: 5, sm: 6, md: 7 },
+                    px: { xs: 2, sm: 3, md: 5 },
+                    overflow: "hidden",
+                    borderBottom: "1px solid rgba(10, 26, 74, 0.08)",
+                    minHeight: { xs: "auto", md: 540, lg: 600 },
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                }}
+            >
+                {/* Soft Organic Background Blobs (#CDE6FA) */}
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: -80,
+                        left: -80,
+                        width: { xs: 220, md: 380 },
+                        height: { xs: 220, md: 380 },
+                        borderRadius: "50%",
+                        background: "radial-gradient(circle, rgba(205, 230, 250, 0.65) 0%, rgba(232, 244, 253, 0) 70%)",
+                        pointerEvents: "none",
+                    }}
+                />
+                <Box
+                    sx={{
+                        position: "absolute",
+                        bottom: -80,
+                        right: -80,
+                        width: { xs: 220, md: 380 },
+                        height: { xs: 220, md: 380 },
+                        borderRadius: "50%",
+                        background: "radial-gradient(circle, rgba(205, 230, 250, 0.65) 0%, rgba(232, 244, 253, 0) 70%)",
+                        pointerEvents: "none",
+                    }}
+                />
 
-                            {/* Headline */}
-                            <Typography
-                                variant="h1"
-                                sx={{
-                                    fontSize: { xs: "2.6rem", sm: "3.5rem", md: "4.2rem" },
-                                    fontWeight: 900,
-                                    lineHeight: 1.08,
-                                    letterSpacing: "-0.035em",
-                                    mb: 3,
-                                }}
-                            >
-                                Engaze Dating — Where Real Sparks{" "}
-                                <br />
-                                <span className="gradient-text">Become Real Connections.</span>
-                            </Typography>
+                {/* Decorative Hand-Drawn Vector Doodles (Desktop/Tablet sm+) */}
+                <Box sx={{ display: { xs: "none", md: "block" }, pointerEvents: "none" }}>
+                    <BurstLines sx={{ position: "absolute", top: { sm: 15, md: 20 }, left: { sm: 40, md: "6%" } }} rotation={0} />
+                    <HeartDoodle sx={{ position: "absolute", top: { sm: 70, md: 80 }, left: { sm: 160, md: "16%" } }} rotation={15} />
+                    <SquiggleDoodle sx={{ position: "absolute", top: { md: 180, lg: 200 }, left: { md: "5%", lg: "6%" } }} />
+                    <BurstLines sx={{ position: "absolute", top: { sm: 15, md: 20 }, right: { sm: 40, md: "6%" } }} rotation={120} />
+                    <BurstLines sx={{ position: "absolute", bottom: { sm: 15, md: 20 }, left: { sm: 80, md: "8%" } }} rotation={60} />
+                    <HeartDoodle sx={{ position: "absolute", bottom: { sm: 160, md: 180 }, right: { sm: 110, md: "14%" } }} rotation={-15} />
+                    <BurstLines sx={{ position: "absolute", bottom: { sm: 140, md: 160 }, right: { sm: 15, md: "3%" } }} rotation={120} />
+                </Box>
 
-                            {/* Subtitle */}
-                            <Typography
-                                variant="body1"
-                                sx={{
-                                    color: BRAND_COLORS.textSecondary,
-                                    lineHeight: 1.65,
-                                    fontSize: { xs: "1.05rem", sm: "1.15rem", md: "1.25rem" },
-                                    mb: 4.5,
-                                    maxWidth: 580,
-                                }}
-                            >
-                                Experience dating without the guesswork. Browse compatible singles, chat instantly with mutual likes, and test genuine chemistry through secure 1-on-1 video dates — before exchanging numbers.
-                            </Typography>
+                {/* Four Circular Profile Portraits (Framing the Corners on sm+) */}
+                {/* 1. Upper-Left Avatar (Smiling Woman on Periwinkle Circle #8FA8FF) */}
+                <Box
+                    component="img"
+                    src={process.env.PUBLIC_URL + "/images/hero-1.png"}
+                    alt="Engaze member smiling"
+                    className="engaze-hero-portrait engaze-float-1"
+                    sx={{
+                        position: "absolute",
+                        top: { sm: 20, md: 30, lg: 35 },
+                        left: { sm: 15, md: "3%", lg: "4%" },
+                        width: { sm: 85, md: 110, lg: 130 },
+                        height: { sm: 85, md: 110, lg: 130 },
+                        borderRadius: "50%",
+                        border: "6px solid #FFFFFF",
+                        boxShadow: "0 14px 30px rgba(10, 26, 74, 0.12)",
+                        backgroundColor: "#8FA8FF",
+                        objectFit: "cover",
+                        zIndex: 2,
+                        display: { xs: "none", sm: "block" },
+                    }}
+                />
 
-                            {/* CTAs */}
-                            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 4.5 }}>
-                                <Button
-                                    component={Link}
-                                    to="/auth"
-                                    variant="contained"
-                                    size="large"
-                                    endIcon={<ArrowForwardRoundedIcon />}
-                                    sx={{
-                                        background: BRAND_COLORS.primaryGradient,
-                                        py: { xs: 1.6, sm: 1.9 },
-                                        px: { xs: 3.5, sm: 4.5 },
-                                        fontSize: "1.05rem",
-                                        fontWeight: 800,
-                                        textTransform: "none",
-                                        borderRadius: 9999,
-                                        boxShadow: "0 8px 30px rgba(253, 58, 115, 0.45)",
-                                        transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                                        "&:hover": {
-                                            transform: "translateY(-2px)",
-                                            boxShadow: "0 12px 35px rgba(253, 58, 115, 0.65)",
-                                        },
-                                    }}
-                                >
-                                    Start Discovering Free
-                                </Button>
-                                <Button
-                                    component="a"
-                                    href="#video-dating"
-                                    onClick={(e) => { e.preventDefault(); scrollToSection("video-dating"); }}
-                                    variant="outlined"
-                                    size="large"
-                                    startIcon={<VideocamRoundedIcon />}
-                                    sx={{
-                                        borderColor: "rgba(255, 255, 255, 0.2)",
-                                        color: "#FFFFFF",
-                                        py: { xs: 1.6, sm: 1.9 },
-                                        px: { xs: 3, sm: 4 },
-                                        fontSize: "1.02rem",
-                                        fontWeight: 700,
-                                        textTransform: "none",
-                                        borderRadius: 9999,
-                                        backgroundColor: "rgba(255, 255, 255, 0.03)",
-                                        backdropFilter: "blur(8px)",
-                                        transition: "all 0.2s ease",
-                                        "&:hover": {
-                                            borderColor: BRAND_COLORS.coralPink,
-                                            backgroundColor: "rgba(253, 58, 115, 0.08)",
-                                            transform: "translateY(-2px)",
-                                        },
-                                    }}
-                                >
-                                    Explore Video Dating
-                                </Button>
-                            </Stack>
+                {/* 2. Upper-Right Avatar (Smiling Man on Purple Circle #A98BFF) */}
+                <Box
+                    component="img"
+                    src={process.env.PUBLIC_URL + "/images/hero-2.png"}
+                    alt="Engaze member laughing"
+                    className="engaze-hero-portrait engaze-float-2"
+                    sx={{
+                        position: "absolute",
+                        top: { sm: 20, md: 30, lg: 35 },
+                        right: { sm: 15, md: "3%", lg: "4%" },
+                        width: { sm: 85, md: 110, lg: 130 },
+                        height: { sm: 85, md: 110, lg: 130 },
+                        borderRadius: "50%",
+                        border: "6px solid #FFFFFF",
+                        boxShadow: "0 14px 30px rgba(10, 26, 74, 0.12)",
+                        backgroundColor: "#A98BFF",
+                        objectFit: "cover",
+                        zIndex: 2,
+                        display: { xs: "none", sm: "block" },
+                    }}
+                />
 
-                            {/* Trust Signals Row */}
-                            <Stack
-                                direction={{ xs: "column", sm: "row" }}
-                                spacing={{ xs: 1.5, sm: 3 }}
-                                sx={{ color: BRAND_COLORS.textSecondary, fontSize: "0.85rem" }}
-                            >
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <ShieldOutlinedIcon sx={{ fontSize: 18, color: BRAND_COLORS.emerald }} />
-                                    <span>Adult 18+ Profiles</span>
-                                </Box>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <FavoriteRoundedIcon sx={{ fontSize: 18, color: BRAND_COLORS.coralPink }} />
-                                    <span>Mutual Likes Only</span>
-                                </Box>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <LockOutlinedIcon sx={{ fontSize: 18, color: BRAND_COLORS.violet }} />
-                                    <span>Encrypted WebRTC Video</span>
-                                </Box>
-                            </Stack>
+                {/* 3. Lower-Left Avatar (Smiling Man on Yellow Circle #FFD84D) */}
+                <Box
+                    component="img"
+                    src={process.env.PUBLIC_URL + "/images/hero-3.png"}
+                    alt="Engaze member profile"
+                    className="engaze-hero-portrait engaze-float-2"
+                    sx={{
+                        position: "absolute",
+                        bottom: { sm: 20, md: 30, lg: 40 },
+                        left: { sm: 15, md: "3%", lg: "4%" },
+                        width: { sm: 85, md: 110, lg: 135 },
+                        height: { sm: 85, md: 110, lg: 135 },
+                        borderRadius: "50%",
+                        border: "6px solid #FFFFFF",
+                        boxShadow: "0 14px 30px rgba(10, 26, 74, 0.12)",
+                        backgroundColor: "#FFD84D",
+                        objectFit: "cover",
+                        zIndex: 2,
+                        display: { xs: "none", sm: "block" },
+                    }}
+                />
+
+                {/* 4. Lower-Right Avatar (Smiling Woman on Pink Circle #F06C9B) */}
+                <Box
+                    component="img"
+                    src={process.env.PUBLIC_URL + "/images/hero-4.png"}
+                    alt="Engaze member connecting"
+                    className="engaze-hero-portrait engaze-float-1"
+                    sx={{
+                        position: "absolute",
+                        bottom: { sm: 20, md: 30, lg: 40 },
+                        right: { sm: 15, md: "3%", lg: "4%" },
+                        width: { sm: 85, md: 110, lg: 135 },
+                        height: { sm: 85, md: 110, lg: 135 },
+                        borderRadius: "50%",
+                        border: "6px solid #FFFFFF",
+                        boxShadow: "0 14px 30px rgba(10, 26, 74, 0.12)",
+                        backgroundColor: "#F06C9B",
+                        objectFit: "cover",
+                        zIndex: 2,
+                        display: { xs: "none", sm: "block" },
+                    }}
+                />
+
+                {/* Floating Tilted Conversation Bubbles (Desktop lg+ only) */}
+                {/* Bubble 1: White with Navy Text (-12deg) */}
+                <Box
+                    className="engaze-chat-bubble engaze-float-2"
+                    sx={{
+                        position: "absolute",
+                        top: { lg: 115 },
+                        left: { lg: "11%", xl: "12%" },
+                        backgroundColor: "#FFFFFF",
+                        color: "#0A1A4A",
+                        border: "1px solid rgba(10, 108, 255, 0.15)",
+                        borderRadius: "16px",
+                        transform: "rotate(-12deg)",
+                        boxShadow: "0 8px 24px rgba(10, 108, 255, 0.12)",
+                        px: 2,
+                        py: 0.8,
+                        fontSize: "0.82rem",
+                        zIndex: 3,
+                        display: { xs: "none", lg: "inline-flex" },
+                        alignItems: "center",
+                        gap: 1,
+                    }}
+                >
+                    <VideocamRoundedIcon sx={{ fontSize: 17, color: "#0A6CFF" }} />
+                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#0A1A4A" }}>
+                        Face-to-face vibe check? 📹
+                    </Typography>
+                </Box>
+
+                {/* Bubble 2: Lavender (#C9B6F5) (+8deg) */}
+                <Box
+                    className="engaze-chat-bubble engaze-float-1"
+                    sx={{
+                        position: "absolute",
+                        top: { lg: 110 },
+                        right: { lg: "11%", xl: "12%" },
+                        backgroundColor: "#C9B6F5",
+                        color: "#0A1A4A",
+                        border: "1px solid rgba(10, 26, 74, 0.10)",
+                        borderRadius: "16px",
+                        transform: "rotate(8deg)",
+                        boxShadow: "0 8px 24px rgba(10, 26, 74, 0.10)",
+                        px: 2,
+                        py: 0.8,
+                        fontSize: "0.82rem",
+                        zIndex: 3,
+                        display: { xs: "none", lg: "inline-flex" },
+                        alignItems: "center",
+                        gap: 1,
+                    }}
+                >
+                    <LocalCafeRoundedIcon sx={{ fontSize: 17, color: "#0A1A4A" }} />
+                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#0A1A4A" }}>
+                        Coffee & banter this weekend? ☕
+                    </Typography>
+                </Box>
+
+                {/* Bubble 3: Pink (#F9A8C0) (-10deg) */}
+                <Box
+                    className="engaze-chat-bubble engaze-float-1"
+                    sx={{
+                        position: "absolute",
+                        bottom: { lg: 125 },
+                        left: { lg: "11%", xl: "12%" },
+                        backgroundColor: "#F9A8C0",
+                        color: "#0A1A4A",
+                        border: "1px solid rgba(10, 26, 74, 0.10)",
+                        borderRadius: "16px",
+                        transform: "rotate(-10deg)",
+                        boxShadow: "0 8px 24px rgba(10, 26, 74, 0.10)",
+                        px: 2,
+                        py: 0.8,
+                        fontSize: "0.82rem",
+                        zIndex: 3,
+                        display: { xs: "none", lg: "inline-flex" },
+                        alignItems: "center",
+                        gap: 1,
+                    }}
+                >
+                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#0A1A4A" }}>
+                        That playlist is a vibe 🎵
+                    </Typography>
+                </Box>
+
+                {/* Bubble 4: Yellow (#FFE680) (-8deg) */}
+                <Box
+                    className="engaze-chat-bubble engaze-float-2"
+                    sx={{
+                        position: "absolute",
+                        bottom: { lg: 130 },
+                        right: { lg: "11%", xl: "12%" },
+                        backgroundColor: "#FFE680",
+                        color: "#0A1A4A",
+                        border: "1px solid rgba(10, 26, 74, 0.10)",
+                        borderRadius: "16px",
+                        transform: "rotate(-8deg)",
+                        boxShadow: "0 8px 24px rgba(10, 26, 74, 0.10)",
+                        px: 2,
+                        py: 0.8,
+                        fontSize: "0.82rem",
+                        zIndex: 3,
+                        display: { xs: "none", lg: "inline-flex" },
+                        alignItems: "center",
+                        gap: 1,
+                    }}
+                >
+                    <FavoriteRoundedIcon sx={{ fontSize: 15, color: "#FF3366" }} />
+                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#0A1A4A" }}>
+                        Mutual match unlocked! 💖
+                    </Typography>
+                </Box>
+
+                {/* Central Hero Content Column */}
+                <Container maxWidth={false} sx={{ maxWidth: { xs: "100%", sm: 520, md: 620, lg: 700 }, position: "relative", zIndex: 5, textAlign: "center", py: { xs: 2, sm: 3, md: 4 } }}>
+                    {/* Eyebrow Pill */}
+                    <Box
+                        sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.8,
+                            backgroundColor: "#FFFFFF",
+                            color: "#0A6CFF",
+                            border: "1.5px solid rgba(10, 108, 255, 0.22)",
+                            boxShadow: "0 4px 12px rgba(10, 108, 255, 0.08)",
+                            px: 2,
+                            py: 0.5,
+                            borderRadius: "9999px",
+                            fontSize: "0.74rem",
+                            fontWeight: 800,
+                            letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                            mb: 2.2,
+                        }}
+                    >
+                        <AutoAwesomeRoundedIcon sx={{ fontSize: 14, color: "#0A6CFF" }} />
+                        <span>A Modern Dating Platform</span>
+                    </Box>
+
+                    {/* Compact Headline (Well-Proportioned) */}
+                    <Typography
+                        variant="h1"
+                        sx={{
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            fontSize: { xs: "1.95rem", sm: "2.6rem", md: "3.2rem", lg: "3.75rem" },
+                            fontWeight: 900,
+                            lineHeight: { xs: 1.1, md: 1.05 },
+                            letterSpacing: "-0.03em",
+                            mb: 2,
+                        }}
+                    >
+                        <Box component="span" sx={{ color: "#0A1A4A", display: "block" }}>
+                            Real Connections.
                         </Box>
-                    </Grid>
+                        <Box component="span" sx={{ color: "#0A6CFF", display: "block" }}>
+                            Real Conversations.
+                        </Box>
+                    </Typography>
 
-                    {/* Right Column: High-Fidelity Product Discovery Showcase */}
-                    <Grid item xs={12} md={5}>
-                        <Box sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", py: 2 }}>
-                            {/* Decorative Multi-Color Ambient Glow */}
+                    {/* Sub-headline */}
+                    <Typography
+                        variant="body1"
+                        sx={{
+                            color: "#5B6475",
+                            fontSize: { xs: "0.90rem", sm: "0.98rem", md: "1.05rem" },
+                            lineHeight: 1.55,
+                            fontWeight: 500,
+                            maxWidth: 540,
+                            mx: "auto",
+                            mb: 3.5,
+                            px: { xs: 1, sm: 0 },
+                        }}
+                    >
+                        Engaze is built for authentic romantic chemistry. Discover compatible singles, chat with mutual likes only, and connect through secure 1-on-1 video dates — before exchanging numbers.
+                    </Typography>
+
+                    {/* Call to Action Buttons */}
+                    <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={1.8}
+                        justifyContent="center"
+                        alignItems="center"
+                    >
+                        <Button
+                            component={Link}
+                            to="/auth"
+                            className="engaze-btn-primary"
+                            variant="contained"
+                            sx={{
+                                background: "#0A6CFF !important",
+                                backgroundColor: "#0A6CFF !important",
+                                color: "#FFFFFF !important",
+                                px: { xs: 3.2, sm: 3.8 },
+                                py: { xs: 1.15, sm: 1.3 },
+                                fontSize: { xs: "0.95rem", sm: "1.0rem" },
+                                fontWeight: 800,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 1.2,
+                                textTransform: "none",
+                                width: { xs: "100%", sm: "auto" },
+                                maxWidth: { xs: 300, sm: "none" },
+                                borderRadius: "9999px",
+                                boxShadow: "0 8px 24px rgba(10, 108, 255, 0.32)",
+                                "&:hover": {
+                                    backgroundColor: "#0857D0 !important",
+                                    transform: "translateY(-2px)",
+                                },
+                            }}
+                        >
+                            <span>Start Discovering Free</span>
                             <Box
+                                component="span"
                                 sx={{
-                                    position: "absolute",
-                                    top: "50%",
-                                    left: "50%",
-                                    transform: "translate(-50%, -50%)",
-                                    width: { xs: 300, sm: 420 },
-                                    height: { xs: 440, sm: 540 },
-                                    background: "radial-gradient(circle, rgba(253, 58, 115, 0.35) 0%, rgba(139, 92, 246, 0.22) 50%, transparent 75%)",
-                                    filter: "blur(55px)",
-                                    zIndex: 0,
-                                    pointerEvents: "none",
-                                }}
-                            />
-
-                            {/* Floating "Video Date Available" Chip (Top Right) */}
-                            <Paper
-                                elevation={6}
-                                sx={{
-                                    position: "absolute",
-                                    top: { xs: -12, sm: 10 },
-                                    right: { xs: -4, sm: -15 },
-                                    zIndex: 5,
-                                    backgroundColor: "rgba(19, 22, 37, 0.92)",
-                                    border: "1px solid rgba(139, 92, 246, 0.4)",
-                                    backdropFilter: "blur(16px)",
-                                    borderRadius: "18px",
-                                    py: 1.2,
-                                    px: 2,
+                                    width: 24,
+                                    height: 24,
+                                    borderRadius: "50%",
+                                    backgroundColor: "#FFFFFF",
+                                    color: "#0A6CFF",
                                     display: "flex",
                                     alignItems: "center",
-                                    gap: 1.2,
-                                    boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                                    justifyContent: "center",
+                                    fontSize: "0.85rem",
+                                    fontWeight: 900,
                                 }}
                             >
+                                →
+                            </Box>
+                        </Button>
+
+                        <Button
+                            component="a"
+                            href="#video-dating"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                scrollToSection("video-dating");
+                            }}
+                            className="engaze-btn-secondary"
+                            variant="outlined"
+                            sx={{
+                                backgroundColor: "#FFFFFF",
+                                color: "#0A1A4A",
+                                borderColor: "rgba(10, 26, 74, 0.16)",
+                                px: { xs: 2.8, sm: 3.4 },
+                                py: { xs: 1.05, sm: 1.2 },
+                                fontSize: { xs: "0.90rem", sm: "0.95rem" },
+                                fontWeight: 700,
+                                textTransform: "none",
+                                width: { xs: "100%", sm: "auto" },
+                                maxWidth: { xs: 300, sm: "none" },
+                                borderRadius: "9999px",
+                                boxShadow: "0 4px 12px rgba(10, 26, 74, 0.05)",
+                                "&:hover": {
+                                    backgroundColor: "#F7FAFE",
+                                    borderColor: "#0A1A4A",
+                                    transform: "translateY(-2px)",
+                                },
+                            }}
+                        >
+                            How Video Dating Works ↗
+                        </Button>
+                    </Stack>
+
+                    {/* Trust Indicators Row */}
+                    <Stack
+                        direction="row"
+                        spacing={{ xs: 1.5, sm: 2.5 }}
+                        justifyContent="center"
+                        alignItems="center"
+                        sx={{
+                            mt: 3.5,
+                            flexWrap: "wrap",
+                            gap: { xs: 1, sm: 0 },
+                        }}
+                    >
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <Box
+                                sx={{
+                                    width: 26,
+                                    height: 26,
+                                    borderRadius: "50%",
+                                    backgroundColor: "rgba(10, 108, 255, 0.14)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#0A6CFF",
+                                }}
+                            >
+                                <ShieldOutlinedIcon sx={{ fontSize: 15 }} />
+                            </Box>
+                            <Typography sx={{ fontWeight: 700, fontSize: { xs: "0.78rem", sm: "0.85rem" }, color: "#0A1A4A" }}>
+                                100% Verified Profiles
+                            </Typography>
+                        </Stack>
+
+                        <Box sx={{ width: "1.5px", height: 16, backgroundColor: "rgba(10, 26, 74, 0.16)", display: { xs: "none", sm: "block" } }} />
+
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <Box
+                                sx={{
+                                    width: 26,
+                                    height: 26,
+                                    borderRadius: "50%",
+                                    backgroundColor: "rgba(184, 167, 255, 0.28)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#7C5CFC",
+                                }}
+                            >
+                                <FavoriteRoundedIcon sx={{ fontSize: 13 }} />
+                            </Box>
+                            <Typography sx={{ fontWeight: 700, fontSize: { xs: "0.78rem", sm: "0.85rem" }, color: "#0A1A4A" }}>
+                                Mutual Matches Only
+                            </Typography>
+                        </Stack>
+
+                        <Box sx={{ width: "1.5px", height: 16, backgroundColor: "rgba(10, 26, 74, 0.16)", display: { xs: "none", sm: "block" } }} />
+
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <Box
+                                sx={{
+                                    width: 26,
+                                    height: 26,
+                                    borderRadius: "50%",
+                                    backgroundColor: "rgba(255, 143, 156, 0.26)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#E63956",
+                                }}
+                            >
+                                <VideocamRoundedIcon sx={{ fontSize: 15 }} />
+                            </Box>
+                            <Typography sx={{ fontWeight: 700, fontSize: { xs: "0.78rem", sm: "0.85rem" }, color: "#0A1A4A" }}>
+                                Secure 1-on-1 Video
+                            </Typography>
+                        </Stack>
+                    </Stack>
+
+                    {/* Mobile-Only Social Proof Card (Visible on xs only) */}
+                    <Box
+                        sx={{
+                            display: { xs: "inline-flex", sm: "none" },
+                            alignItems: "center",
+                            gap: 1.2,
+                            mt: 3,
+                            backgroundColor: "rgba(255, 255, 255, 0.8)",
+                            backdropFilter: "blur(4px)",
+                            border: "1px solid rgba(10, 108, 255, 0.16)",
+                            borderRadius: "9999px",
+                            px: 2,
+                            py: 0.6,
+                        }}
+                    >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                            {[1, 2, 3, 4].map((n) => (
                                 <Box
+                                    key={n}
+                                    component="img"
+                                    src={process.env.PUBLIC_URL + `/images/hero-${n}.png`}
+                                    alt="Engaze member"
                                     sx={{
-                                        width: 34,
-                                        height: 34,
+                                        width: 22,
+                                        height: 22,
                                         borderRadius: "50%",
-                                        background: "linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        color: "#FFFFFF",
+                                        border: "2px solid #FFFFFF",
+                                        ml: n === 1 ? 0 : -0.8,
+                                        objectFit: "cover",
+                                    }}
+                                />
+                            ))}
+                        </Box>
+                        <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: "#0A1A4A" }}>
+                            10,000+ singles connected
+                        </Typography>
+                    </Box>
+                </Container>
+            </Box>
+                         
+
+            {/* ============================================================
+                3. SECTION: "A REAL CONNECTION. NOT AN ENDLESS SWIPE TRAP."
+                Warm Cream background, asymmetric fanned/stacked feature cards
+                with thick 2.5px dark borders and vibrant pop palettes.
+                ============================================================ */}
+            <Box
+                id="features"
+                component="section"
+                sx={{
+                    py: { xs: 6, md: 8.5 },
+                    px: { xs: 2.5, sm: 4, md: 6 },
+                    backgroundColor: "#FFFDF9",
+                    borderBottom: "3px solid #0D0E15",
+                }}
+            >
+                <Container maxWidth="xl">
+                    {/* Header Row with Tilted Pill & Editorial Description */}
+                    <Grid container spacing={{ xs: 4, md: 8 }} alignItems="flex-end" sx={{ mb: { xs: 3.5, md: 5 } }}>
+                        <Grid item xs={12} md={7}>
+                            <Box
+                                sx={{
+                                    display: "inline-block",
+                                    backgroundColor: "#FD2E7A",
+                                    color: "#FFFFFF",
+                                    px: 2,
+                                    py: 0.6,
+                                    borderRadius: "9999px",
+                                    fontSize: "0.78rem",
+                                    fontWeight: 900,
+                                    letterSpacing: "0.08em",
+                                    textTransform: "uppercase",
+                                    mb: 2.5,
+                                }}
+                            >
+                                WHAT IS ENGAZE
+                            </Box>
+                            <Typography
+                                variant="h2"
+                                sx={{
+                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                    fontSize: { xs: "1.8rem", sm: "2.3rem", md: "2.8rem" },
+                                    fontWeight: 900,
+                                    lineHeight: 1.05,
+                                    letterSpacing: "-0.035em",
+                                    color: "#0D0E15",
+                                }}
+                            >
+                                A real connection.{" "}
+                                <Box component="span" sx={{ color: "#FD2E7A", display: "inline" }}>
+                                    Not an endless swipe trap.
+                                </Box>
+                            </Typography>
+                        </Grid>
+
+                        <Grid item xs={12} md={5}>
+                            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+                                <Box
+                                    className="sticker-tag"
+                                    sx={{
+                                        alignSelf: "flex-start",
+                                        backgroundColor: "#FFD233",
+                                        color: "#0D0E15",
+                                        transform: "rotate(-2deg)",
                                     }}
                                 >
-                                    <VideocamRoundedIcon sx={{ fontSize: 18 }} />
+                                    <span>✨ no paywalled chats or fake bots</span>
                                 </Box>
+                                <Typography
+                                    variant="body1"
+                                    sx={{
+                                        fontSize: { xs: "1.05rem", md: "1.15rem" },
+                                        color: "#4B4E63",
+                                        lineHeight: 1.6,
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    Engaze brings people together for authentic human connection through live face-to-face video, mutual match safety, and seamless real-time conversations.
+                                </Typography>
                                 <Box>
-                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.violet, fontWeight: 800, display: "block", lineHeight: 1.1 }}>
-                                        LIVE VIDEO READY
+                                    <Button
+                                        component={Link}
+                                        to="/auth"
+                                        className="pop-pill"
+                                        sx={{
+                                            backgroundColor: "#0D0E15",
+                                            color: "#FFFFFF",
+                                            px: 3,
+                                            py: 1.1,
+                                            fontSize: "0.92rem",
+                                            textTransform: "none",
+                                            "&:hover": { backgroundColor: "#1C1D2B" },
+                                        }}
+                                    >
+                                        Explore Features →
+                                    </Button>
+                                </Box>
+                            </Box>
+                        </Grid>
+                    </Grid>
+
+                    {/* Mobile Horizontal Swipe Track (FRND Card Slider style, < 900px) */}
+                    <Box sx={{ display: { xs: "block", md: "none" } }}>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5, px: 0.5 }}>
+                            <Typography sx={{ fontSize: "0.78rem", fontWeight: 800, color: "#FD2E7A", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                                👈 Swipe Features 👉
+                            </Typography>
+                            <Box sx={{ display: "flex", gap: 0.6 }}>
+                                {[1, 2, 3, 4, 5].map((dot) => (
+                                    <Box key={dot} sx={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: dot === 1 ? "#FD2E7A" : "#D1D5DB" }} />
+                                ))}
+                            </Box>
+                        </Box>
+                        <Box
+                            className="engaze-swipe-track"
+                            sx={{
+                                gap: 2,
+                                mx: -2.5,
+                                px: 2.5,
+                                py: 1,
+                            }}
+                        >
+                            {/* Card 1 */}
+                            <Paper
+                                elevation={0}
+                                className="neo-card engaze-swipe-item"
+                                sx={{
+                                    backgroundColor: "#24C5F7",
+                                    color: "#0D0E15",
+                                    p: 2.5,
+                                    width: "82vw",
+                                    maxWidth: 310,
+                                    minHeight: 250,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
+                                }}
+                            >
+                                <Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                        <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", opacity: 0.65 }}>01</Typography>
+                                        <Box sx={{ width: 40, height: 40, borderRadius: "50%", backgroundColor: "#FFFFFF", border: "2px solid #0D0E15", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0px #0D0E15" }}>
+                                            <VideocamRoundedIcon sx={{ fontSize: 22, color: "#FD2E7A" }} />
+                                        </Box>
+                                    </Box>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.25rem", lineHeight: 1.25, mb: 1.2 }}>
+                                        Live 1-on-1 Video Dates
                                     </Typography>
-                                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#FFFFFF", fontSize: "0.82rem" }}>
-                                        Instant 1-on-1 Vibe Check
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.88rem", lineHeight: 1.5, color: "#111422" }}>
+                                        Instant WebRTC video calls right in your browser. Test real-world vibes and authentic chemistry before ever giving out your phone number.
                                     </Typography>
+                                </Box>
+                                <Box sx={{ pt: 2 }}>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FFFFFF", fontSize: "0.78rem", py: 0.4, px: 1.4 }}>
+                                        Peer-to-Peer Encrypted
+                                    </Box>
                                 </Box>
                             </Paper>
 
-                            {/* Main Discovery Card Preview (Real Profile Mockup) */}
+                            {/* Card 2 */}
                             <Paper
-                                elevation={12}
-                                className="float-animation"
+                                elevation={0}
+                                className="neo-card engaze-swipe-item"
                                 sx={{
-                                    width: { xs: 310, sm: 360 },
-                                    height: { xs: 490, sm: 540 },
-                                    borderRadius: "32px",
-                                    overflow: "hidden",
-                                    position: "relative",
-                                    backgroundColor: BRAND_COLORS.surfaceDark,
-                                    border: "2px solid rgba(255, 255, 255, 0.12)",
-                                    boxShadow: "0 30px 80px rgba(0, 0, 0, 0.8)",
-                                    zIndex: 2,
+                                    backgroundColor: "#FFD233",
+                                    color: "#0D0E15",
+                                    p: 2.5,
+                                    width: "82vw",
+                                    maxWidth: 310,
+                                    minHeight: 250,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
                                 }}
                             >
-                                {/* Profile Background Photo */}
-                                <Box
-                                    component="img"
-                                    src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80"
-                                    srcSet="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=400&q=75 400w, https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80 800w"
-                                    sizes="(max-width: 600px) 360px, 400px"
-                                    alt="Ananya Sharma on Engaze"
-                                    loading="eager"
-                                    fetchpriority="high"
-                                    decoding="async"
-                                    width={360}
-                                    height={540}
-                                    sx={{
-                                        width: "100%",
-                                        height: "100%",
-                                        objectFit: "cover",
-                                        display: "block",
-                                    }}
-                                />
-
-                                {/* Top Compatibility & Distance Badges */}
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        top: 18,
-                                        left: 18,
-                                        right: 18,
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                        zIndex: 4,
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            display: "inline-flex",
-                                            alignItems: "center",
-                                            gap: 0.6,
-                                            px: 1.5,
-                                            py: 0.6,
-                                            borderRadius: 9999,
-                                            backgroundColor: "rgba(11, 13, 23, 0.75)",
-                                            backdropFilter: "blur(12px)",
-                                            border: "1px solid rgba(253, 58, 115, 0.4)",
-                                            color: "#FFFFFF",
-                                            fontSize: "0.78rem",
-                                            fontWeight: 800,
-                                        }}
-                                    >
-                                        <BoltRoundedIcon sx={{ fontSize: 16, color: BRAND_COLORS.coralPink }} />
-                                        Demo Profile
+                                <Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                        <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", opacity: 0.65 }}>02</Typography>
+                                        <Box sx={{ width: 40, height: 40, borderRadius: "50%", backgroundColor: "#FFFFFF", border: "2px solid #0D0E15", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0px #0D0E15" }}>
+                                            <FavoriteRoundedIcon sx={{ fontSize: 22, color: "#FD2E7A" }} />
+                                        </Box>
                                     </Box>
-
-                                    <Box
-                                        sx={{
-                                            display: "inline-flex",
-                                            alignItems: "center",
-                                            gap: 0.5,
-                                            px: 1.4,
-                                            py: 0.6,
-                                            borderRadius: 9999,
-                                            backgroundColor: "rgba(11, 13, 23, 0.75)",
-                                            backdropFilter: "blur(12px)",
-                                            border: "1px solid rgba(255, 255, 255, 0.15)",
-                                            color: "#FFFFFF",
-                                            fontSize: "0.78rem",
-                                            fontWeight: 700,
-                                        }}
-                                    >
-                                        <LocationOnRoundedIcon sx={{ fontSize: 14, color: BRAND_COLORS.skyBlue }} />
-                                        New Delhi
+                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.25rem", lineHeight: 1.25, mb: 1.2 }}>
+                                        Mutual Match Shield
+                                    </Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.88rem", lineHeight: 1.5, color: "#111422" }}>
+                                        Zero unsolicited cold messages, zero spam. Conversations and video calls only unlock when both singles mutually like each other.
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ pt: 2 }}>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FFFFFF", fontSize: "0.78rem", py: 0.4, px: 1.4 }}>
+                                        100% Consent-Driven
                                     </Box>
                                 </Box>
+                            </Paper>
 
-                                {/* Card Bottom Gradient & Information */}
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        bottom: 0,
-                                        left: 0,
-                                        right: 0,
-                                        p: { xs: 2.2, sm: 2.8 },
-                                        pt: 9,
-                                        background: "linear-gradient(to top, rgba(11, 13, 23, 0.98) 0%, rgba(11, 13, 23, 0.85) 45%, rgba(11, 13, 23, 0.35) 75%, transparent 100%)",
-                                        zIndex: 3,
-                                    }}
-                                >
-                                    {/* Name and Age */}
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.4 }}>
-                                        <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.01em" }}>
-                                            Ananya Sharma, 24
-                                        </Typography>
+                            {/* Card 3 */}
+                            <Paper
+                                elevation={0}
+                                className="neo-card engaze-swipe-item"
+                                sx={{
+                                    backgroundColor: "#FF7A29",
+                                    color: "#FFFFFF",
+                                    p: 2.5,
+                                    width: "82vw",
+                                    maxWidth: 310,
+                                    minHeight: 250,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
+                                }}
+                            >
+                                <Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                        <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", opacity: 0.75 }}>03</Typography>
+                                        <Box sx={{ width: 40, height: 40, borderRadius: "50%", backgroundColor: "#FFFFFF", border: "2px solid #0D0E15", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0px #0D0E15" }}>
+                                            <ChatBubbleRoundedIcon sx={{ fontSize: 20, color: "#FF7A29" }} />
+                                        </Box>
                                     </Box>
-
-                                    {/* Bio snippet */}
-                                    <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.82)", mb: 1.5, fontSize: "0.85rem", lineHeight: 1.4 }}>
-                                        Architect in South Delhi • Coffee enthusiast, watercolor painter & indie music lover ☕🎨
+                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.25rem", lineHeight: 1.25, mb: 1.2 }}>
+                                        High-Speed Live Chat
                                     </Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.88rem", lineHeight: 1.5, color: "#FFFFFF" }}>
+                                        High-speed WebSocket messaging with instant typing indicators, read receipts, and photo previews. Say goodbye to laggy messaging.
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ pt: 2 }}>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#0D0E15", color: "#FFFFFF", fontSize: "0.78rem", py: 0.4, px: 1.4 }}>
+                                        Live WebSockets
+                                    </Box>
+                                </Box>
+                            </Paper>
 
-                                    {/* Interest Chips */}
-                                    <Stack direction="row" spacing={0.8} sx={{ mb: 2.5, flexWrap: "wrap", gap: 0.8 }}>
-                                        <Chip
-                                            label="Art 🎨"
-                                            size="small"
-                                            sx={{
-                                                bgcolor: "rgba(255, 255, 255, 0.1)",
-                                                color: "#FFFFFF",
-                                                fontWeight: 600,
-                                                fontSize: "0.75rem",
-                                                border: "1px solid rgba(255, 255, 255, 0.15)",
-                                            }}
-                                        />
-                                        <Chip
-                                            label="Coffee ☕"
-                                            size="small"
-                                            sx={{
-                                                bgcolor: "rgba(255, 255, 255, 0.1)",
-                                                color: "#FFFFFF",
-                                                fontWeight: 600,
-                                                fontSize: "0.75rem",
-                                                border: "1px solid rgba(255, 255, 255, 0.15)",
-                                            }}
-                                        />
-                                        <Chip
-                                            label="Music 🎵"
-                                            size="small"
-                                            sx={{
-                                                bgcolor: "rgba(255, 255, 255, 0.1)",
-                                                color: "#FFFFFF",
-                                                fontWeight: 600,
-                                                fontSize: "0.75rem",
-                                                border: "1px solid rgba(255, 255, 255, 0.15)",
-                                            }}
-                                        />
-                                        <Chip
-                                            label="Travel ✈️"
-                                            size="small"
-                                            sx={{
-                                                bgcolor: "rgba(255, 255, 255, 0.1)",
-                                                color: "#FFFFFF",
-                                                fontWeight: 600,
-                                                fontSize: "0.75rem",
-                                                border: "1px solid rgba(255, 255, 255, 0.15)",
-                                            }}
-                                        />
-                                    </Stack>
+                            {/* Card 4 */}
+                            <Paper
+                                elevation={0}
+                                className="neo-card engaze-swipe-item"
+                                sx={{
+                                    backgroundColor: "#FFFFFF",
+                                    color: "#0D0E15",
+                                    p: 2.5,
+                                    width: "82vw",
+                                    maxWidth: 310,
+                                    minHeight: 250,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
+                                }}
+                            >
+                                <Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                        <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", opacity: 0.5 }}>04</Typography>
+                                        <Box sx={{ width: 40, height: 40, borderRadius: "50%", backgroundColor: "#FD2E7A", border: "2px solid #0D0E15", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0px #0D0E15" }}>
+                                            <StarRoundedIcon sx={{ fontSize: 22, color: "#FFD233" }} />
+                                        </Box>
+                                    </Box>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.25rem", lineHeight: 1.25, mb: 1.2 }}>
+                                        Rich Portrait Discovery
+                                    </Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.88rem", lineHeight: 1.5, color: "#4B4E63" }}>
+                                        Edge-to-edge candidate cards with verified bio highlights, interests, and smart age/gender filters. Swipe with full context.
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ pt: 2 }}>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FCEEF2", color: "#FD2E7A", fontSize: "0.78rem", py: 0.4, px: 1.4 }}>
+                                        Full-Screen Cards
+                                    </Box>
+                                </Box>
+                            </Paper>
 
-                                    {/* Realistic Discovery Action Buttons Dock */}
-                                    <Stack direction="row" spacing={1.5} justifyContent="center" alignItems="center">
-                                        {/* Reset Deck */}
-                                        <IconButton
-                                            aria-label="Reset deck (Demo)"
-                                            sx={{
-                                                width: 42,
-                                                height: 42,
-                                                borderRadius: "50%",
-                                                bgcolor: "rgba(234, 179, 8, 0.15)",
-                                                border: "1.5px solid rgba(234, 179, 8, 0.4)",
-                                                color: BRAND_COLORS.amberGold,
-                                                "&:hover": { bgcolor: "rgba(234, 179, 8, 0.25)" },
-                                            }}
-                                        >
-                                            <ReplayRoundedIcon sx={{ fontSize: 20 }} />
-                                        </IconButton>
+                            {/* Card 5 */}
+                            <Paper
+                                elevation={0}
+                                className="neo-card engaze-swipe-item"
+                                sx={{
+                                    backgroundColor: "#FD2E7A",
+                                    color: "#FFFFFF",
+                                    p: 2.5,
+                                    width: "82vw",
+                                    maxWidth: 310,
+                                    minHeight: 250,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
+                                }}
+                            >
+                                <Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                        <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", opacity: 0.75 }}>05</Typography>
+                                        <Box sx={{ width: 40, height: 40, borderRadius: "50%", backgroundColor: "#FFFFFF", border: "2px solid #0D0E15", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0px #0D0E15" }}>
+                                            <ShieldOutlinedIcon sx={{ fontSize: 22, color: "#FD2E7A" }} />
+                                        </Box>
+                                    </Box>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.25rem", lineHeight: 1.25, mb: 1.2 }}>
+                                        18+ Adult Safety
+                                    </Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.88rem", lineHeight: 1.5, color: "#FFFFFF" }}>
+                                        Strict age verification, automated GPS metadata stripping, one-tap instant reporting, and real-time moderation for bad actors.
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ pt: 2 }}>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#0D0E15", color: "#FFFFFF", fontSize: "0.78rem", py: 0.4, px: 1.4 }}>
+                                        Safe & Moderated
+                                    </Box>
+                                </Box>
+                            </Paper>
+                        </Box>
+                    </Box>
 
-                                        {/* Pass / Nope */}
-                                        <IconButton
-                                            sx={{
-                                                width: 52,
-                                                height: 52,
-                                                borderRadius: "50%",
-                                                bgcolor: "rgba(239, 68, 68, 0.15)",
-                                                border: "2px solid rgba(239, 68, 68, 0.5)",
-                                                color: BRAND_COLORS.crimson,
-                                                boxShadow: "0 4px 15px rgba(239, 68, 68, 0.2)",
-                                                "&:hover": { bgcolor: "rgba(239, 68, 68, 0.25)" },
-                                            }}
-                                        >
-                                            <CloseRoundedIcon sx={{ fontSize: 26 }} />
-                                        </IconButton>
-
-                                        {/* Super Like */}
-                                        <IconButton
+                    {/* Asymmetric Neo-Pop Feature Cards Grid (Desktop >= 900px) */}
+                    <Grid container spacing={3.5} sx={{ display: { xs: "none", md: "flex" } }}>
+                        {/* Card 1: Cyan (Live Video) */}
+                        <Grid item xs={12} sm={6} lg={4}>
+                            <Paper
+                                elevation={0}
+                                className="neo-card"
+                                sx={{
+                                    backgroundColor: "#24C5F7",
+                                    color: "#0D0E15",
+                                    p: { xs: 2.5, md: 3 },
+                                    height: "100%",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
+                                    minHeight: { xs: "auto", sm: 260, md: 280 },
+                                }}
+                            >
+                                <Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                                        <Typography sx={{ fontWeight: 900, fontSize: "1.4rem", opacity: 0.65 }}>01</Typography>
+                                        <Box
                                             sx={{
                                                 width: 44,
                                                 height: 44,
                                                 borderRadius: "50%",
-                                                bgcolor: "rgba(56, 189, 248, 0.15)",
-                                                border: "1.5px solid rgba(56, 189, 248, 0.45)",
-                                                color: BRAND_COLORS.skyBlue,
-                                                "&:hover": { bgcolor: "rgba(56, 189, 248, 0.25)" },
+                                                backgroundColor: "#FFFFFF",
+                                                border: "2px solid #0D0E15",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                boxShadow: "2px 2px 0px #0D0E15",
                                             }}
                                         >
-                                            <StarRoundedIcon sx={{ fontSize: 22 }} />
-                                        </IconButton>
-
-                                        {/* Like */}
-                                        <IconButton
-                                            sx={{
-                                                width: 54,
-                                                height: 54,
-                                                borderRadius: "50%",
-                                                background: BRAND_COLORS.primaryGradient,
-                                                color: "#FFFFFF",
-                                                boxShadow: "0 6px 20px rgba(253, 58, 115, 0.5)",
-                                                transition: "transform 0.15s ease",
-                                                "&:hover": { transform: "scale(1.08)" },
-                                            }}
-                                        >
-                                            <FavoriteRoundedIcon sx={{ fontSize: 28 }} />
-                                        </IconButton>
-                                    </Stack>
+                                            <VideocamRoundedIcon sx={{ fontSize: 24, color: "#FD2E7A" }} />
+                                        </Box>
+                                    </Box>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.35rem", lineHeight: 1.2, mb: 1.8 }}>
+                                        Live 1-on-1 Video Dates
+                                    </Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.98rem", lineHeight: 1.55, color: "#111422" }}>
+                                        Instant WebRTC video calls right in your browser. Test real-world vibes and authentic face-to-face chemistry before ever giving out your phone number or socials.
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ pt: 3 }}>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FFFFFF", fontSize: "0.82rem", py: 0.5, px: 1.5 }}>
+                                        Peer-to-Peer Encrypted
+                                    </Box>
                                 </Box>
                             </Paper>
+                        </Grid>
 
-                            {/* Floating "Mutual Match!" Toast (Bottom Left) */}
+                        {/* Card 2: Butter Yellow (Mutual Matches) */}
+                        <Grid item xs={12} sm={6} lg={4}>
                             <Paper
-                                elevation={8}
+                                elevation={0}
+                                className="neo-card"
                                 sx={{
-                                    position: "absolute",
-                                    bottom: { xs: -16, sm: 8 },
-                                    left: { xs: -6, sm: -20 },
-                                    zIndex: 5,
-                                    backgroundColor: "rgba(19, 22, 37, 0.94)",
-                                    border: "1px solid rgba(16, 185, 129, 0.45)",
-                                    backdropFilter: "blur(16px)",
-                                    borderRadius: "20px",
-                                    py: 1.2,
-                                    px: 2.2,
+                                    backgroundColor: "#FFD233",
+                                    color: "#0D0E15",
+                                    p: { xs: 2.5, md: 3 },
+                                    height: "100%",
                                     display: "flex",
-                                    alignItems: "center",
-                                    gap: 1.4,
-                                    boxShadow: "0 15px 35px rgba(0,0,0,0.6)",
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
+                                    minHeight: { xs: "auto", sm: 260, md: 280 },
                                 }}
                             >
+                                <Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                                        <Typography sx={{ fontWeight: 900, fontSize: "1.4rem", opacity: 0.65 }}>02</Typography>
+                                        <Box
+                                            sx={{
+                                                width: 44,
+                                                height: 44,
+                                                borderRadius: "50%",
+                                                backgroundColor: "#FFFFFF",
+                                                border: "2px solid #0D0E15",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                boxShadow: "2px 2px 0px #0D0E15",
+                                            }}
+                                        >
+                                            <FavoriteRoundedIcon sx={{ fontSize: 24, color: "#FD2E7A" }} />
+                                        </Box>
+                                    </Box>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.35rem", lineHeight: 1.2, mb: 1.8 }}>
+                                        Mutual Match Shield
+                                    </Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.98rem", lineHeight: 1.55, color: "#111422" }}>
+                                        Zero unsolicited cold messages, zero spam. Conversations and video calls only unlock when both singles mutually like each other. Total control over who enters your inbox.
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ pt: 3 }}>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FFFFFF", fontSize: "0.82rem", py: 0.5, px: 1.5 }}>
+                                        100% Consent-Driven
+                                    </Box>
+                                </Box>
+                            </Paper>
+                        </Grid>
+
+                        {/* Card 3: Tangerine Orange (Real-Time Chat) */}
+                        <Grid item xs={12} sm={6} lg={4}>
+                            <Paper
+                                elevation={0}
+                                className="neo-card"
+                                sx={{
+                                    backgroundColor: "#FF7A29",
+                                    color: "#FFFFFF",
+                                    p: { xs: 2.5, md: 3 },
+                                    height: "100%",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
+                                    minHeight: { xs: "auto", sm: 260, md: 280 },
+                                }}
+                            >
+                                <Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                                        <Typography sx={{ fontWeight: 900, fontSize: "1.4rem", opacity: 0.75 }}>03</Typography>
+                                        <Box
+                                            sx={{
+                                                width: 44,
+                                                height: 44,
+                                                borderRadius: "50%",
+                                                backgroundColor: "#FFFFFF",
+                                                border: "2px solid #0D0E15",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                boxShadow: "2px 2px 0px #0D0E15",
+                                            }}
+                                        >
+                                            <ChatBubbleRoundedIcon sx={{ fontSize: 22, color: "#FF7A29" }} />
+                                        </Box>
+                                    </Box>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.35rem", lineHeight: 1.2, mb: 1.8 }}>
+                                        High-Speed Live Chat
+                                    </Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.98rem", lineHeight: 1.55, color: "#FFFFFF" }}>
+                                        High-speed WebSocket messaging with instant typing indicators, read receipts, and photo previews. Say goodbye to laggy messaging that feels like sending emails.
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ pt: 3 }}>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#0D0E15", color: "#FFFFFF", fontSize: "0.82rem", py: 0.5, px: 1.5 }}>
+                                        Live WebSockets
+                                    </Box>
+                                </Box>
+                            </Paper>
+                        </Grid>
+
+                        {/* Card 4: Clean White (Portrait Discovery) */}
+                        <Grid item xs={12} sm={6} lg={6}>
+                            <Paper
+                                elevation={0}
+                                className="neo-card"
+                                sx={{
+                                    backgroundColor: "#FFFFFF",
+                                    color: "#0D0E15",
+                                    p: { xs: 2.5, md: 3 },
+                                    height: "100%",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
+                                    minHeight: { xs: "auto", sm: 240, md: 260 },
+                                }}
+                            >
+                                <Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                                        <Typography sx={{ fontWeight: 900, fontSize: "1.4rem", opacity: 0.5 }}>04</Typography>
+                                        <Box
+                                            sx={{
+                                                width: 44,
+                                                height: 44,
+                                                borderRadius: "50%",
+                                                backgroundColor: "#FD2E7A",
+                                                border: "2px solid #0D0E15",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                boxShadow: "2px 2px 0px #0D0E15",
+                                            }}
+                                        >
+                                            <StarRoundedIcon sx={{ fontSize: 24, color: "#FFD233" }} />
+                                        </Box>
+                                    </Box>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.35rem", lineHeight: 1.2, mb: 1.8 }}>
+                                        Rich Portrait Discovery
+                                    </Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.98rem", lineHeight: 1.55, color: "#4B4E63" }}>
+                                        Edge-to-edge candidate cards with verified bio highlights, interests, and smart age/gender filters. Swipe with full context instead of tiny cropped thumbnails.
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ pt: 3 }}>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FCEEF2", color: "#FD2E7A", fontSize: "0.82rem", py: 0.5, px: 1.5 }}>
+                                        Full-Screen Cards
+                                    </Box>
+                                </Box>
+                            </Paper>
+                        </Grid>
+
+                        {/* Card 5: Hot Magenta / Pink (Safety & Moderation) */}
+                        <Grid item xs={12} sm={12} lg={6}>
+                            <Paper
+                                elevation={0}
+                                className="neo-card"
+                                sx={{
+                                    backgroundColor: "#FD2E7A",
+                                    color: "#FFFFFF",
+                                    p: { xs: 2.5, md: 3 },
+                                    height: "100%",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
+                                    minHeight: { xs: "auto", sm: 240, md: 260 },
+                                }}
+                            >
+                                <Box>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                                        <Typography sx={{ fontWeight: 900, fontSize: "1.4rem", opacity: 0.75 }}>05</Typography>
+                                        <Box
+                                            sx={{
+                                                width: 44,
+                                                height: 44,
+                                                borderRadius: "50%",
+                                                backgroundColor: "#FFFFFF",
+                                                border: "2px solid #0D0E15",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                boxShadow: "2px 2px 0px #0D0E15",
+                                            }}
+                                        >
+                                            <ShieldOutlinedIcon sx={{ fontSize: 24, color: "#FD2E7A" }} />
+                                        </Box>
+                                    </Box>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.35rem", lineHeight: 1.2, mb: 1.8 }}>
+                                        18+ Adult Safety & Active Moderation
+                                    </Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.98rem", lineHeight: 1.55, color: "#FFFFFF" }}>
+                                        Strict age verification, automated EXIF/GPS metadata stripping from uploaded photos, one-tap instant reporting, and real-time session termination for bad actors.
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ pt: 3 }}>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#0D0E15", color: "#FFFFFF", fontSize: "0.82rem", py: 0.5, px: 1.5 }}>
+                                        Safe & Moderated
+                                    </Box>
+                                </Box>
+                            </Paper>
+                        </Grid>
+                    </Grid>
+                </Container>
+            </Box>
+
+            {/* ============================================================
+                4. SECTION: "YOUR AUTHENTIC VIBE IS THE WHOLE POINT"
+                Soft Blush Pink background with tactile, playful sticker pills.
+                ============================================================ */}
+            <Box
+                component="section"
+                sx={{
+                    py: { xs: 6, md: 8.5 },
+                    px: { xs: 2.5, sm: 4, md: 6 },
+                    backgroundColor: "#FCEEF2",
+                    borderBottom: "3px solid #0D0E15",
+                    textAlign: "center",
+                }}
+            >
+                <Container maxWidth="md">
+                    <Box
+                        sx={{
+                            display: "inline-block",
+                            backgroundColor: "#FD2E7A",
+                            color: "#FFFFFF",
+                            px: 2,
+                            py: 0.6,
+                            borderRadius: "9999px",
+                            fontSize: "0.78rem",
+                            fontWeight: 900,
+                            letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                            mb: 2.5,
+                        }}
+                    >
+                        GENUINE VIBES
+                    </Box>
+
+                    <Typography
+                        variant="h2"
+                        sx={{
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            fontSize: { xs: "1.8rem", sm: "2.3rem", md: "2.8rem" },
+                            fontWeight: 900,
+                            lineHeight: 1.05,
+                            letterSpacing: "-0.035em",
+                            color: "#0D0E15",
+                            mb: 3,
+                        }}
+                    >
+                        Your{" "}
+                        <Box component="span" sx={{ color: "#FD2E7A" }}>
+                            authentic vibe
+                        </Box>{" "}
+                        is the whole point.
+                    </Typography>
+
+                    <Typography
+                        variant="body1"
+                        sx={{
+                            fontSize: { xs: "1.05rem", md: "1.2rem" },
+                            color: "#4B4E63",
+                            lineHeight: 1.6,
+                            fontWeight: 600,
+                            maxWidth: 620,
+                            mx: "auto",
+                            mb: 6,
+                        }}
+                    >
+                        Dating isn't a job interview or a corporate checklist. Whether you're here for deep 2 AM talks, coffee banter, or testing instant face-to-face chemistry — Engaze brings people together who actually click.
+                    </Typography>
+
+                    {/* Mobile 2-Row Horizontal Scrollable Tags (< 600px, FRND-style) */}
+                    <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1.5, mx: -2.5, px: 2.5 }}>
+                        <Box className="engaze-swipe-track" sx={{ gap: 1.2, py: 0.5 }}>
+                            {[
+                                { label: "1-on-1 Video Dating 📹", bg: "#FFFFFF", color: "#0D0E15", rotate: "-2deg" },
+                                { label: "Coffee & Banter ☕", bg: "#FFD233", color: "#0D0E15", rotate: "2deg" },
+                                { label: "Mutual Likes Only 🔒", bg: "#24C5F7", color: "#0D0E15", rotate: "-1deg" },
+                                { label: "Late Night Talks 🌙", bg: "#FD2E7A", color: "#FFFFFF", rotate: "2deg" },
+                                { label: "Concerts & Gigs 🎸", bg: "#7C5CFC", color: "#FFFFFF", rotate: "-2deg" },
+                                { label: "Foodie Adventures 🍕", bg: "#FF7A29", color: "#FFFFFF", rotate: "1deg" },
+                            ].map((item, idx) => (
                                 <Box
+                                    key={idx}
+                                    className="sticker-tag engaze-swipe-item"
                                     sx={{
-                                        width: 36,
-                                        height: 36,
-                                        borderRadius: "50%",
-                                        background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        color: "#FFFFFF",
+                                        backgroundColor: item.bg,
+                                        color: item.color,
+                                        transform: `rotate(${item.rotate})`,
+                                        fontSize: "0.85rem",
+                                        py: 0.7,
+                                        px: 1.8,
+                                        whiteSpace: "nowrap",
                                     }}
                                 >
-                                    <FavoriteRoundedIcon sx={{ fontSize: 20 }} />
+                                    {item.label}
                                 </Box>
-                                <Box>
-                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.emerald, fontWeight: 800, display: "block", lineHeight: 1.1 }}>
-                                        IT'S A MUTUAL MATCH!
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#FFFFFF", fontSize: "0.85rem" }}>
-                                        You & Ananya liked each other
-                                    </Typography>
+                            ))}
+                        </Box>
+                        <Box className="engaze-swipe-track" sx={{ gap: 1.2, py: 0.5 }}>
+                            {[
+                                { label: "Weekend Getaways ✈️", bg: "#FFFFFF", color: "#0D0E15", rotate: "-2deg" },
+                                { label: "Zero Ghosting 🚫", bg: "#10B981", color: "#FFFFFF", rotate: "2deg" },
+                                { label: "Film & Cinema 🎬", bg: "#FFD233", color: "#0D0E15", rotate: "-1deg" },
+                                { label: "Dog Lovers 🐕", bg: "#0D0E15", color: "#FFFFFF", rotate: "2deg" },
+                                { label: "+ your unique spark ✨", bg: "#FD2E7A", color: "#FFFFFF", rotate: "-2deg", big: true },
+                            ].map((item, idx) => (
+                                <Box
+                                    key={idx}
+                                    className="sticker-tag engaze-swipe-item"
+                                    sx={{
+                                        backgroundColor: item.bg,
+                                        color: item.color,
+                                        transform: `rotate(${item.rotate})`,
+                                        fontSize: item.big ? "0.90rem" : "0.85rem",
+                                        py: item.big ? 0.8 : 0.7,
+                                        px: item.big ? 2.2 : 1.8,
+                                        whiteSpace: "nowrap",
+                                    }}
+                                >
+                                    {item.label}
                                 </Box>
+                            ))}
+                        </Box>
+                    </Box>
+
+                    {/* Desktop/Tablet Playful Sticker Pills Cluster (>= 600px) */}
+                    <Box
+                        sx={{
+                            display: { xs: "none", sm: "flex" },
+                            flexWrap: "wrap",
+                            gap: 2,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            maxWidth: 780,
+                            mx: "auto",
+                        }}
+                    >
+                        {[
+                            { label: "1-on-1 Video Dating 📹", bg: "#FFFFFF", color: "#0D0E15", rotate: "-2deg" },
+                            { label: "Coffee & Banter ☕", bg: "#FFD233", color: "#0D0E15", rotate: "3deg" },
+                            { label: "Mutual Likes Only 🔒", bg: "#24C5F7", color: "#0D0E15", rotate: "-1deg" },
+                            { label: "Late Night Talks 🌙", bg: "#FD2E7A", color: "#FFFFFF", rotate: "2deg" },
+                            { label: "Concerts & Gigs 🎸", bg: "#7C5CFC", color: "#FFFFFF", rotate: "-3deg" },
+                            { label: "Foodie Adventures 🍕", bg: "#FF7A29", color: "#FFFFFF", rotate: "1deg" },
+                            { label: "Weekend Getaways ✈️", bg: "#FFFFFF", color: "#0D0E15", rotate: "-2deg" },
+                            { label: "Zero Ghosting 🚫", bg: "#10B981", color: "#FFFFFF", rotate: "2deg" },
+                            { label: "Film & Cinema 🎬", bg: "#FFD233", color: "#0D0E15", rotate: "-1deg" },
+                            { label: "Dog Lovers 🐕", bg: "#0D0E15", color: "#FFFFFF", rotate: "2deg" },
+                            { label: "+ your unique spark ✨", bg: "#FD2E7A", color: "#FFFFFF", rotate: "-2deg", big: true },
+                        ].map((item, idx) => (
+                            <Box
+                                key={idx}
+                                className="sticker-tag"
+                                sx={{
+                                    backgroundColor: item.bg,
+                                    color: item.color,
+                                    transform: `rotate(${item.rotate})`,
+                                    fontSize: item.big ? "1.05rem" : "0.95rem",
+                                    py: item.big ? 1.2 : 0.9,
+                                    px: item.big ? 3 : 2.2,
+                                    cursor: "pointer",
+                                }}
+                            >
+                                {item.label}
+                            </Box>
+                        ))}
+                    </Box>
+                </Container>
+            </Box>
+
+            {/* ============================================================
+                5. SECTION: "WHY ENGAZE HITS DIFFERENT"
+                Comparison of traditional text-only dating vs Engaze video-first.
+                ============================================================ */}
+            <Box
+                id="difference"
+                component="section"
+                sx={{
+                    py: { xs: 6, md: 8.5 },
+                    px: { xs: 2.5, sm: 4, md: 6 },
+                    backgroundColor: "#FFFDF9",
+                    borderBottom: "3px solid #0D0E15",
+                }}
+            >
+                <Container maxWidth="lg">
+                    <Box sx={{ textAlign: "center", mb: { xs: 3.5, md: 5 } }}>
+                        <Box
+                            sx={{
+                                display: "inline-block",
+                                backgroundColor: "#FFD233",
+                                color: "#0D0E15",
+                                px: 2,
+                                py: 0.6,
+                                borderRadius: "9999px",
+                                fontSize: "0.78rem",
+                                fontWeight: 900,
+                                letterSpacing: "0.08em",
+                                textTransform: "uppercase",
+                                mb: 2.5,
+                                border: "2px solid #0D0E15",
+                                boxShadow: "2px 2px 0px #0D0E15",
+                            }}
+                        >
+                            THE DIFFERENCE
+                        </Box>
+                        <Typography
+                            variant="h2"
+                            sx={{
+                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                fontSize: { xs: "1.8rem", sm: "2.3rem", md: "2.8rem" },
+                                fontWeight: 900,
+                                lineHeight: 1.05,
+                                letterSpacing: "-0.035em",
+                                color: "#0D0E15",
+                            }}
+                        >
+                            Dating platforms evolved.{" "}
+                            <Box component="span" sx={{ color: "#FD2E7A" }}>
+                                See how we compare.
+                            </Box>
+                        </Typography>
+                    </Box>
+
+                    {/* Mobile Horizontal Comparison Swipe (< 900px) */}
+                    <Box sx={{ display: { xs: "block", md: "none" } }}>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5, px: 0.5 }}>
+                            <Typography sx={{ fontSize: "0.78rem", fontWeight: 800, color: "#0D0E15", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                                👈 Swipe To Compare 👉
+                            </Typography>
+                            <Typography sx={{ fontSize: "0.74rem", fontWeight: 700, color: "#6B7280" }}>
+                                1 of 2
+                            </Typography>
+                        </Box>
+                        <Box className="engaze-swipe-track" sx={{ gap: 2, mx: -2.5, px: 2.5, py: 1 }}>
+                            {/* Card 1: Traditional Apps */}
+                            <Paper
+                                elevation={0}
+                                className="engaze-swipe-item"
+                                sx={{
+                                    border: "2.5px solid #0D0E15",
+                                    borderRadius: "24px",
+                                    p: 2.5,
+                                    backgroundColor: "#F3F4F6",
+                                    color: "#0D0E15",
+                                    width: "84vw",
+                                    maxWidth: 320,
+                                    boxShadow: "3px 3px 0px #D1D5DB",
+                                }}
+                            >
+                                <Typography variant="h5" sx={{ fontWeight: 900, fontSize: "1.25rem", mb: 2, opacity: 0.85 }}>
+                                    Traditional Dating Apps
+                                </Typography>
+                                <Stack spacing={1.8}>
+                                    {[
+                                        "Endless superficial swiping that leads nowhere",
+                                        "Awkward text chats that drag on for weeks",
+                                        "Catfishing & profiles from 5 years ago",
+                                        "Unwanted cold DMs and spam requests",
+                                        "Giving out your phone number on day one",
+                                    ].map((point, i) => (
+                                        <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1.2 }}>
+                                            <CancelRoundedIcon sx={{ color: "#EF4444", fontSize: 18, mt: 0.2 }} />
+                                            <Typography sx={{ fontWeight: 600, color: "#4B4E63", fontSize: "0.85rem" }}>
+                                                {point}
+                                            </Typography>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                            </Paper>
+
+                            {/* Card 2: The Engaze Way */}
+                            <Paper
+                                elevation={0}
+                                className="neo-card engaze-swipe-item"
+                                sx={{
+                                    border: "3px solid #0D0E15 !important",
+                                    borderRadius: "24px",
+                                    p: 2.5,
+                                    backgroundColor: "#FFFFFF",
+                                    color: "#0D0E15",
+                                    width: "84vw",
+                                    maxWidth: 320,
+                                    boxShadow: "4px 4px 0px #0D0E15 !important",
+                                }}
+                            >
+                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 900, fontSize: "1.25rem", color: "#FD2E7A" }}>
+                                        The Engaze Way
+                                    </Typography>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FFD233", fontSize: "0.74rem", py: 0.3, px: 1.2 }}>
+                                        Next-Gen
+                                    </Box>
+                                </Box>
+                                <Stack spacing={1.8}>
+                                    {[
+                                        "Immediate 1-on-1 video dates right in your browser",
+                                        "Mutual likes only — zero unsolicited messages",
+                                        "Encrypted peer-to-peer WebRTC video",
+                                        "Test the real vibe before exchanging numbers",
+                                        "Strict 18+ adult community with active moderation",
+                                    ].map((point, i) => (
+                                        <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1.2 }}>
+                                            <CheckCircleRoundedIcon sx={{ color: "#10B981", fontSize: 18, mt: 0.2 }} />
+                                            <Typography sx={{ fontWeight: 700, color: "#0D0E15", fontSize: "0.85rem" }}>
+                                                {point}
+                                            </Typography>
+                                        </Box>
+                                    ))}
+                                </Stack>
                             </Paper>
                         </Box>
-                    </Grid>
-                </Grid>
-
-                {/* Metrics Bar */}
-                <Paper
-                    sx={{
-                        mt: { xs: 8, md: 12 },
-                        p: { xs: 3, sm: 4 },
-                        borderRadius: "24px",
-                        backgroundColor: BRAND_COLORS.surfaceDark,
-                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4)",
-                    }}
-                >
-                    <Grid container spacing={3} alignItems="center">
-                        <Grid item xs={6} md={3} sx={{ textAlign: "center", borderRight: { md: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` } }}>
-                            <Typography variant="h3" sx={{ fontWeight: 900, color: BRAND_COLORS.coralPink, mb: 0.5, letterSpacing: "-0.02em" }}>
-                                100%
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, fontWeight: 600 }}>
-                                Mutual Match Opt-In (Zero Spam)
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={6} md={3} sx={{ textAlign: "center", borderRight: { md: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` } }}>
-                            <Typography variant="h3" sx={{ fontWeight: 900, color: BRAND_COLORS.violet, mb: 0.5, letterSpacing: "-0.02em" }}>
-                                &lt; 60s
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, fontWeight: 600 }}>
-                                Easy Onboarding & Setup
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={6} md={3} sx={{ textAlign: "center", borderRight: { md: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` } }}>
-                            <Typography variant="h3" sx={{ fontWeight: 900, color: BRAND_COLORS.emerald, mb: 0.5, letterSpacing: "-0.02em" }}>
-                                HD Video
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, fontWeight: 600 }}>
-                                WebRTC Encrypted Video Dating
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={6} md={3} sx={{ textAlign: "center" }}>
-                            <Typography variant="h3" sx={{ fontWeight: 900, color: BRAND_COLORS.skyBlue, mb: 0.5, letterSpacing: "-0.02em" }}>
-                                Free
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, fontWeight: 600 }}>
-                                Unlimited Swipes & Mutual Chats
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                </Paper>
-            </Container>
-
-            {/* Core Product Pillars Section */}
-            <Box id="features" sx={{ py: { xs: 8, md: 14 }, borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
-                <Container maxWidth="xl" sx={{ px: { xs: 2.5, sm: 4, md: 6 } }}>
-                    <Box sx={{ textAlign: "center", maxWidth: 700, mx: "auto", mb: { xs: 6, md: 10 } }}>
-                        <Typography
-                            variant="overline"
-                            sx={{ color: BRAND_COLORS.coralPink, fontWeight: 800, letterSpacing: "0.15em", fontSize: "0.85rem" }}
-                        >
-                            ENGINEERED FOR CHEMISTRY
-                        </Typography>
-                        <Typography
-                            variant="h2"
-                            sx={{
-                                fontWeight: 900,
-                                fontSize: { xs: "2rem", sm: "2.8rem", md: "3.2rem" },
-                                letterSpacing: "-0.03em",
-                                mt: 1,
-                                mb: 2,
-                            }}
-                        >
-                            Everything You Need to Find Real Chemistry.
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "1.1rem" }}>
-                            Engaze is designed from the ground up to replace superficial swiping with authentic, high-confidence connections.
-                        </Typography>
                     </Box>
 
-                    <Grid container spacing={4}>
-                        {/* Pillar 1: Smart Card Discovery */}
-                        <Grid item xs={12} md={4}>
-                            <Paper
-                                sx={{
-                                    p: 4.5,
-                                    height: "100%",
-                                    borderRadius: "28px",
-                                    backgroundColor: BRAND_COLORS.surfaceDark,
-                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    transition: "all 0.3s ease",
-                                    "&:hover": {
-                                        transform: "translateY(-6px)",
-                                        borderColor: "rgba(253, 58, 115, 0.4)",
-                                        boxShadow: "0 20px 40px rgba(253, 58, 115, 0.15)",
-                                    },
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        width: 58,
-                                        height: 58,
-                                        borderRadius: "18px",
-                                        bgcolor: "rgba(253, 58, 115, 0.15)",
-                                        border: "1px solid rgba(253, 58, 115, 0.3)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        color: BRAND_COLORS.coralPink,
-                                        mb: 3,
-                                    }}
-                                >
-                                    <FavoriteRoundedIcon sx={{ fontSize: 32 }} />
-                                </Box>
-                                <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
-                                    Portrait Card Discovery
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem", mb: 3 }}>
-                                    Browse edge-to-edge profile portraits with full photo galleries, bio highlights, and smart age & gender filters. Swipe right when you feel a spark, swipe left without awkwardness.
-                                </Typography>
-                                <Box sx={{ mt: "auto", pt: 2, borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
-                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.coralPink, fontWeight: 700 }}>
-                                        ✓ Mutual opt-in &bull; Zero cold spam
-                                    </Typography>
-                                </Box>
-                            </Paper>
-                        </Grid>
-
-                        {/* Pillar 2: 1-to-1 Video Matchmaking */}
-                        <Grid item xs={12} md={4}>
-                            <Paper
-                                id="video-dating"
-                                sx={{
-                                    p: 4.5,
-                                    height: "100%",
-                                    borderRadius: "28px",
-                                    backgroundColor: BRAND_COLORS.surfaceDark,
-                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    transition: "all 0.3s ease",
-                                    "&:hover": {
-                                        transform: "translateY(-6px)",
-                                        borderColor: "rgba(139, 92, 246, 0.4)",
-                                        boxShadow: "0 20px 40px rgba(139, 92, 246, 0.15)",
-                                    },
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        width: 58,
-                                        height: 58,
-                                        borderRadius: "18px",
-                                        bgcolor: "rgba(139, 92, 246, 0.15)",
-                                        border: "1px solid rgba(139, 92, 246, 0.3)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        color: BRAND_COLORS.violet,
-                                        mb: 3,
-                                    }}
-                                >
-                                    <VideocamRoundedIcon sx={{ fontSize: 32 }} />
-                                </Box>
-                                <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
-                                    Encrypted 1-on-1 Video Dating
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem", mb: 3 }}>
-                                    Connect face-to-face from your browser through low-latency WebRTC peer connections. Test real-world vibes and chemistry before exchanging personal phone numbers or socials.
-                                </Typography>
-                                <Box sx={{ mt: "auto", pt: 2, borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
-                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.violet, fontWeight: 700 }}>
-                                        ✓ Peer-to-peer encrypted &bull; Instant skip control
-                                    </Typography>
-                                </Box>
-                            </Paper>
-                        </Grid>
-
-                        {/* Pillar 3: Real-Time Chat */}
-                        <Grid item xs={12} md={4}>
-                            <Paper
-                                sx={{
-                                    p: 4.5,
-                                    height: "100%",
-                                    borderRadius: "28px",
-                                    backgroundColor: BRAND_COLORS.surfaceDark,
-                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    transition: "all 0.3s ease",
-                                    "&:hover": {
-                                        transform: "translateY(-6px)",
-                                        borderColor: "rgba(16, 185, 129, 0.4)",
-                                        boxShadow: "0 20px 40px rgba(16, 185, 129, 0.15)",
-                                    },
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        width: 58,
-                                        height: 58,
-                                        borderRadius: "18px",
-                                        bgcolor: "rgba(16, 185, 129, 0.15)",
-                                        border: "1px solid rgba(16, 185, 129, 0.3)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        color: BRAND_COLORS.emerald,
-                                        mb: 3,
-                                    }}
-                                >
-                                    <ChatBubbleOutlineRoundedIcon sx={{ fontSize: 32 }} />
-                                </Box>
-                                <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
-                                    Instant Real-Time Chat
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem", mb: 3 }}>
-                                    Break the ice effortlessly with genuine mutual matches. Powered by high-speed WebSockets featuring real-time typing indicators, double-check read receipts, and photo previews.
-                                </Typography>
-                                <Box sx={{ mt: "auto", pt: 2, borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
-                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.emerald, fontWeight: 700 }}>
-                                        ✓ Live double-check receipts &bull; Zero delay
-                                    </Typography>
-                                </Box>
-                            </Paper>
-                        </Grid>
-                    </Grid>
-                </Container>
-            </Box>
-
-            {/* Why Engaze / Comparison Section */}
-            <Box id="difference" sx={{ py: { xs: 8, md: 12 }, backgroundColor: "rgba(19, 22, 37, 0.4)", borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
-                <Container maxWidth="lg" sx={{ px: { xs: 2.5, sm: 4 } }}>
-                    <Box sx={{ textAlign: "center", maxWidth: 680, mx: "auto", mb: { xs: 6, md: 8 } }}>
-                        <Typography
-                            variant="overline"
-                            sx={{ color: BRAND_COLORS.coralPink, fontWeight: 800, letterSpacing: "0.15em", fontSize: "0.85rem" }}
-                        >
-                            THE ENGAZE DIFFERENCE
-                        </Typography>
-                        <Typography
-                            variant="h2"
-                            sx={{
-                                fontWeight: 900,
-                                fontSize: { xs: "1.85rem", sm: "2.6rem" },
-                                letterSpacing: "-0.03em",
-                                mt: 1,
-                                mb: 2,
-                            }}
-                        >
-                            Why Modern Singles Are Switching to Engaze.
-                        </Typography>
-                    </Box>
-
-                    <Grid container spacing={4}>
-                        {/* Old Apps */}
+                    {/* Side-by-Side Neo-Brutalist Comparison Cards (Desktop >= 900px) */}
+                    <Grid container spacing={4} alignItems="stretch" sx={{ display: { xs: "none", md: "flex" } }}>
+                        {/* Traditional Apps Card */}
                         <Grid item xs={12} md={6}>
                             <Paper
+                                elevation={0}
                                 sx={{
-                                    p: 4.5,
+                                    border: "2.5px solid #0D0E15",
+                                    borderRadius: "28px",
+                                    p: { xs: 2.5, sm: 3.2 },
+                                    backgroundColor: "#F3F4F6",
+                                    color: "#0D0E15",
                                     height: "100%",
-                                    borderRadius: "24px",
-                                    backgroundColor: "rgba(11, 13, 23, 0.8)",
-                                    border: "1px solid rgba(239, 68, 68, 0.2)",
+                                    boxShadow: "4px 4px 0px #D1D5DB",
                                 }}
                             >
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: BRAND_COLORS.crimson, mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
-                                    <CancelRoundedIcon sx={{ fontSize: 24 }} />
-                                    Legacy Dating Apps
+                                <Typography variant="h5" sx={{ fontWeight: 900, fontSize: "1.45rem", mb: 3, opacity: 0.85 }}>
+                                    Traditional Dating Apps
                                 </Typography>
-
                                 <Stack spacing={2.5}>
-                                    <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
-                                        <CancelRoundedIcon sx={{ color: "rgba(239, 68, 68, 0.7)", fontSize: 20, mt: 0.3 }} />
-                                        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>
-                                            Flooded with ghost profiles, abandoned accounts, and automated bots.
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
-                                        <CancelRoundedIcon sx={{ color: "rgba(239, 68, 68, 0.7)", fontSize: 20, mt: 0.3 }} />
-                                        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>
-                                            Aggressive paywalls just to read incoming messages or see who liked your profile.
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
-                                        <CancelRoundedIcon sx={{ color: "rgba(239, 68, 68, 0.7)", fontSize: 20, mt: 0.3 }} />
-                                        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>
-                                            Forced to share personal phone numbers or Instagram before knowing if you vibe.
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
-                                        <CancelRoundedIcon sx={{ color: "rgba(239, 68, 68, 0.7)", fontSize: 20, mt: 0.3 }} />
-                                        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>
-                                            Unsolicited messages and intrusive cold DMs cluttering your inbox.
-                                        </Typography>
-                                    </Box>
+                                    {[
+                                        "Endless superficial swiping that leads nowhere",
+                                        "Awkward text chats that drag on for weeks",
+                                        "Catfishing & profiles from 5 years ago",
+                                        "Unwanted cold DMs and spam requests",
+                                        "Having to give out your personal phone number on day one",
+                                    ].map((point, i) => (
+                                        <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                                            <CancelRoundedIcon sx={{ color: "#EF4444", fontSize: 22, mt: 0.2 }} />
+                                            <Typography sx={{ fontWeight: 600, color: "#4B4E63", fontSize: "0.98rem" }}>
+                                                {point}
+                                            </Typography>
+                                        </Box>
+                                    ))}
                                 </Stack>
                             </Paper>
                         </Grid>
 
-                        {/* Engaze Platform */}
+                        {/* The Engaze Way Card */}
                         <Grid item xs={12} md={6}>
                             <Paper
+                                elevation={0}
+                                className="neo-card"
                                 sx={{
-                                    p: 4.5,
+                                    border: "3px solid #0D0E15 !important",
+                                    borderRadius: "28px",
+                                    p: { xs: 2.5, sm: 3.2 },
+                                    backgroundColor: "#FFFFFF",
+                                    color: "#0D0E15",
                                     height: "100%",
-                                    borderRadius: "24px",
-                                    backgroundColor: BRAND_COLORS.surfaceDark,
-                                    border: "1.5px solid rgba(253, 58, 115, 0.45)",
-                                    boxShadow: "0 10px 40px rgba(253, 58, 115, 0.15)",
+                                    boxShadow: "6px 6px 0px #0D0E15 !important",
                                 }}
                             >
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: BRAND_COLORS.coralPink, mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
-                                    <CheckCircleRoundedIcon sx={{ fontSize: 24, color: BRAND_COLORS.emerald }} />
-                                    Engaze.com
-                                </Typography>
-
+                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 900, fontSize: "1.5rem", color: "#FD2E7A" }}>
+                                        The Engaze Experience
+                                    </Typography>
+                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FFD233", fontSize: "0.78rem", py: 0.4, px: 1.4 }}>
+                                        Next-Gen
+                                    </Box>
+                                </Box>
                                 <Stack spacing={2.5}>
-                                    <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
-                                        <CheckCircleRoundedIcon sx={{ color: BRAND_COLORS.emerald, fontSize: 20, mt: 0.3 }} />
-                                        <Typography variant="body2" sx={{ color: "#FFFFFF", fontWeight: 600, lineHeight: 1.6 }}>
-                                            Authentic 18+ profiles with member discovery and safety reporting.
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
-                                        <CheckCircleRoundedIcon sx={{ color: BRAND_COLORS.emerald, fontSize: 20, mt: 0.3 }} />
-                                        <Typography variant="body2" sx={{ color: "#FFFFFF", fontWeight: 600, lineHeight: 1.6 }}>
-                                            100% Free mutual discovery, unlimited likes, and instant real-time chat.
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
-                                        <CheckCircleRoundedIcon sx={{ color: BRAND_COLORS.emerald, fontSize: 20, mt: 0.3 }} />
-                                        <Typography variant="body2" sx={{ color: "#FFFFFF", fontWeight: 600, lineHeight: 1.6 }}>
-                                            Encrypted 1-on-1 video dates right in your browser without exposing your number.
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
-                                        <CheckCircleRoundedIcon sx={{ color: BRAND_COLORS.emerald, fontSize: 20, mt: 0.3 }} />
-                                        <Typography variant="body2" sx={{ color: "#FFFFFF", fontWeight: 600, lineHeight: 1.6 }}>
-                                            Strict mutual opt-in gatekeeper: only mutually matched members can contact you.
-                                        </Typography>
-                                    </Box>
+                                    {[
+                                        "Immediate 1-on-1 video dates right from your browser",
+                                        "Mutual likes only — zero unsolicited messages",
+                                        "Encrypted peer-to-peer WebRTC video that is never recorded",
+                                        "Complete privacy: test the vibe before giving out your number",
+                                        "Strict 18+ adult community with active moderation",
+                                    ].map((point, i) => (
+                                        <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                                            <CheckCircleRoundedIcon sx={{ color: "#10B981", fontSize: 22, mt: 0.2 }} />
+                                            <Typography sx={{ fontWeight: 700, color: "#0D0E15", fontSize: "0.98rem" }}>
+                                                {point}
+                                            </Typography>
+                                        </Box>
+                                    ))}
                                 </Stack>
                             </Paper>
                         </Grid>
@@ -1026,569 +1844,820 @@ export default function LandingPage() {
                 </Container>
             </Box>
 
-            {/* Safety & Trust Section */}
-            <Box id="safety" sx={{ py: { xs: 8, md: 12 }, borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
-                <Container maxWidth="xl" sx={{ px: { xs: 2.5, sm: 4, md: 6 } }}>
-                    <Box sx={{ textAlign: "center", maxWidth: 700, mx: "auto", mb: { xs: 6, md: 8 } }}>
-                        <Typography
-                            variant="overline"
-                            sx={{ color: BRAND_COLORS.emerald, fontWeight: 800, letterSpacing: "0.15em", fontSize: "0.85rem" }}
-                        >
-                            TRUST & PROTECTION
-                        </Typography>
-                        <Typography
-                            variant="h2"
-                            sx={{
-                                fontWeight: 900,
-                                fontSize: { xs: "2rem", sm: "2.8rem" },
-                                letterSpacing: "-0.03em",
-                                mt: 1,
-                                mb: 2,
-                            }}
-                        >
-                            Your Safety and Privacy Come First.
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "1.1rem" }}>
-                            Dating should be exciting and safe. Engaze integrates multi-layered privacy controls to protect every connection.
-                        </Typography>
-                    </Box>
-
-                    <Grid container spacing={3.5}>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Paper
+            {/* ============================================================
+                6. SECTION: LIVE 1-ON-1 VIDEO DATING DEEP DIVE
+                Highlighting browser-based WebRTC dating mechanics.
+                ============================================================ */}
+            <Box
+                id="video-dating"
+                component="section"
+                sx={{
+                    py: { xs: 6, md: 8.5 },
+                    px: { xs: 2.5, sm: 4, md: 6 },
+                    backgroundColor: "#0D0E15",
+                    color: "#FFFFFF",
+                    borderBottom: "3px solid #0D0E15",
+                }}
+            >
+                <Container maxWidth="xl">
+                    <Grid container spacing={{ xs: 6, md: 8 }} alignItems="center">
+                        <Grid item xs={12} md={6}>
+                            <Box
                                 sx={{
-                                    p: 3.5,
-                                    height: "100%",
-                                    borderRadius: "20px",
-                                    backgroundColor: BRAND_COLORS.surfaceDark,
-                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                    display: "inline-block",
+                                    backgroundColor: "#7C5CFC",
+                                    color: "#FFFFFF",
+                                    px: 2,
+                                    py: 0.6,
+                                    borderRadius: "9999px",
+                                    fontSize: "0.78rem",
+                                    fontWeight: 900,
+                                    letterSpacing: "0.08em",
+                                    textTransform: "uppercase",
+                                    mb: 2.5,
                                 }}
                             >
-                                <ShieldOutlinedIcon sx={{ color: BRAND_COLORS.skyBlue, fontSize: 36, mb: 2 }} />
-                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: "#FFFFFF" }}>
-                                    Adult 18+ Profiles
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.6 }}>
-                                    Age-verified onboarding and safety reporting ensure you connect with genuine adults across discovery.
-                                </Typography>
-                            </Paper>
+                                REAL-TIME DATING
+                            </Box>
+                            <Typography
+                                variant="h2"
+                                sx={{
+                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                    fontSize: { xs: "1.8rem", sm: "2.3rem", md: "2.8rem" },
+                                    fontWeight: 900,
+                                    lineHeight: 1.05,
+                                    letterSpacing: "-0.035em",
+                                    color: "#FFFFFF",
+                                    mb: 3,
+                                }}
+                            >
+                                Test the chemistry.{" "}
+                                <Box component="span" sx={{ color: "#FD2E7A" }}>
+                                    Skip the bad dates.
+                                </Box>
+                            </Typography>
+                            <Typography
+                                variant="body1"
+                                sx={{
+                                    fontSize: { xs: "1.05rem", md: "1.18rem" },
+                                    color: "#A1A4B8",
+                                    lineHeight: 1.65,
+                                    fontWeight: 500,
+                                    mb: 4.5,
+                                }}
+                            >
+                                A five-minute video date reveals what five hundred text messages never could: their laugh, their real smile, and your natural conversational flow. All without ever leaving your web browser.
+                            </Typography>
+
+                            <Stack spacing={2.5} sx={{ mb: 5 }}>
+                                {[
+                                    { title: "No Phone Number Needed", desc: "Initiate direct video calls with mutual matches right inside the Engaze app." },
+                                    { title: "Encrypted & Private", desc: "Peer-to-peer WebRTC connections are direct between browsers and are never recorded." },
+                                    { title: "One-Tap Call Controls", desc: "Easily toggle camera, mute microphone, or end the session with a single tap." },
+                                ].map((feature, i) => (
+                                    <Box key={i} sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+                                        <Box
+                                            sx={{
+                                                width: 32,
+                                                height: 32,
+                                                borderRadius: "50%",
+                                                backgroundColor: "#FD2E7A",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                color: "#FFFFFF",
+                                                flexShrink: 0,
+                                                fontWeight: 900,
+                                                fontSize: "0.85rem",
+                                            }}
+                                        >
+                                            ✓
+                                        </Box>
+                                        <Box>
+                                            <Typography sx={{ fontWeight: 800, fontSize: "1.05rem", color: "#FFFFFF" }}>
+                                                {feature.title}
+                                            </Typography>
+                                            <Typography sx={{ fontWeight: 500, fontSize: "0.92rem", color: "#9CA3AF" }}>
+                                                {feature.desc}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                ))}
+                            </Stack>
+
+                            <Button
+                                component={Link}
+                                to="/auth"
+                                className="pop-pill"
+                                variant="contained"
+                                sx={{
+                                    backgroundColor: "#FD2E7A",
+                                    color: "#FFFFFF",
+                                    px: 4,
+                                    py: 1.6,
+                                    fontSize: "1.05rem",
+                                    textTransform: "none",
+                                    "&:hover": { backgroundColor: "#E61C68" },
+                                }}
+                            >
+                                Try Video Dating Free →
+                            </Button>
                         </Grid>
 
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Paper
-                                sx={{
-                                    p: 3.5,
-                                    height: "100%",
-                                    borderRadius: "20px",
-                                    backgroundColor: BRAND_COLORS.surfaceDark,
-                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                }}
-                            >
-                                <ShieldOutlinedIcon sx={{ color: BRAND_COLORS.emerald, fontSize: 36, mb: 2 }} />
-                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: "#FFFFFF" }}>
-                                    Mutual-Like Shield
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.6 }}>
-                                    Nobody can message or call you unless both of you swipe right. Unwanted spam is structurally impossible.
-                                </Typography>
-                            </Paper>
-                        </Grid>
+                        {/* Interactive UI Mockup Card */}
+                        <Grid item xs={12} md={6}>
+                            <Box sx={{ position: "relative", p: 2 }}>
+                                <Paper
+                                    elevation={0}
+                                    sx={{
+                                        border: "3px solid #2B2D3D",
+                                        borderRadius: "32px",
+                                        backgroundColor: "#161822",
+                                        p: { xs: 3, sm: 4 },
+                                        boxShadow: "0 25px 60px rgba(0,0,0,0.6)",
+                                        position: "relative",
+                                        overflow: "hidden",
+                                    }}
+                                >
+                                    {/* Video Stream Preview Frame */}
+                                    <Box
+                                        sx={{
+                                            position: "relative",
+                                            width: "100%",
+                                            height: { xs: 210, sm: 320 },
+                                            borderRadius: "20px",
+                                            overflow: "hidden",
+                                            border: "2px solid rgba(255, 255, 255, 0.12)",
+                                        }}
+                                    >
+                                        <Box
+                                            component="img"
+                                            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"
+                                            alt="Live 1-on-1 Video Call Date"
+                                            sx={{
+                                                width: "100%",
+                                                height: "100%",
+                                                objectFit: "cover",
+                                            }}
+                                        />
 
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Paper
-                                sx={{
-                                    p: 3.5,
-                                    height: "100%",
-                                    borderRadius: "20px",
-                                    backgroundColor: BRAND_COLORS.surfaceDark,
-                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                }}
-                            >
-                                <LockOutlinedIcon sx={{ color: BRAND_COLORS.violet, fontSize: 36, mb: 2 }} />
-                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: "#FFFFFF" }}>
-                                    Peer-to-Peer Encryption
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.6 }}>
-                                    WebRTC video streams and messaging connections are securely transmitted without exposing personal phone numbers.
-                                </Typography>
-                            </Paper>
-                        </Grid>
+                                        {/* Status Tag Overlay */}
+                                        <Box
+                                            sx={{
+                                                position: "absolute",
+                                                top: 14,
+                                                left: 14,
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: 0.8,
+                                                backgroundColor: "rgba(13, 14, 21, 0.75)",
+                                                backdropFilter: "blur(10px)",
+                                                border: "1px solid rgba(255, 255, 255, 0.2)",
+                                                borderRadius: "9999px",
+                                                px: 1.5,
+                                                py: 0.5,
+                                                color: "#FFFFFF",
+                                                fontSize: "0.78rem",
+                                                fontWeight: 800,
+                                            }}
+                                        >
+                                            <Box
+                                                sx={{
+                                                    width: 8,
+                                                    height: 8,
+                                                    borderRadius: "50%",
+                                                    backgroundColor: "#10B981",
+                                                    animation: "radarPulse 2s infinite",
+                                                }}
+                                            />
+                                            <span>LIVE VIBE CHECK • 04:18</span>
+                                        </Box>
 
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Paper
-                                sx={{
-                                    p: 3.5,
-                                    height: "100%",
-                                    borderRadius: "20px",
-                                    backgroundColor: BRAND_COLORS.surfaceDark,
-                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                }}
-                            >
-                                <BoltRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 36, mb: 2 }} />
-                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: "#FFFFFF" }}>
-                                    One-Tap Protection
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.6 }}>
-                                    Instant block and report controls immediately terminate calls and permanently remove disruptive profiles.
-                                </Typography>
-                            </Paper>
+                                        {/* Floating Call Reaction Bubble */}
+                                        <Box
+                                            className="pop-bubble"
+                                            sx={{
+                                                position: "absolute",
+                                                bottom: 20,
+                                                left: 20,
+                                                backgroundColor: "#FFD233",
+                                                color: "#0D0E15",
+                                            }}
+                                        >
+                                            <span>"You have the best laugh! 😂"</span>
+                                        </Box>
+                                    </Box>
+
+                                    {/* Action Bar Beneath Stream */}
+                                    <Box
+                                        sx={{
+                                            mt: 3,
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <Box>
+                                            <Typography sx={{ fontWeight: 800, fontSize: "1.1rem", color: "#FFFFFF" }}>
+                                                Ananya, 24
+                                            </Typography>
+                                            <Typography sx={{ fontWeight: 500, fontSize: "0.85rem", color: "#9CA3AF" }}>
+                                                Mutual Match • Active Now
+                                            </Typography>
+                                        </Box>
+
+                                        <Stack direction="row" spacing={1.5}>
+                                            <Box
+                                                sx={{
+                                                    width: 44,
+                                                    height: 44,
+                                                    borderRadius: "50%",
+                                                    backgroundColor: "#2B2D3D",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    color: "#FFFFFF",
+                                                }}
+                                            >
+                                                <VideocamRoundedIcon sx={{ fontSize: 20 }} />
+                                            </Box>
+                                            <Box
+                                                sx={{
+                                                    width: 44,
+                                                    height: 44,
+                                                    borderRadius: "50%",
+                                                    backgroundColor: "#EF4444",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    color: "#FFFFFF",
+                                                    cursor: "pointer",
+                                                }}
+                                            >
+                                                ✕
+                                            </Box>
+                                        </Stack>
+                                    </Box>
+                                </Paper>
+                            </Box>
                         </Grid>
                     </Grid>
                 </Container>
             </Box>
 
-            {/* Frequently Asked Questions (FAQ) Section */}
-            <Box id="faq" sx={{ py: { xs: 8, md: 12 }, borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
-                <Container maxWidth="md" sx={{ px: { xs: 2.5, sm: 4 } }}>
-                    <Box sx={{ textAlign: "center", mb: { xs: 5, md: 7 } }}>
-                        <Typography
-                            variant="overline"
-                            sx={{ color: BRAND_COLORS.skyBlue, fontWeight: 800, letterSpacing: "0.15em", fontSize: "0.85rem" }}
+            {/* ============================================================
+                7. SECTION: TRUST, SAFETY & COMMUNITY GUIDELINES
+                Clear safety pillars, EXIF privacy, and reporting transparency.
+                ============================================================ */}
+            <Box
+                id="safety"
+                component="section"
+                sx={{
+                    py: { xs: 6, md: 8.5 },
+                    px: { xs: 2.5, sm: 4, md: 6 },
+                    backgroundColor: "#FFFDF9",
+                    borderBottom: "3px solid #0D0E15",
+                }}
+            >
+                <Container maxWidth="lg">
+                    <Box sx={{ textAlign: "center", mb: { xs: 3.5, md: 5 } }}>
+                        <Box
+                            sx={{
+                                display: "inline-block",
+                                backgroundColor: "#10B981",
+                                color: "#FFFFFF",
+                                px: 2,
+                                py: 0.6,
+                                borderRadius: "9999px",
+                                fontSize: "0.78rem",
+                                fontWeight: 900,
+                                letterSpacing: "0.08em",
+                                textTransform: "uppercase",
+                                mb: 2.5,
+                                border: "2px solid #0D0E15",
+                                boxShadow: "2px 2px 0px #0D0E15",
+                            }}
                         >
-                            GOT QUESTIONS?
-                        </Typography>
+                            TRUST & SAFETY
+                        </Box>
                         <Typography
                             variant="h2"
                             sx={{
+                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                fontSize: { xs: "1.8rem", sm: "2.3rem", md: "2.8rem" },
                                 fontWeight: 900,
-                                fontSize: { xs: "2rem", sm: "2.8rem" },
-                                letterSpacing: "-0.03em",
-                                mt: 1,
-                                mb: 2,
+                                lineHeight: 1.05,
+                                letterSpacing: "-0.035em",
+                                color: "#0D0E15",
                             }}
                         >
-                            Frequently Asked Questions
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "1.05rem" }}>
-                            Everything you need to know about how Engaze works, dating features, and community safety.
+                            Dating should feel exciting.{" "}
+                            <Box component="span" sx={{ color: "#FD2E7A" }}>
+                                Never unsafe.
+                            </Box>
                         </Typography>
                     </Box>
 
-                    <Stack spacing={2}>
-                        <Accordion
-                            sx={{
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                borderRadius: "16px !important",
-                                color: "#FFFFFF",
-                                "&:before": { display: "none" },
-                                boxShadow: "none",
-                            }}
-                        >
-                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
-                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
-                                    What is Engaze?
-                                </Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
-                                    Engaze is an online dating platform designed for genuine singles. It combines portrait card discovery, real-time mutual chat, and browser-based 1-on-1 video dates to help you discover authentic chemistry.
-                                </Typography>
-                            </AccordionDetails>
-                        </Accordion>
+                    {/* Mobile Horizontal Swipe Track for Safety (< 600px) */}
+                    <Box sx={{ display: { xs: "block", sm: "none" } }}>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5, px: 0.5 }}>
+                            <Typography sx={{ fontSize: "0.78rem", fontWeight: 800, color: "#10B981", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                                👈 Swipe Safety Features 👉
+                            </Typography>
+                            <Box sx={{ display: "flex", gap: 0.6 }}>
+                                {[1, 2, 3, 4].map((dot) => (
+                                    <Box key={dot} sx={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: dot === 1 ? "#10B981" : "#D1D5DB" }} />
+                                ))}
+                            </Box>
+                        </Box>
+                        <Box className="engaze-swipe-track" sx={{ gap: 2, mx: -2.5, px: 2.5, py: 1 }}>
+                            {[
+                                {
+                                    icon: <VerifiedUserRoundedIcon sx={{ fontSize: 24, color: "#FD2E7A" }} />,
+                                    title: "Strict 18+ Adult Policy",
+                                    desc: "Exclusively for adults aged 18 and older. Age confirmation is required during onboarding.",
+                                },
+                                {
+                                    icon: <LockOutlinedIcon sx={{ fontSize: 24, color: "#7C5CFC" }} />,
+                                    title: "GPS EXIF Data Stripped",
+                                    desc: "Every profile photo has its location metadata automatically sanitized to safeguard your real-world whereabouts.",
+                                },
+                                {
+                                    icon: <ShieldOutlinedIcon sx={{ fontSize: 24, color: "#10B981" }} />,
+                                    title: "One-Tap Reporting",
+                                    desc: "Instant reporting and blocking available on profiles and in live video calls. Moderation acts immediately.",
+                                },
+                                {
+                                    icon: <VideocamRoundedIcon sx={{ fontSize: 24, color: "#24C5F7" }} />,
+                                    title: "No Phone Number Sharing",
+                                    desc: "Video dates occur over secure browser streams. Never surrender your phone number or socials.",
+                                },
+                            ].map((card, i) => (
+                                <Paper
+                                    key={i}
+                                    elevation={0}
+                                    className="neo-card engaze-swipe-item"
+                                    sx={{
+                                        p: 2.2,
+                                        backgroundColor: "#FFFFFF",
+                                        color: "#0D0E15",
+                                        width: "80vw",
+                                        maxWidth: 290,
+                                        minHeight: 210,
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        justifyContent: "space-between",
+                                    }}
+                                >
+                                    <Box>
+                                        <Box
+                                            sx={{
+                                                width: 44,
+                                                height: 44,
+                                                borderRadius: "14px",
+                                                backgroundColor: "#FCEEF2",
+                                                border: "2px solid #0D0E15",
+                                                boxShadow: "2px 2px 0px #0D0E15",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                mb: 2,
+                                            }}
+                                        >
+                                            {card.icon}
+                                        </Box>
+                                        <Typography variant="h5" sx={{ fontWeight: 900, fontSize: "1.15rem", mb: 1 }}>
+                                            {card.title}
+                                        </Typography>
+                                        <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "#4B4E63", lineHeight: 1.5 }}>
+                                            {card.desc}
+                                        </Typography>
+                                    </Box>
+                                </Paper>
+                            ))}
+                        </Box>
+                    </Box>
 
-                        <Accordion
-                            sx={{
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                borderRadius: "16px !important",
-                                color: "#FFFFFF",
-                                "&:before": { display: "none" },
-                                boxShadow: "none",
-                            }}
-                        >
-                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
-                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
-                                    How does matching work on Engaze?
-                                </Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
-                                    Matching is strictly based on mutual opt-in. Both you and another member must like each other before either person can start a conversation or request a video call. This prevents cold messages and unsolicited spam.
-                                </Typography>
-                            </AccordionDetails>
-                        </Accordion>
+                    {/* Tablet/Desktop Grid Layout (>= 600px) */}
+                    <Grid container spacing={3.5} sx={{ display: { xs: "none", sm: "flex" } }}>
+                        {[
+                            {
+                                icon: <VerifiedUserRoundedIcon sx={{ fontSize: 28, color: "#FD2E7A" }} />,
+                                title: "Strict 18+ Adult Policy",
+                                desc: "Engaze is exclusively for adults aged 18 and older. Age confirmation is required during onboarding to maintain an authentic, mature dating environment.",
+                            },
+                            {
+                                icon: <LockOutlinedIcon sx={{ fontSize: 28, color: "#7C5CFC" }} />,
+                                title: "GPS EXIF Data Stripped",
+                                desc: "Every profile photo uploaded to Engaze has its location metadata (GPS coordinates) automatically sanitized to safeguard your real-world whereabouts.",
+                            },
+                            {
+                                icon: <ShieldOutlinedIcon sx={{ fontSize: 28, color: "#10B981" }} />,
+                                title: "One-Tap Reporting & Blocking",
+                                desc: "If someone makes you uncomfortable, reporting and blocking is available directly on member profiles and in live video calls. Moderation acts immediately.",
+                            },
+                            {
+                                icon: <VideocamRoundedIcon sx={{ fontSize: 28, color: "#24C5F7" }} />,
+                                title: "No Phone Number Sharing",
+                                desc: "Video dates occur over secure peer-to-peer browser streams. You never have to surrender your personal phone number, home address, or social handles.",
+                            },
+                        ].map((card, i) => (
+                            <Grid item xs={12} sm={6} key={i}>
+                                <Paper
+                                    elevation={0}
+                                    className="neo-card"
+                                    sx={{
+                                        p: { xs: 2.5, sm: 3.2 },
+                                        backgroundColor: "#FFFFFF",
+                                        color: "#0D0E15",
+                                        height: "100%",
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            width: 52,
+                                            height: 52,
+                                            borderRadius: "16px",
+                                            backgroundColor: "#FCEEF2",
+                                            border: "2px solid #0D0E15",
+                                            boxShadow: "2px 2px 0px #0D0E15",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            mb: 2.5,
+                                        }}
+                                    >
+                                        {card.icon}
+                                    </Box>
+                                    <Typography variant="h5" sx={{ fontWeight: 900, fontSize: "1.35rem", mb: 1.5 }}>
+                                        {card.title}
+                                    </Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.95rem", color: "#4B4E63", lineHeight: 1.6 }}>
+                                        {card.desc}
+                                    </Typography>
+                                </Paper>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Container>
+            </Box>
 
-                        <Accordion
+            {/* ============================================================
+                8. SECTION: INTERACTIVE FAQ ACCORDION
+                Matching Schema.org FAQPage structured data accurately.
+                ============================================================ */}
+            <Box
+                id="faq"
+                component="section"
+                sx={{
+                    py: { xs: 6, md: 8.5 },
+                    px: { xs: 2.5, sm: 4, md: 6 },
+                    backgroundColor: "#FFFDF9",
+                    borderBottom: "3px solid #0D0E15",
+                }}
+            >
+                <Container maxWidth="md">
+                    <Box sx={{ textAlign: "center", mb: { xs: 3.5, md: 5 } }}>
+                        <Box
                             sx={{
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                borderRadius: "16px !important",
+                                display: "inline-block",
+                                backgroundColor: "#FD2E7A",
                                 color: "#FFFFFF",
-                                "&:before": { display: "none" },
-                                boxShadow: "none",
+                                px: 2,
+                                py: 0.6,
+                                borderRadius: "9999px",
+                                fontSize: "0.78rem",
+                                fontWeight: 900,
+                                letterSpacing: "0.08em",
+                                textTransform: "uppercase",
+                                mb: 2.5,
                             }}
                         >
-                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
-                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
-                                    Does Engaze support live video dating?
-                                </Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
-                                    Yes. Engaze provides encrypted 1-on-1 WebRTC video dating right in your web browser. You can test real-world chemistry and vibe before deciding whether to exchange phone numbers or social media handles. Video and audio streams are peer-to-peer and are never recorded.
-                                </Typography>
-                            </AccordionDetails>
-                        </Accordion>
+                            FREQUENTLY ASKED
+                        </Box>
+                        <Typography
+                            variant="h2"
+                            sx={{
+                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                fontSize: { xs: "1.8rem", sm: "2.3rem", md: "2.8rem" },
+                                fontWeight: 900,
+                                lineHeight: 1.05,
+                                letterSpacing: "-0.035em",
+                                color: "#0D0E15",
+                            }}
+                        >
+                            Everything you need to know.{" "}
+                            <Box component="span" sx={{ color: "#FD2E7A" }}>
+                                No surprises.
+                            </Box>
+                        </Typography>
+                    </Box>
 
-                        <Accordion
-                            sx={{
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                borderRadius: "16px !important",
-                                color: "#FFFFFF",
-                                "&:before": { display: "none" },
-                                boxShadow: "none",
-                            }}
-                        >
-                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
-                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
-                                    Is Engaze free to use?
-                                </Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
-                                    Yes. Account creation, profile discovery, mutual matching, real-time chat, and 1-on-1 video calls on Engaze are completely free.
-                                </Typography>
-                            </AccordionDetails>
-                        </Accordion>
-
-                        <Accordion
-                            sx={{
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                borderRadius: "16px !important",
-                                color: "#FFFFFF",
-                                "&:before": { display: "none" },
-                                boxShadow: "none",
-                            }}
-                        >
-                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
-                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
-                                    Who is eligible to join Engaze?
-                                </Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
-                                    Engaze is strictly reserved for adults aged 18 and older. Age confirmation is required during the onboarding and profile creation process.
-                                </Typography>
-                            </AccordionDetails>
-                        </Accordion>
-
-                        <Accordion
-                            sx={{
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                borderRadius: "16px !important",
-                                color: "#FFFFFF",
-                                "&:before": { display: "none" },
-                                boxShadow: "none",
-                            }}
-                        >
-                            <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />}>
-                                <Typography sx={{ fontWeight: 800, fontSize: "1.05rem" }}>
-                                    How do I contact customer support or report an issue?
-                                </Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, fontSize: "0.95rem" }}>
-                                    You can reach customer support at <strong>support@engaze.date</strong> or send general enquiries to <strong>contact@engaze.date</strong>. In-app reporting and blocking features are also accessible directly on member profiles and during live calls.
-                                </Typography>
-                            </AccordionDetails>
-                        </Accordion>
+                    <Stack spacing={2.5}>
+                        {[
+                            {
+                                q: "What is Engaze?",
+                                a: "Engaze is an online dating platform designed for genuine singles. It combines portrait card discovery, real-time mutual chat, and browser-based 1-on-1 video dates to help you discover authentic chemistry without having to exchange phone numbers.",
+                            },
+                            {
+                                q: "How does matching work on Engaze?",
+                                a: "Matching is strictly based on mutual opt-in. Both you and another member must like each other before either person can start a conversation or request a video call. This prevents cold messages and unsolicited spam.",
+                            },
+                            {
+                                q: "Does Engaze support live video dating?",
+                                a: "Yes. Engaze provides encrypted 1-on-1 WebRTC video dating right in your web browser. You can test real-world chemistry and vibe before deciding whether to exchange phone numbers or social media handles. Video and audio streams are peer-to-peer and are never recorded.",
+                            },
+                            {
+                                q: "Is Engaze free to use?",
+                                a: "Yes. Account creation, profile discovery, mutual matching, real-time chat, and 1-on-1 video calls on Engaze are completely free.",
+                            },
+                            {
+                                q: "Who is eligible to join Engaze?",
+                                a: "Engaze is strictly reserved for adults aged 18 and older. Age confirmation is required during the onboarding and profile creation process.",
+                            },
+                            {
+                                q: "How do I contact customer support or report an issue?",
+                                a: "You can reach customer support at support@engaze.date or send general enquiries to contact@engaze.date. In-app reporting and blocking features are also accessible directly on member profiles and during live calls.",
+                            },
+                        ].map((faq, i) => (
+                            <Accordion
+                                key={i}
+                                elevation={0}
+                                sx={{
+                                    border: "2.5px solid #0D0E15 !important",
+                                    borderRadius: "20px !important",
+                                    boxShadow: "3.5px 3.5px 0px #0D0E15 !important",
+                                    backgroundColor: "#FFFFFF",
+                                    "&:before": { display: "none" },
+                                    overflow: "hidden",
+                                }}
+                            >
+                                <AccordionSummary
+                                    expandIcon={<ExpandMoreRoundedIcon sx={{ color: "#0D0E15", fontSize: 26 }} />}
+                                    sx={{ px: 3, py: 1.5 }}
+                                >
+                                    <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.05rem", md: "1.15rem" }, color: "#0D0E15" }}>
+                                        {faq.q}
+                                    </Typography>
+                                </AccordionSummary>
+                                <AccordionDetails sx={{ px: 3, pb: 3, pt: 0 }}>
+                                    <Typography sx={{ fontWeight: 500, fontSize: "0.98rem", color: "#4B4E63", lineHeight: 1.65 }}>
+                                        {faq.a}
+                                    </Typography>
+                                </AccordionDetails>
+                            </Accordion>
+                        ))}
                     </Stack>
                 </Container>
             </Box>
 
-            {/* Bottom Call to Action Banner */}
-            <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 }, px: { xs: 2.5, sm: 4 } }}>
-                <Paper
-                    sx={{
-                        p: { xs: 5, sm: 8 },
-                        borderRadius: "36px",
-                        textAlign: "center",
-                        background: "linear-gradient(135deg, rgba(253, 58, 115, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)",
-                        border: "1.5px solid rgba(253, 58, 115, 0.35)",
-                        position: "relative",
-                        overflow: "hidden",
-                        boxShadow: "0 25px 60px rgba(0,0,0,0.6)",
-                    }}
-                >
-                    <Box
+            {/* ============================================================
+                9. HIGH-IMPACT CTA BANNER
+                Bold, electric call to action before the footer.
+                ============================================================ */}
+            <Box
+                component="section"
+                sx={{
+                    py: { xs: 6, md: 8.5 },
+                    px: { xs: 2.5, sm: 4, md: 6 },
+                    backgroundColor: "#FFFDF9",
+                }}
+            >
+                <Container maxWidth="lg">
+                    <Paper
+                        elevation={0}
                         sx={{
-                            maxWidth: 620,
-                            mx: "auto",
+                            backgroundColor: "#FD2E7A",
+                            color: "#FFFFFF",
+                            border: "3.5px solid #0D0E15",
+                            borderRadius: { xs: "32px", md: "40px" },
+                            boxShadow: "7px 7px 0px #0D0E15",
+                            p: { xs: 3.5, sm: 5, md: 6 },
+                            textAlign: "center",
                             position: "relative",
-                            zIndex: 2,
+                            overflow: "hidden",
                         }}
                     >
+                        <Box
+                            sx={{
+                                display: "inline-block",
+                                backgroundColor: "#0D0E15",
+                                color: "#FFFFFF",
+                                px: 2.2,
+                                py: 0.7,
+                                borderRadius: "9999px",
+                                fontSize: "0.82rem",
+                                fontWeight: 900,
+                                letterSpacing: "0.08em",
+                                textTransform: "uppercase",
+                                mb: 3,
+                            }}
+                        >
+                            START TODAY
+                        </Box>
+
                         <Typography
                             variant="h2"
                             sx={{
+                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                fontSize: { xs: "1.85rem", sm: "2.4rem", md: "2.9rem" },
                                 fontWeight: 900,
-                                fontSize: { xs: "2.2rem", sm: "3.2rem" },
-                                letterSpacing: "-0.03em",
-                                mb: 2,
+                                lineHeight: 1.05,
+                                letterSpacing: "-0.04em",
+                                mb: 3,
                             }}
                         >
-                            Ready to Find Your{" "}
-                            <span className="gradient-text">Match?</span>
+                            Ready to feel the spark?
                         </Typography>
+
                         <Typography
                             variant="body1"
                             sx={{
-                                color: "rgba(255, 255, 255, 0.8)",
-                                fontSize: "1.15rem",
-                                lineHeight: 1.6,
-                                mb: 4.5,
+                                fontSize: { xs: "1.1rem", sm: "1.25rem" },
+                                fontWeight: 600,
+                                maxWidth: 580,
+                                mx: "auto",
+                                mb: 5,
+                                lineHeight: 1.5,
                             }}
                         >
-                            Join Engaze today. Create your profile in under 60 seconds and start discovering people who match your wavelength.
+                            Join thousands of genuine singles on Engaze. Mutual likes only, instant browser video vibe checks, and zero paywalls.
                         </Typography>
-                        <Button
-                            variant="contained"
-                            size="large"
-                            endIcon={<ArrowForwardRoundedIcon />}
-                            onClick={() => navigate("/auth")}
-                            sx={{
-                                background: BRAND_COLORS.primaryGradient,
-                                py: 2,
-                                px: { xs: 4, sm: 6 },
-                                fontSize: "1.15rem",
-                                fontWeight: 900,
-                                borderRadius: 9999,
-                                boxShadow: "0 8px 30px rgba(253, 58, 115, 0.5)",
-                                transition: "all 0.2s ease",
-                                "&:hover": {
-                                    transform: "translateY(-2px)",
-                                    boxShadow: "0 12px 35px rgba(253, 58, 115, 0.7)",
-                                },
-                            }}
-                        >
-                            Get Started Free
-                        </Button>
-                        <Typography variant="caption" sx={{ display: "block", mt: 2, color: BRAND_COLORS.textSecondary }}>
-                            No credit card required &bull; 100% free mutual matching & messaging
-                        </Typography>
-                    </Box>
-                </Paper>
-            </Container>
 
-            {/* Official Comprehensive Footer */}
+                        <Button
+                            component={Link}
+                            to="/auth"
+                            className="pop-pill"
+                            variant="contained"
+                            sx={{
+                                backgroundColor: "#FFFFFF",
+                                color: "#FD2E7A",
+                                px: { xs: 4, sm: 5.5 },
+                                py: { xs: 1.8, sm: 2.2 },
+                                fontSize: { xs: "1.1rem", sm: "1.22rem" },
+                                textTransform: "none",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 1.5,
+                                "&:hover": { backgroundColor: "#FFF8F0" },
+                            }}
+                        >
+                            <span>Create Free Account</span>
+                            <Box
+                                component="span"
+                                sx={{
+                                    width: 28,
+                                    height: 28,
+                                    borderRadius: "50%",
+                                    backgroundColor: "#FFD233",
+                                    color: "#0D0E15",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "1rem",
+                                    fontWeight: 900,
+                                }}
+                            >
+                                →
+                            </Box>
+                        </Button>
+                    </Paper>
+                </Container>
+            </Box>
+
+            {/* ============================================================
+                10. FOOTER
+                Clean neo-pop footer with legal links, contact, and copyright.
+                ============================================================ */}
             <Box
                 component="footer"
                 sx={{
+                    backgroundColor: "#0D0E15",
+                    color: "#FFFFFF",
+                    borderTop: "3.5px solid #0D0E15",
                     pt: { xs: 8, md: 10 },
-                    pb: 6,
-                    borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                    backgroundColor: "rgba(11, 13, 23, 0.95)",
+                    pb: { xs: 6, md: 8 },
+                    px: { xs: 2.5, sm: 4, md: 6 },
                 }}
             >
-                <Container maxWidth="xl" sx={{ px: { xs: 3, sm: 4, md: 8 } }}>
-                    <Grid container spacing={{ xs: 5, md: 8 }}>
-                        {/* Brand Column */}
-                        <Grid item xs={12} md={4}>
-                            <Box
-                                component={Link}
-                                to="/"
-                                aria-label="Engaze Homepage"
-                                sx={{ display: "inline-block", mb: 2, textDecoration: "none" }}
-                            >
-                                <EngazeLogo size={36} fontSize="1.45rem" />
+                <Container maxWidth="lg">
+                    <Grid container spacing={4} justifyContent="space-between" alignItems="flex-start" sx={{ mb: 6 }}>
+                        <Grid item xs={12} md={5}>
+                            <Box sx={{ mb: 2 }}>
+                                <EngazeLogo size={36} fontSize="1.5rem" textColor="#FFFFFF" />
                             </Box>
-                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7, maxWidth: 340, mb: 3 }}>
-                                Engaze connects genuine singles through intuitive card discovery, instant mutual messaging, and encrypted 1-on-1 video dates.
+                            <Typography sx={{ color: "#9CA3AF", fontSize: "0.95rem", lineHeight: 1.6, maxWidth: 380, mb: 3 }}>
+                                Engaze is an online dating and live video connections platform connecting genuine singles through mutual match discovery and encrypted 1-on-1 browser video dates.
                             </Typography>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: BRAND_COLORS.emerald, fontSize: "0.85rem", fontWeight: 700 }}>
-                                <ShieldOutlinedIcon sx={{ fontSize: 18 }} />
-                                Adult 18+ Dating Platform
-                            </Box>
-                        </Grid>
-
-                        {/* Navigation Links */}
-                        <Grid item xs={6} sm={4} md={2.5}>
-                            <Typography variant="subtitle2" sx={{ color: "#FFFFFF", fontWeight: 800, mb: 2.5, letterSpacing: "0.05em" }}>
-                                DISCOVERY
-                            </Typography>
-                            <Stack spacing={1.6}>
+                            <Stack direction="row" spacing={2}>
                                 <Box
-                                    component={Link}
-                                    to="/auth"
-                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
+                                    component="a"
+                                    href="mailto:support@engaze.date"
+                                    sx={{
+                                        color: "#FD2E7A",
+                                        fontWeight: 700,
+                                        fontSize: "0.9rem",
+                                        textDecoration: "none",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 0.8,
+                                        "&:hover": { textDecoration: "underline" },
+                                    }}
                                 >
-                                    Card Discovery
-                                </Box>
-                                <Box
-                                    component={Link}
-                                    to="/auth"
-                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
-                                >
-                                    Mutual Matches
+                                    <SupportAgentRoundedIcon sx={{ fontSize: 18 }} />
+                                    support@engaze.date
                                 </Box>
                                 <Box
                                     component="a"
-                                    href="#video-dating"
-                                    onClick={(e) => { e.preventDefault(); scrollToSection("video-dating"); }}
-                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
+                                    href="mailto:contact@engaze.date"
+                                    sx={{
+                                        color: "#FFFFFF",
+                                        fontWeight: 700,
+                                        fontSize: "0.9rem",
+                                        textDecoration: "none",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 0.8,
+                                        "&:hover": { textDecoration: "underline" },
+                                    }}
                                 >
-                                    1-on-1 Video Dating
-                                </Box>
-                                <Box
-                                    component={Link}
-                                    to="/auth"
-                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
-                                >
-                                    Sign In / Register
+                                    <EmailRoundedIcon sx={{ fontSize: 18 }} />
+                                    contact@engaze.date
                                 </Box>
                             </Stack>
                         </Grid>
 
-                        {/* Safety & Guidelines */}
-                        <Grid item xs={6} sm={4} md={2.5}>
-                            <Typography variant="subtitle2" sx={{ color: "#FFFFFF", fontWeight: 800, mb: 2.5, letterSpacing: "0.05em" }}>
+                        <Grid item xs={6} sm={4} md={2}>
+                            <Typography sx={{ fontWeight: 900, fontSize: "0.95rem", color: "#FFFFFF", mb: 2 }}>
+                                PRODUCT
+                            </Typography>
+                            <Stack spacing={1.4}>
+                                <Box component="a" href="#features" onClick={(e) => { e.preventDefault(); scrollToSection("features"); }} sx={{ color: "#9CA3AF", textDecoration: "none", fontSize: "0.9rem", "&:hover": { color: "#FFFFFF" } }}>Features</Box>
+                                <Box component="a" href="#video-dating" onClick={(e) => { e.preventDefault(); scrollToSection("video-dating"); }} sx={{ color: "#9CA3AF", textDecoration: "none", fontSize: "0.9rem", "&:hover": { color: "#FFFFFF" } }}>Live Video</Box>
+                                <Box component="a" href="#difference" onClick={(e) => { e.preventDefault(); scrollToSection("difference"); }} sx={{ color: "#9CA3AF", textDecoration: "none", fontSize: "0.9rem", "&:hover": { color: "#FFFFFF" } }}>Why Engaze</Box>
+                                <Box component="a" href="#faq" onClick={(e) => { e.preventDefault(); scrollToSection("faq"); }} sx={{ color: "#9CA3AF", textDecoration: "none", fontSize: "0.9rem", "&:hover": { color: "#FFFFFF" } }}>FAQ</Box>
+                            </Stack>
+                        </Grid>
+
+                        <Grid item xs={6} sm={4} md={2}>
+                            <Typography sx={{ fontWeight: 900, fontSize: "0.95rem", color: "#FFFFFF", mb: 2 }}>
                                 TRUST & SAFETY
                             </Typography>
-                            <Stack spacing={1.6}>
-                                <Box
-                                    component={Link}
-                                    to="/safety"
-                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
-                                >
-                                    Community Guidelines
-                                </Box>
-                                <Box
-                                    component={Link}
-                                    to="/safety"
-                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
-                                >
-                                    Safety Tips
-                                </Box>
-                                <Box
-                                    component={Link}
-                                    to="/safety"
-                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
-                                >
-                                    Profile Safety
-                                </Box>
-                                <Box
-                                    component={Link}
-                                    to="/safety"
-                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
-                                >
-                                    Anti-Harassment Policy
-                                </Box>
+                            <Stack spacing={1.4}>
+                                <Box component={Link} to="/safety" sx={{ color: "#9CA3AF", textDecoration: "none", fontSize: "0.9rem", "&:hover": { color: "#FFFFFF" } }}>Safety Tips</Box>
+                                <Box component={Link} to="/terms" sx={{ color: "#9CA3AF", textDecoration: "none", fontSize: "0.9rem", "&:hover": { color: "#FFFFFF" } }}>Terms of Service</Box>
+                                <Box component={Link} to="/privacy" sx={{ color: "#9CA3AF", textDecoration: "none", fontSize: "0.9rem", "&:hover": { color: "#FFFFFF" } }}>Privacy Policy</Box>
                             </Stack>
                         </Grid>
 
-                        {/* Legal & Policies */}
-                        <Grid item xs={6} sm={4} md={2.5}>
-                            <Typography variant="subtitle2" sx={{ color: "#FFFFFF", fontWeight: 800, mb: 2.5, letterSpacing: "0.05em" }}>
-                                LEGAL & PRIVACY
-                            </Typography>
-                            <Stack spacing={1.6}>
-                                <Box
-                                    component={Link}
-                                    to="/privacy"
-                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
-                                >
-                                    Privacy Policy
-                                </Box>
-                                <Box
-                                    component={Link}
-                                    to="/terms"
-                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
-                                >
-                                    Terms of Service
-                                </Box>
-                                <Box
-                                    component={Link}
-                                    to="/safety"
-                                    sx={{ color: BRAND_COLORS.textSecondary, textDecoration: "none", fontSize: "0.875rem", "&:hover": { color: "#FFFFFF" } }}
-                                >
-                                    Safety Center
-                                </Box>
-                            </Stack>
-                        </Grid>
-
-                        {/* Contact & Support Section */}
                         <Grid item xs={12} sm={4} md={3}>
-                            <Typography variant="subtitle2" sx={{ color: "#FFFFFF", fontWeight: 800, mb: 2.5, letterSpacing: "0.05em" }}>
-                                CONTACT & SUPPORT
+                            <Typography sx={{ fontWeight: 900, fontSize: "0.95rem", color: "#FFFFFF", mb: 2 }}>
+                                JOIN THE COMMUNITY
                             </Typography>
-                            <Stack spacing={2}>
-                                <Box>
-                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, display: "block", mb: 0.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                                        Customer Support & Help
-                                    </Typography>
-                                    <Box
-                                        component="a"
-                                        href="mailto:support@engaze.date"
-                                        aria-label="Contact Customer Support at support@engaze.date"
-                                        sx={{
-                                            display: "inline-flex",
-                                            alignItems: "center",
-                                            gap: 1,
-                                            color: "#FFFFFF",
-                                            textDecoration: "none",
-                                            fontSize: "0.9rem",
-                                            fontWeight: 600,
-                                            transition: "color 0.2s ease",
-                                            "&:hover": { color: BRAND_COLORS.coralPink },
-                                        }}
-                                    >
-                                        <SupportAgentRoundedIcon sx={{ fontSize: 18, color: BRAND_COLORS.coralPink }} />
-                                        support@engaze.date
-                                    </Box>
-                                </Box>
-
-                                <Box>
-                                    <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, display: "block", mb: 0.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                                        General Enquiries & Business
-                                    </Typography>
-                                    <Box
-                                        component="a"
-                                        href="mailto:contact@engaze.date"
-                                        aria-label="Contact General Enquiries at contact@engaze.date"
-                                        sx={{
-                                            display: "inline-flex",
-                                            alignItems: "center",
-                                            gap: 1,
-                                            color: "#FFFFFF",
-                                            textDecoration: "none",
-                                            fontSize: "0.9rem",
-                                            fontWeight: 600,
-                                            transition: "color 0.2s ease",
-                                            "&:hover": { color: BRAND_COLORS.violet },
-                                        }}
-                                    >
-                                        <EmailRoundedIcon sx={{ fontSize: 18, color: BRAND_COLORS.violet }} />
-                                        contact@engaze.date
-                                    </Box>
-                                </Box>
-                            </Stack>
+                            <Typography sx={{ color: "#9CA3AF", fontSize: "0.88rem", mb: 2.5, lineHeight: 1.5 }}>
+                                Free account setup. Zero credit card required. Connect authentically today.
+                            </Typography>
+                            <Button
+                                component={Link}
+                                to="/auth"
+                                className="pop-pill"
+                                variant="contained"
+                                sx={{
+                                    backgroundColor: "#FD2E7A",
+                                    color: "#FFFFFF",
+                                    px: 2.8,
+                                    py: 1,
+                                    fontSize: "0.9rem",
+                                    textTransform: "none",
+                                    "&:hover": { backgroundColor: "#E61C68" },
+                                }}
+                            >
+                                Get Started Free →
+                            </Button>
                         </Grid>
                     </Grid>
 
-                    {/* Bottom Copyright Divider */}
                     <Box
                         sx={{
-                            mt: 8,
                             pt: 4,
-                            borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                            borderTop: "1px solid rgba(255, 255, 255, 0.12)",
                             display: "flex",
                             flexDirection: { xs: "column", sm: "row" },
                             justifyContent: "space-between",
                             alignItems: "center",
                             gap: 2,
-                            textAlign: { xs: "center", sm: "left" },
+                            color: "#6B7280",
+                            fontSize: "0.85rem",
                         }}
                     >
-                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textMuted }}>
-                            &copy; {new Date().getFullYear()} Engaze.com &bull; All Rights Reserved.
+                        <Typography variant="body2" sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
+                            © {new Date().getFullYear()} Engaze. All rights reserved. Strictly 18+ adult dating service.
                         </Typography>
-                        <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted }}>
-                            Designed for genuine romantic connections and live video chemistry.
-                        </Typography>
+                        <Stack direction="row" spacing={3}>
+                            <Box component={Link} to="/privacy" sx={{ color: "#6B7280", textDecoration: "none", "&:hover": { color: "#FFFFFF" } }}>Privacy</Box>
+                            <Box component={Link} to="/terms" sx={{ color: "#6B7280", textDecoration: "none", "&:hover": { color: "#FFFFFF" } }}>Terms</Box>
+                            <Box component={Link} to="/safety" sx={{ color: "#6B7280", textDecoration: "none", "&:hover": { color: "#FFFFFF" } }}>Safety</Box>
+                        </Stack>
                     </Box>
                 </Container>
             </Box>

@@ -1,14 +1,12 @@
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { AuthContext } from "../contexts/AuthContext";
-import { BRAND_COLORS } from "../theme";
 import {
     Alert,
     CircularProgress,
@@ -21,6 +19,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import VideocamIcon from "@mui/icons-material/Videocam";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import EngazeLogo from "../components/EngazeLogo";
 
@@ -69,7 +68,6 @@ export default function Authentication() {
                     return;
                 }
                 await handleRegister(name, username, password);
-                // handleRegister in AuthContext persists the session and automatically routes to /home
             }
         } catch (err) {
             let errorMessage = "An error occurred";
@@ -120,164 +118,166 @@ export default function Authentication() {
             component="main"
             sx={{
                 minHeight: "100vh",
-                bgcolor: BRAND_COLORS.backgroundDark,
+                bgcolor: "#FFFDF9",
                 overflow: "hidden",
             }}
         >
             <CssBaseline />
 
-            {/* Left Hero Graphic Section (Desktop) */}
+            {/* Left Hero Storytelling Panel (Desktop) */}
             <Grid
                 item
                 xs={false}
-                sm={4}
-                md={7}
+                sm={5}
+                md={6}
+                lg={7}
                 sx={{
                     position: "relative",
-                    background: "radial-gradient(circle at 30% 30%, #1E1235 0%, #0B0D17 80%)",
+                    backgroundColor: "#FD2E7A",
+                    color: "#FFFFFF",
                     display: { xs: "none", sm: "flex" },
                     flexDirection: "column",
                     justifyContent: "space-between",
-                    p: { sm: 4, md: 8 },
+                    p: { sm: 4, md: 7, lg: 9 },
                     overflow: "hidden",
+                    borderRight: "3px solid #0D0E15",
                 }}
             >
-                {/* Background decorative glow orbs */}
-                <Box
-                    sx={{
-                        position: "absolute",
-                        top: "-15%",
-                        left: "-10%",
-                        width: 500,
-                        height: 500,
-                        borderRadius: "50%",
-                        background: "radial-gradient(circle, rgba(253, 58, 115, 0.25) 0%, rgba(253, 58, 115, 0) 70%)",
-                        filter: "blur(40px)",
-                        pointerEvents: "none",
-                    }}
-                />
-                <Box
-                    sx={{
-                        position: "absolute",
-                        bottom: "-10%",
-                        right: "-5%",
-                        width: 450,
-                        height: 450,
-                        borderRadius: "50%",
-                        background: "radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, rgba(139, 92, 246, 0) 70%)",
-                        filter: "blur(50px)",
-                        pointerEvents: "none",
-                    }}
-                />
-
                 {/* Top Brand Logo */}
-                <EngazeLogo
-                    size={36}
-                    fontSize="1.6rem"
-                    onClick={() => navigate("/")}
-                    sx={{ zIndex: 2 }}
-                />
+                <Box sx={{ zIndex: 3 }}>
+                    <EngazeLogo
+                        size={36}
+                        fontSize="1.6rem"
+                        textColor="#FFFFFF"
+                        onClick={() => navigate("/")}
+                    />
+                </Box>
 
-                {/* Central Value Copy */}
-                <Box sx={{ maxWidth: 540, my: "auto", zIndex: 2 }}>
+                {/* Floating Conversational Bubbles (Neo-Pop) */}
+                <Box
+                    className="pop-bubble"
+                    sx={{
+                        position: "absolute",
+                        top: "16%",
+                        right: "8%",
+                        backgroundColor: "#FFD233",
+                        color: "#0D0E15",
+                        zIndex: 2,
+                    }}
+                >
+                    <span>Free tonight for a video date? 📹</span>
+                </Box>
+
+                <Box
+                    className="pop-bubble"
+                    sx={{
+                        position: "absolute",
+                        bottom: "22%",
+                        left: "6%",
+                        backgroundColor: "#24C5F7",
+                        color: "#0D0E15",
+                        zIndex: 2,
+                    }}
+                >
+                    <span>Instant match unlocked! ✨</span>
+                </Box>
+
+                {/* Central Value Copy & Visual Highlights */}
+                <Box sx={{ maxWidth: 580, my: "auto", zIndex: 2, position: "relative" }}>
+                    <Box
+                        sx={{
+                            display: "inline-block",
+                            backgroundColor: "#0D0E15",
+                            color: "#FFFFFF",
+                            px: 2,
+                            py: 0.6,
+                            borderRadius: "9999px",
+                            fontSize: "0.78rem",
+                            fontWeight: 900,
+                            letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                            mb: 3,
+                        }}
+                    >
+                        THE ENGAZE THIRD SPACE
+                    </Box>
+
                     <Typography
                         variant="h2"
                         sx={{
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            fontSize: { sm: "2.8rem", md: "3.8rem", lg: "4.5rem" },
                             fontWeight: 900,
-                            letterSpacing: "-0.03em",
-                            lineHeight: 1.15,
+                            lineHeight: 1.05,
+                            letterSpacing: "-0.04em",
                             color: "#FFFFFF",
                             mb: 2.5,
                         }}
                     >
-                        Where real connections{" "}
-                        <span
-                            style={{
-                                background: BRAND_COLORS.primaryGradient,
-                                WebkitBackgroundClip: "text",
-                                WebkitFillColor: "transparent",
-                            }}
-                        >
-                            spark
-                        </span>
-                        .
+                        Real sparks.
+                        <Box component="span" sx={{ color: "#0D0E15", display: "block" }}>
+                            Feel heard.
+                        </Box>
                     </Typography>
+
                     <Typography
                         variant="body1"
                         sx={{
-                            color: BRAND_COLORS.textSecondary,
-                            fontSize: "1.1rem",
+                            color: "#FFFFFF",
+                            fontSize: "1.15rem",
+                            fontWeight: 600,
                             lineHeight: 1.6,
-                            mb: 5,
+                            mb: 4.5,
+                            maxWidth: 500,
                         }}
                     >
-                        Join thousands of members discovering mutual matches, engaging in real-time chat, and enjoying spontaneous 1-on-1 video calls.
+                        Join genuine singles testing real-world vibes through mutual likes, real-time messaging, and secure 1-on-1 video dates.
                     </Typography>
 
-                    {/* Features checklist */}
-                    <Stack spacing={2.2}>
-                        <Stack direction="row" spacing={1.5} alignItems="center">
+                    {/* Features checklist pills */}
+                    <Stack spacing={2}>
+                        {[
+                            {
+                                icon: <FavoriteIcon sx={{ color: "#FD2E7A", fontSize: 18 }} />,
+                                text: "Mutual match discovery — zero unsolicited cold spam",
+                            },
+                            {
+                                icon: <VideocamIcon sx={{ color: "#7C5CFC", fontSize: 18 }} />,
+                                text: "Encrypted 1-on-1 browser video dating before phone numbers",
+                            },
+                            {
+                                icon: <ShieldOutlinedIcon sx={{ color: "#10B981", fontSize: 18 }} />,
+                                text: "Adult 18+ verified community with active moderation",
+                            },
+                        ].map((item, idx) => (
                             <Box
+                                key={idx}
                                 sx={{
-                                    width: 34,
-                                    height: 34,
-                                    borderRadius: "10px",
-                                    bgcolor: "rgba(253, 58, 115, 0.15)",
-                                    display: "flex",
+                                    display: "inline-flex",
                                     alignItems: "center",
-                                    justifyContent: "center",
+                                    gap: 1.5,
+                                    backgroundColor: "rgba(255, 255, 255, 0.92)",
+                                    border: "2px solid #0D0E15",
+                                    boxShadow: "3px 3px 0px #0D0E15",
+                                    borderRadius: "9999px",
+                                    px: 2.2,
+                                    py: 1,
+                                    color: "#0D0E15",
+                                    fontWeight: 800,
+                                    fontSize: "0.9rem",
+                                    width: "fit-content",
                                 }}
                             >
-                                <FavoriteIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 18 }} />
+                                {item.icon}
+                                <span>{item.text}</span>
                             </Box>
-                            <Typography variant="body2" sx={{ color: "#FFFFFF", fontWeight: 600 }}>
-                                Mutual Match Discovery with Zero Unwanted Spam
-                            </Typography>
-                        </Stack>
-
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                            <Box
-                                sx={{
-                                    width: 34,
-                                    height: 34,
-                                    borderRadius: "10px",
-                                    bgcolor: "rgba(139, 92, 246, 0.15)",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                }}
-                            >
-                                <VideocamIcon sx={{ color: BRAND_COLORS.violet, fontSize: 18 }} />
-                            </Box>
-                            <Typography variant="body2" sx={{ color: "#FFFFFF", fontWeight: 600 }}>
-                                Fast, Encrypted 1-to-1 Video Matchmaking
-                            </Typography>
-                        </Stack>
-
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                            <Box
-                                sx={{
-                                    width: 34,
-                                    height: 34,
-                                    borderRadius: "10px",
-                                    bgcolor: "rgba(16, 185, 129, 0.15)",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                }}
-                            >
-                                <ShieldOutlinedIcon sx={{ color: "#10B981", fontSize: 18 }} />
-                            </Box>
-                            <Typography variant="body2" sx={{ color: "#FFFFFF", fontWeight: 600 }}>
-                                Adult 18+ Profiles & Privacy-First Security
-                            </Typography>
-                        </Stack>
+                        ))}
                     </Stack>
                 </Box>
 
                 {/* Footer caption */}
-                <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.4)", zIndex: 2 }}>
-                    © {new Date().getFullYear()} Engaze.com. All rights reserved.
+                <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.8)", zIndex: 2, fontWeight: 700 }}>
+                    © {new Date().getFullYear()} Engaze. All rights reserved. Strictly 18+ adult dating platform.
                 </Typography>
             </Grid>
 
@@ -285,21 +285,18 @@ export default function Authentication() {
             <Grid
                 item
                 xs={12}
-                sm={8}
-                md={5}
-                component={Paper}
-                elevation={0}
-                square
+                sm={7}
+                md={6}
+                lg={5}
                 sx={{
-                    bgcolor: BRAND_COLORS.surfaceDark,
-                    borderLeft: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                    bgcolor: "#FFFDF9",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
-                    p: { xs: 2.2, sm: 5, md: 7 },
+                    p: { xs: 3, sm: 5, md: 7, lg: 8 },
                 }}
             >
-                <Box sx={{ maxWidth: 420, width: "100%", mx: "auto" }}>
+                <Box sx={{ maxWidth: 440, width: "100%", mx: "auto" }}>
                     {/* Mobile Logo Header */}
                     <Box
                         sx={{
@@ -309,32 +306,44 @@ export default function Authentication() {
                         }}
                     >
                         <EngazeLogo
-                            size={32}
-                            fontSize="1.4rem"
+                            size={34}
+                            fontSize="1.5rem"
+                            textColor="#0D0E15"
                             onClick={() => navigate("/")}
                         />
                     </Box>
 
                     {/* Form Title & Switcher */}
                     <Box sx={{ mb: 4 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 900, color: "#FFFFFF", mb: 1, letterSpacing: "-0.02em" }}>
-                            {formState === 0 ? "Welcome Back" : "Create Account"}
+                        <Typography
+                            variant="h3"
+                            sx={{
+                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                fontWeight: 900,
+                                color: "#0D0E15",
+                                fontSize: { xs: "2rem", md: "2.4rem" },
+                                letterSpacing: "-0.03em",
+                                mb: 1,
+                            }}
+                        >
+                            {formState === 0 ? "Welcome back!" : "Create account"}
                         </Typography>
-                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                        <Typography variant="body2" sx={{ color: "#4B4E63", fontSize: "0.95rem", fontWeight: 600 }}>
                             {formState === 0
-                                ? "Enter your credentials to access your matches and chats."
-                                : "Start your journey to meaningful connections today."}
+                                ? "Enter your credentials to access your matches and live video dates."
+                                : "Join Engaze today to find genuine connections with mutual likes."}
                         </Typography>
                     </Box>
 
-                    {/* Segmented Tab Switcher */}
+                    {/* Tactile Neo-Pop Segmented Tab Switcher */}
                     <Box
                         sx={{
                             display: "flex",
                             p: 0.6,
-                            borderRadius: "14px",
-                            bgcolor: "rgba(255, 255, 255, 0.04)",
-                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                            borderRadius: "9999px",
+                            bgcolor: "#FFFFFF",
+                            border: "2.5px solid #0D0E15",
+                            boxShadow: "3px 3px 0px #0D0E15",
                             mb: 3.5,
                         }}
                     >
@@ -346,14 +355,14 @@ export default function Authentication() {
                             }}
                             sx={{
                                 py: 1.1,
-                                borderRadius: "10px",
-                                fontWeight: 700,
+                                borderRadius: "9999px",
+                                fontWeight: 900,
+                                fontSize: "0.92rem",
                                 textTransform: "none",
-                                background: formState === 0 ? BRAND_COLORS.primaryGradient : "transparent",
-                                color: formState === 0 ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                                boxShadow: formState === 0 ? "0 4px 15px rgba(253, 58, 115, 0.3)" : "none",
+                                background: formState === 0 ? "#0D0E15" : "transparent",
+                                color: formState === 0 ? "#FFFFFF" : "#0D0E15",
                                 "&:hover": {
-                                    background: formState === 0 ? BRAND_COLORS.primaryGradient : "rgba(255, 255, 255, 0.04)",
+                                    background: formState === 0 ? "#1C1D2B" : "rgba(13, 14, 21, 0.05)",
                                 },
                             }}
                         >
@@ -367,14 +376,14 @@ export default function Authentication() {
                             }}
                             sx={{
                                 py: 1.1,
-                                borderRadius: "10px",
-                                fontWeight: 700,
+                                borderRadius: "9999px",
+                                fontWeight: 900,
+                                fontSize: "0.92rem",
                                 textTransform: "none",
-                                background: formState === 1 ? BRAND_COLORS.primaryGradient : "transparent",
-                                color: formState === 1 ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                                boxShadow: formState === 1 ? "0 4px 15px rgba(253, 58, 115, 0.3)" : "none",
+                                background: formState === 1 ? "#FD2E7A" : "transparent",
+                                color: formState === 1 ? "#FFFFFF" : "#0D0E15",
                                 "&:hover": {
-                                    background: formState === 1 ? BRAND_COLORS.primaryGradient : "rgba(255, 255, 255, 0.04)",
+                                    background: formState === 1 ? "#E61C68" : "rgba(13, 14, 21, 0.05)",
                                 },
                             }}
                         >
@@ -401,9 +410,14 @@ export default function Authentication() {
                                 placeholder="Alex Morgan"
                                 sx={{
                                     "& .MuiOutlinedInput-root": {
-                                        borderRadius: "14px",
-                                        bgcolor: "rgba(255, 255, 255, 0.04)",
+                                        borderRadius: "16px",
+                                        bgcolor: "#FFFFFF",
+                                        border: "2px solid #0D0E15",
+                                        fontWeight: 700,
+                                        "&:hover fieldset": { borderColor: "transparent" },
+                                        "&.Mui-focused fieldset": { borderColor: "transparent" },
                                     },
+                                    "& fieldset": { border: "none" },
                                 }}
                             />
                         )}
@@ -424,9 +438,14 @@ export default function Authentication() {
                             placeholder="alex_m"
                             sx={{
                                 "& .MuiOutlinedInput-root": {
-                                    borderRadius: "14px",
-                                    bgcolor: "rgba(255, 255, 255, 0.04)",
+                                    borderRadius: "16px",
+                                    bgcolor: "#FFFFFF",
+                                    border: "2px solid #0D0E15",
+                                    fontWeight: 700,
+                                    "&:hover fieldset": { borderColor: "transparent" },
+                                    "&.Mui-focused fieldset": { borderColor: "transparent" },
                                 },
+                                "& fieldset": { border: "none" },
                             }}
                         />
 
@@ -450,7 +469,7 @@ export default function Authentication() {
                                         <IconButton
                                             onClick={() => setShowPassword(!showPassword)}
                                             edge="end"
-                                            sx={{ color: BRAND_COLORS.textSecondary }}
+                                            sx={{ color: "#0D0E15" }}
                                         >
                                             {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
                                         </IconButton>
@@ -459,9 +478,14 @@ export default function Authentication() {
                             }}
                             sx={{
                                 "& .MuiOutlinedInput-root": {
-                                    borderRadius: "14px",
-                                    bgcolor: "rgba(255, 255, 255, 0.04)",
+                                    borderRadius: "16px",
+                                    bgcolor: "#FFFFFF",
+                                    border: "2px solid #0D0E15",
+                                    fontWeight: 700,
+                                    "&:hover fieldset": { borderColor: "transparent" },
+                                    "&.Mui-focused fieldset": { borderColor: "transparent" },
                                 },
+                                "& fieldset": { border: "none" },
                             }}
                         />
 
@@ -471,8 +495,12 @@ export default function Authentication() {
                                 variant="filled"
                                 sx={{
                                     mt: 2.5,
-                                    borderRadius: "12px",
+                                    borderRadius: "14px",
+                                    fontWeight: 700,
                                     fontSize: "0.88rem",
+                                    backgroundColor: "#EF4444",
+                                    border: "2px solid #0D0E15",
+                                    boxShadow: "2px 2px 0px #0D0E15",
                                 }}
                             >
                                 {error}
@@ -482,52 +510,60 @@ export default function Authentication() {
                         <Button
                             type="button"
                             fullWidth
+                            className="pop-pill"
                             variant="contained"
                             sx={{
                                 mt: 3.5,
                                 mb: 2,
-                                py: 1.5,
-                                borderRadius: "14px",
-                                background: BRAND_COLORS.primaryGradient,
-                                fontWeight: 800,
-                                fontSize: "1rem",
-                                boxShadow: "0 6px 20px rgba(253, 58, 115, 0.4)",
+                                py: 1.6,
+                                backgroundColor: "#FD2E7A",
+                                color: "#FFFFFF",
+                                fontWeight: 900,
+                                fontSize: "1.05rem",
+                                textTransform: "none",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 1.2,
+                                "&:hover": { backgroundColor: "#E61C68" },
                             }}
                             onClick={handleAuth}
                             disabled={loading}
                             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                         >
-                            {loading ? "Authenticating..." : formState === 0 ? "Sign In to Engaze" : "Create My Account"}
+                            <span>{loading ? "Authenticating..." : formState === 0 ? "Sign In to Engaze" : "Create My Account"}</span>
+                            {!loading && <ArrowForwardRoundedIcon sx={{ fontSize: 20 }} />}
                         </Button>
 
                         {/* Divider OR */}
-                        <Box sx={{ display: "flex", alignItems: "center", my: 2 }}>
-                            <Box sx={{ flex: 1, height: "1px", bgcolor: "rgba(255, 255, 255, 0.12)" }} />
-                            <Typography variant="caption" sx={{ px: 2, color: BRAND_COLORS.textSecondary, fontWeight: 700, letterSpacing: "1px" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", my: 2.5 }}>
+                            <Box sx={{ flex: 1, height: "1.5px", bgcolor: "#E5E7EB" }} />
+                            <Typography variant="caption" sx={{ px: 2, color: "#6B7280", fontWeight: 800, letterSpacing: "1px" }}>
                                 OR
                             </Typography>
-                            <Box sx={{ flex: 1, height: "1px", bgcolor: "rgba(255, 255, 255, 0.12)" }} />
+                            <Box sx={{ flex: 1, height: "1.5px", bgcolor: "#E5E7EB" }} />
                         </Box>
 
                         {/* Continue with Google */}
                         {googleClientId ? (
                             <GoogleOAuthProvider clientId={googleClientId}>
-<Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
-                                <GoogleLogin
-                                    onSuccess={handleGoogleSuccess}
-                                    onError={handleGoogleError}
-                                    theme="filled_black"
-                                    size="large"
-                                    shape="rectangular"
-                                    text={formState === 0 ? "signin_with" : "signup_with"}
-                                    width="100%"
-                                />
-                            </Box>
+                                <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                                    <GoogleLogin
+                                        onSuccess={handleGoogleSuccess}
+                                        onError={handleGoogleError}
+                                        theme="outline"
+                                        size="large"
+                                        shape="pill"
+                                        text={formState === 0 ? "signin_with" : "signup_with"}
+                                        width="100%"
+                                    />
+                                </Box>
                             </GoogleOAuthProvider>
                         ) : (
                             <Button
                                 variant="outlined"
                                 fullWidth
+                                className="pop-pill"
                                 startIcon={
                                     <svg width="20" height="20" viewBox="0 0 24 24">
                                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -541,15 +577,13 @@ export default function Authentication() {
                                 }}
                                 sx={{
                                     py: 1.3,
-                                    borderRadius: "14px",
-                                    borderColor: "rgba(255, 255, 255, 0.2)",
-                                    color: "#FFFFFF",
-                                    fontWeight: 700,
+                                    backgroundColor: "#FFFFFF",
+                                    color: "#0D0E15",
+                                    fontWeight: 800,
                                     textTransform: "none",
                                     fontSize: "0.95rem",
                                     "&:hover": {
-                                        borderColor: BRAND_COLORS.coralPink,
-                                        backgroundColor: "rgba(253, 58, 115, 0.08)",
+                                        backgroundColor: "#F9FAFB",
                                     },
                                 }}
                             >
@@ -560,22 +594,28 @@ export default function Authentication() {
                         <Typography
                             variant="caption"
                             sx={{
-                                color: BRAND_COLORS.textSecondary,
+                                color: "#6B7280",
                                 textAlign: "center",
                                 display: "block",
-                                mt: 2,
+                                mt: 3,
+                                fontWeight: 500,
+                                lineHeight: 1.5,
                             }}
                         >
-                            By continuing, you agree to Engaze's Terms of Service & Privacy Policy.
+                            By continuing, you agree to Engaze's{" "}
+                            <Box component={Link} to="/terms" sx={{ color: "#FD2E7A", fontWeight: 700, textDecoration: "none" }}>Terms of Service</Box>
+                            {" "}and{" "}
+                            <Box component={Link} to="/privacy" sx={{ color: "#FD2E7A", fontWeight: 700, textDecoration: "none" }}>Privacy Policy</Box>.
                         </Typography>
 
                         <Typography
                             variant="caption"
                             sx={{
-                                color: BRAND_COLORS.textMuted,
+                                color: "#9CA3AF",
                                 textAlign: "center",
                                 display: "block",
                                 mt: 1.5,
+                                fontWeight: 500,
                             }}
                         >
                             Need assistance with your account?{" "}
@@ -584,9 +624,9 @@ export default function Authentication() {
                                 href="mailto:support@engaze.date"
                                 aria-label="Email Customer Support at support@engaze.date"
                                 sx={{
-                                    color: BRAND_COLORS.coralPink,
+                                    color: "#FD2E7A",
                                     textDecoration: "none",
-                                    fontWeight: 600,
+                                    fontWeight: 700,
                                     "&:hover": { textDecoration: "underline" },
                                 }}
                             >
@@ -596,7 +636,6 @@ export default function Authentication() {
                     </Box>
                 </Box>
             </Grid>
-
         </Grid>
     );
 }

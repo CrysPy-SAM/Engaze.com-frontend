@@ -1259,15 +1259,17 @@ function ChatPage() {
                                         <IconButton
                                             onClick={() => setShowVideoModal(true)}
                                             sx={{
-                                                width: 40,
-                                                height: 40,
-                                                bgcolor: "rgba(139, 92, 246, 0.15)",
-                                                border: "1px solid rgba(139, 92, 246, 0.35)",
-                                                color: "#C4B5FD",
-                                                transition: "all 0.2s ease",
+                                                width: 42,
+                                                height: 42,
+                                                bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
+                                                border: "2px solid #0D0E15",
+                                                boxShadow: "2.5px 2.5px 0px #0D0E15",
+                                                color: "#FFFFFF",
+                                                transition: "all 0.15s ease",
                                                 "&:hover": {
-                                                    bgcolor: "rgba(139, 92, 246, 0.28)",
-                                                    transform: "scale(1.05)",
+                                                    bgcolor: "#E61A68",
+                                                    boxShadow: "3.5px 3.5px 0px #0D0E15",
+                                                    transform: "translate(-1px, -1px)",
                                                 },
                                             }}
                                         >
@@ -1469,23 +1471,21 @@ function ChatPage() {
                                                         }}
                                                     >
                                                         <Paper
-                                                            elevation={2}
+                                                            elevation={0}
                                                             onDoubleClick={() => toggleHeartReaction(msg._id)}
                                                             sx={{
                                                                 p: 1.6,
                                                                 px: 2.2,
                                                                 borderRadius: "20px",
-                                                                background: isMine
-                                                                    ? BRAND_COLORS.chatBubbleSent
-                                                                    : BRAND_COLORS.chatBubbleReceived,
+                                                                bgcolor: isMine
+                                                                    ? (BRAND_COLORS.hotPink || "#FD2E7A")
+                                                                    : "#1A1D2E",
                                                                 color: "#FFFFFF",
                                                                 borderTopRightRadius: isMine ? "4px" : "20px",
                                                                 borderTopLeftRadius: !isMine ? "4px" : "20px",
-                                                                border: isMine ? "none" : `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                                                border: "2px solid #0D0E15",
+                                                                boxShadow: "2.5px 2.5px 0px #0D0E15",
                                                                 wordBreak: "break-word",
-                                                                boxShadow: isMine
-                                                                    ? "0 4px 16px rgba(253, 58, 115, 0.3)"
-                                                                    : "0 4px 12px rgba(0,0,0,0.25)",
                                                             }}
                                                         >
                                                             <Typography variant="body1" sx={{ fontSize: "0.95rem", lineHeight: 1.45, fontWeight: 400 }}>
@@ -1718,17 +1718,20 @@ function ChatPage() {
                                     sx={{
                                         width: 44,
                                         height: 44,
-                                        background: BRAND_COLORS.primaryGradient,
+                                        bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
+                                        border: "2.5px solid #0D0E15",
                                         color: "#ffffff",
-                                        boxShadow: "0 4px 16px rgba(253, 58, 115, 0.4)",
-                                        transition: "all 0.2s ease",
+                                        boxShadow: "3px 3px 0px #0D0E15",
+                                        transition: "all 0.15s ease",
                                         "&:hover": {
-                                            opacity: 0.92,
-                                            transform: "scale(1.06)",
+                                            bgcolor: "#E61A68",
+                                            boxShadow: "4px 4px 0px #0D0E15",
+                                            transform: "translate(-1px, -1px)",
                                         },
                                         "&.Mui-disabled": {
                                             bgcolor: "rgba(255, 255, 255, 0.06)",
                                             color: "rgba(255, 255, 255, 0.2)",
+                                            border: "2px solid rgba(255, 255, 255, 0.1)",
                                             boxShadow: "none",
                                         },
                                     }}

@@ -70,13 +70,22 @@ export default function SafetyCenter() {
                         to="/auth"
                         variant="contained"
                         sx={{
-                            background: BRAND_COLORS.primaryGradient,
+                            bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
+                            color: "#FFFFFF",
+                            border: "2px solid #0D0E15",
+                            boxShadow: "2.5px 2.5px 0px #0D0E15",
                             borderRadius: 9999,
                             px: 3,
                             py: 0.9,
                             fontSize: "0.9rem",
-                            fontWeight: 700,
+                            fontWeight: 800,
                             textTransform: "none",
+                            transition: "all 0.15s ease",
+                            "&:hover": {
+                                bgcolor: "#E61A68",
+                                boxShadow: "3.5px 3.5px 0px #0D0E15",
+                                transform: "translate(-1px, -1px)",
+                            },
                         }}
                     >
                         Sign In / Join

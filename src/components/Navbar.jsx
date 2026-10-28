@@ -207,12 +207,13 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                         {!isMobile && (
                             <Stack
                                 direction="row"
-                                spacing={0.6}
+                                spacing={0.8}
                                 sx={{
-                                    bgcolor: "rgba(255, 255, 255, 0.03)",
-                                    p: 0.6,
+                                    bgcolor: "#141624",
+                                    p: 0.8,
                                     borderRadius: "9999px",
-                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                    border: "2px solid rgba(255, 255, 255, 0.12)",
+                                    boxShadow: "0 4px 18px rgba(0, 0, 0, 0.4)",
                                 }}
                             >
                                 {navItems.map((item) => {
@@ -227,16 +228,17 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                 py: 0.8,
                                                 borderRadius: "9999px",
                                                 fontSize: "0.88rem",
-                                                fontWeight: active ? 700 : 500,
+                                                fontWeight: active ? 800 : 600,
                                                 color: active ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                                                background: active ? BRAND_COLORS.primaryGradient : "transparent",
-                                                boxShadow: active ? "0 4px 18px rgba(253, 58, 115, 0.35)" : "none",
+                                                background: active ? "#FD2E7A" : "transparent",
+                                                border: active ? "1.5px solid #0D0E15" : "1.5px solid transparent",
+                                                boxShadow: active ? "2.5px 2.5px 0px #0D0E15" : "none",
                                                 position: "relative",
-                                                transition: "all 0.22s ease",
+                                                transition: "all 0.18s ease",
                                                 "&:hover": {
                                                     background: active
-                                                        ? BRAND_COLORS.primaryGradientHover
-                                                        : "rgba(255, 255, 255, 0.06)",
+                                                        ? "#E61C68"
+                                                        : "rgba(255, 255, 255, 0.08)",
                                                     color: "#FFFFFF",
                                                 },
                                             }}
@@ -252,7 +254,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                         fontSize: "0.62rem",
                                                         fontWeight: 800,
                                                         borderRadius: "9999px",
-                                                        bgcolor: active ? "rgba(255, 255, 255, 0.25)" : "rgba(139, 92, 246, 0.3)",
+                                                        bgcolor: active ? "#0D0E15" : "#FD2E7A",
                                                         color: "#fff",
                                                         letterSpacing: "0.5px",
                                                     }}

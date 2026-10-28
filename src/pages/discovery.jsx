@@ -955,22 +955,22 @@ function DiscoveryPage() {
                                     disabled={resettingFeed || swiping}
                                     className="btn-tactile-action"
                                     sx={{
-                                        width: { xs: 48, sm: 52 },
-                                        height: { xs: 48, sm: 52 },
+                                        width: { xs: 48, sm: 54 },
+                                        height: { xs: 48, sm: 54 },
                                         borderRadius: "50%",
-                                        bgcolor: "#171926",
-                                        border: "1.5px solid rgba(245, 158, 11, 0.5)",
-                                        color: BRAND_COLORS.gold,
-                                        boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5)",
+                                        bgcolor: "#FFD233",
+                                        border: "2.5px solid #0D0E15",
+                                        color: "#0D0E15",
+                                        boxShadow: "3px 3px 0px #0D0E15",
                                         "&:hover": {
-                                            bgcolor: "rgba(245, 158, 11, 0.15)",
-                                            borderColor: BRAND_COLORS.gold,
-                                            boxShadow: "0 8px 24px rgba(245, 158, 11, 0.3)",
+                                            bgcolor: "#FFE066",
+                                            borderColor: "#0D0E15",
+                                            boxShadow: "4px 4px 0px #0D0E15",
                                         },
                                     }}
                                 >
                                     {resettingFeed ? (
-                                        <CircularProgress size={22} sx={{ color: BRAND_COLORS.gold }} />
+                                        <CircularProgress size={22} sx={{ color: "#0D0E15" }} />
                                     ) : (
                                         <ReplayRoundedIcon sx={{ fontSize: 24 }} />
                                     )}
@@ -985,17 +985,17 @@ function DiscoveryPage() {
                                     disabled={swiping}
                                     className="btn-tactile-action"
                                     sx={{
-                                        width: { xs: 66, sm: 72 },
-                                        height: { xs: 66, sm: 72 },
+                                        width: { xs: 66, sm: 74 },
+                                        height: { xs: 66, sm: 74 },
                                         borderRadius: "50%",
-                                        bgcolor: "#171926",
-                                        border: "2px solid rgba(253, 58, 115, 0.5)",
-                                        color: BRAND_COLORS.coralPink,
-                                        boxShadow: "0 10px 28px rgba(0, 0, 0, 0.6)",
+                                        bgcolor: "#FFFFFF",
+                                        border: "2.5px solid #0D0E15",
+                                        color: "#EF4444",
+                                        boxShadow: "3.5px 3.5px 0px #0D0E15",
                                         "&:hover": {
-                                            bgcolor: "rgba(253, 58, 115, 0.15)",
-                                            borderColor: BRAND_COLORS.coralPink,
-                                            boxShadow: "0 12px 34px rgba(253, 58, 115, 0.35)",
+                                            bgcolor: "#FFF5F5",
+                                            borderColor: "#0D0E15",
+                                            boxShadow: "4.5px 4.5px 0px #0D0E15",
                                         },
                                     }}
                                 >
@@ -1011,21 +1011,21 @@ function DiscoveryPage() {
                                     disabled={swiping}
                                     className="btn-tactile-action"
                                     sx={{
-                                        width: { xs: 66, sm: 72 },
-                                        height: { xs: 66, sm: 72 },
+                                        width: { xs: 66, sm: 74 },
+                                        height: { xs: 66, sm: 74 },
                                         borderRadius: "50%",
-                                        bgcolor: "#171926",
-                                        border: "2px solid rgba(253, 58, 115, 0.5)",
-                                        color: BRAND_COLORS.coralPink,
-                                        boxShadow: "0 10px 28px rgba(0, 0, 0, 0.6)",
+                                        bgcolor: "#FD2E7A",
+                                        border: "2.5px solid #0D0E15",
+                                        color: "#FFFFFF",
+                                        boxShadow: "3.5px 3.5px 0px #0D0E15",
                                         "&:hover": {
-                                            bgcolor: "rgba(253, 58, 115, 0.15)",
-                                            borderColor: BRAND_COLORS.coralPink,
-                                            boxShadow: "0 12px 34px rgba(253, 58, 115, 0.35)",
+                                            bgcolor: "#E61C68",
+                                            borderColor: "#0D0E15",
+                                            boxShadow: "4.5px 4.5px 0px #0D0E15",
                                         },
                                     }}
                                 >
-                                    <FavoriteRoundedIcon sx={{ fontSize: { xs: 32, sm: 36 }, color: BRAND_COLORS.coralPink }} />
+                                    <FavoriteRoundedIcon sx={{ fontSize: { xs: 32, sm: 36 }, color: "#FFFFFF" }} />
                                 </IconButton>
                             </Tooltip>
 
@@ -1037,17 +1037,17 @@ function DiscoveryPage() {
                                     disabled={swiping}
                                     className="btn-tactile-action"
                                     sx={{
-                                        width: { xs: 48, sm: 52 },
-                                        height: { xs: 48, sm: 52 },
+                                        width: { xs: 48, sm: 54 },
+                                        height: { xs: 48, sm: 54 },
                                         borderRadius: "50%",
-                                        bgcolor: "#171926",
-                                        border: "1.5px solid rgba(0, 210, 255, 0.5)",
-                                        color: BRAND_COLORS.superLike,
-                                        boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5)",
+                                        bgcolor: "#24C5F7",
+                                        border: "2.5px solid #0D0E15",
+                                        color: "#0D0E15",
+                                        boxShadow: "3px 3px 0px #0D0E15",
                                         "&:hover": {
-                                            bgcolor: "rgba(0, 210, 255, 0.15)",
-                                            borderColor: BRAND_COLORS.superLike,
-                                            boxShadow: "0 8px 24px rgba(0, 210, 255, 0.35)",
+                                            bgcolor: "#56D5FA",
+                                            borderColor: "#0D0E15",
+                                            boxShadow: "4px 4px 0px #0D0E15",
                                         },
                                     }}
                                 >
