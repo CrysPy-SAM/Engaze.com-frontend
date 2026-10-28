@@ -538,6 +538,26 @@ body {
   animation-play-state: paused;
 }
 
+@keyframes marqueeScrollReverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.engaze-marquee-track-reverse {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: marqueeScrollReverse 32s linear infinite;
+}
+
+.engaze-marquee-container:hover .engaze-marquee-track-reverse {
+  animation-play-state: paused;
+}
+
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   *,

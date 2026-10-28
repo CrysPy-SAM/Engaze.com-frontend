@@ -104,6 +104,346 @@ const SquiggleDoodle = ({ sx = {}, color = "#8FA8FF" }) => (
     </Box>
 );
 
+// Modern Senior-Developer Mobile Auto-Swipe Carousel for Feature Cards
+function MobileAutoFeatureCarousel() {
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
+    const touchStartX = React.useRef(0);
+    const touchEndX = React.useRef(0);
+
+    const features = [
+        {
+            num: "01",
+            bg: "#24C5F7",
+            textColor: "#0D0E15",
+            icon: <VideocamRoundedIcon sx={{ fontSize: 24, color: "#FD2E7A" }} />,
+            title: "Live 1-on-1 Video Dates",
+            desc: "Instant WebRTC video calls right in your browser. Test real-world vibes and authentic chemistry before ever giving out your phone number.",
+            badge: "Peer-to-Peer Encrypted",
+            badgeBg: "#FFFFFF",
+            badgeColor: "#0D0E15",
+        },
+        {
+            num: "02",
+            bg: "#FFD233",
+            textColor: "#0D0E15",
+            icon: <FavoriteRoundedIcon sx={{ fontSize: 24, color: "#FD2E7A" }} />,
+            title: "Mutual Match Shield",
+            desc: "Zero unsolicited cold messages, zero spam. Conversations and video calls only unlock when both singles mutually like each other.",
+            badge: "100% Consent-Driven",
+            badgeBg: "#FFFFFF",
+            badgeColor: "#0D0E15",
+        },
+        {
+            num: "03",
+            bg: "#FF7A29",
+            textColor: "#FFFFFF",
+            icon: <ChatBubbleRoundedIcon sx={{ fontSize: 22, color: "#FF7A29" }} />,
+            title: "High-Speed Live Chat",
+            desc: "High-speed WebSocket messaging with instant typing indicators, read receipts, and photo previews. Say goodbye to laggy messaging.",
+            badge: "Live WebSockets",
+            badgeBg: "#0D0E15",
+            badgeColor: "#FFFFFF",
+        },
+        {
+            num: "04",
+            bg: "#FFFFFF",
+            textColor: "#0D0E15",
+            icon: <StarRoundedIcon sx={{ fontSize: 24, color: "#FFD233" }} />,
+            title: "Rich Portrait Discovery",
+            desc: "Edge-to-edge candidate cards with verified bio highlights, interests, and smart age/gender filters. Swipe with full context instead of tiny thumbnails.",
+            badge: "Full-Screen Cards",
+            badgeBg: "#FCEEF2",
+            badgeColor: "#FD2E7A",
+        },
+        {
+            num: "05",
+            bg: "#FD2E7A",
+            textColor: "#FFFFFF",
+            icon: <ShieldOutlinedIcon sx={{ fontSize: 24, color: "#FD2E7A" }} />,
+            title: "18+ Adult Safety",
+            desc: "Strict age verification, automated GPS metadata stripping, one-tap instant reporting, and real-time moderation for bad actors.",
+            badge: "Safe & Moderated",
+            badgeBg: "#0D0E15",
+            badgeColor: "#FFFFFF",
+        },
+    ];
+
+    React.useEffect(() => {
+        if (isPaused) return;
+        const interval = setInterval(() => {
+            setActiveIndex((prev) => (prev + 1) % features.length);
+        }, 3600);
+        return () => clearInterval(interval);
+    }, [isPaused, features.length]);
+
+    const handleTouchStart = (e) => {
+        setIsPaused(true);
+        touchStartX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e) => {
+        touchEndX.current = e.changedTouches[0].clientX;
+        const diff = touchStartX.current - touchEndX.current;
+        if (diff > 45) {
+            setActiveIndex((prev) => (prev + 1) % features.length);
+        } else if (diff < -45) {
+            setActiveIndex((prev) => (prev - 1 + features.length) % features.length);
+        }
+        setTimeout(() => setIsPaused(false), 2500);
+    };
+
+    const current = features[activeIndex];
+
+    return (
+        <Box
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            sx={{
+                width: "100%",
+                maxWidth: 420,
+                mx: "auto",
+                position: "relative",
+            }}
+        >
+            {/* The Animated Card with Smooth Transition */}
+            <Paper
+                key={activeIndex}
+                elevation={0}
+                className="neo-card"
+                sx={{
+                    backgroundColor: current.bg,
+                    color: current.textColor,
+                    p: 2.8,
+                    borderRadius: "24px",
+                    minHeight: 250,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    boxShadow: "4px 4px 0px #0D0E15",
+                    animation: "cardSlideIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1)",
+                    "@keyframes cardSlideIn": {
+                        "0%": { opacity: 0.6, transform: "scale(0.97)" },
+                        "100%": { opacity: 1, transform: "scale(1)" },
+                    },
+                }}
+            >
+                <Box>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                        <Typography sx={{ fontWeight: 900, fontSize: "1.35rem", opacity: 0.7 }}>
+                            {current.num}
+                        </Typography>
+                        <Box
+                            sx={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: "50%",
+                                backgroundColor: current.num === "04" ? "#FD2E7A" : "#FFFFFF",
+                                border: "2px solid #0D0E15",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                boxShadow: "2px 2px 0px #0D0E15",
+                            }}
+                        >
+                            {current.icon}
+                        </Box>
+                    </Box>
+                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.28rem", lineHeight: 1.25, mb: 1.2 }}>
+                        {current.title}
+                    </Typography>
+                    <Typography
+                        sx={{
+                            fontWeight: 600,
+                            fontSize: "0.88rem",
+                            lineHeight: 1.55,
+                            color: current.textColor === "#FFFFFF" ? "rgba(255,255,255,0.95)" : "#142B45",
+                        }}
+                    >
+                        {current.desc}
+                    </Typography>
+                </Box>
+                <Box sx={{ pt: 2.5, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <Box
+                        className="sticker-tag"
+                        sx={{
+                            backgroundColor: current.badgeBg,
+                            color: current.badgeColor,
+                            fontSize: "0.78rem",
+                            py: 0.45,
+                            px: 1.4,
+                        }}
+                    >
+                        {current.badge}
+                    </Box>
+                    <Typography sx={{ fontSize: "0.75rem", fontWeight: 800, opacity: 0.6 }}>
+                        {activeIndex + 1} / {features.length}
+                    </Typography>
+                </Box>
+            </Paper>
+
+            {/* Interactive Pill Pagination Controls */}
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 1,
+                    mt: 2.5,
+                }}
+            >
+                {features.map((_, dotIdx) => {
+                    const isActive = dotIdx === activeIndex;
+                    return (
+                        <Box
+                            key={dotIdx}
+                            onClick={() => setActiveIndex(dotIdx)}
+                            sx={{
+                                height: 8,
+                                width: isActive ? 28 : 8,
+                                borderRadius: "9999px",
+                                backgroundColor: isActive ? "#0A6CFF" : "rgba(10, 26, 74, 0.2)",
+                                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                cursor: "pointer",
+                            }}
+                        />
+                    );
+                })}
+            </Box>
+        </Box>
+    );
+}
+
+// Senior-Developer Segmented Control Switcher for The Difference Section
+function MobileDifferenceSwitch() {
+    const [selectedTab, setSelectedTab] = useState("engaze");
+
+    return (
+        <Box sx={{ width: "100%", maxWidth: 420, mx: "auto" }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    p: 0.6,
+                    backgroundColor: "rgba(10, 26, 74, 0.06)",
+                    borderRadius: "9999px",
+                    border: "1.5px solid rgba(10, 26, 74, 0.12)",
+                    mb: 2.5,
+                }}
+            >
+                <Button
+                    onClick={() => setSelectedTab("traditional")}
+                    sx={{
+                        flex: 1,
+                        py: 0.85,
+                        borderRadius: "9999px",
+                        fontWeight: 800,
+                        fontSize: "0.80rem",
+                        textTransform: "none",
+                        color: selectedTab === "traditional" ? "#0A1A4A" : "#62748A",
+                        backgroundColor: selectedTab === "traditional" ? "#FFFFFF" : "transparent",
+                        boxShadow: selectedTab === "traditional" ? "0 4px 12px rgba(10, 26, 74, 0.1)" : "none",
+                        transition: "all 0.2s ease",
+                    }}
+                >
+                    Traditional Apps
+                </Button>
+                <Button
+                    onClick={() => setSelectedTab("engaze")}
+                    sx={{
+                        flex: 1,
+                        py: 0.85,
+                        borderRadius: "9999px",
+                        fontWeight: 800,
+                        fontSize: "0.80rem",
+                        textTransform: "none",
+                        color: selectedTab === "engaze" ? "#FFFFFF" : "#62748A",
+                        backgroundColor: selectedTab === "engaze" ? "#0A6CFF" : "transparent",
+                        boxShadow: selectedTab === "engaze" ? "0 4px 14px rgba(10, 108, 255, 0.3)" : "none",
+                        transition: "all 0.2s ease",
+                    }}
+                >
+                    The Engaze Way ✨
+                </Button>
+            </Box>
+
+            {selectedTab === "traditional" ? (
+                <Paper
+                    elevation={0}
+                    className="neo-card"
+                    sx={{
+                        border: "2.5px solid #0D0E15",
+                        borderRadius: "24px",
+                        p: 2.8,
+                        backgroundColor: "#F3F4F6",
+                        color: "#0D0E15",
+                        boxShadow: "3px 3px 0px #D1D5DB",
+                    }}
+                >
+                    <Typography variant="h5" sx={{ fontWeight: 900, fontSize: "1.2rem", mb: 2, opacity: 0.85 }}>
+                        Traditional Dating Apps
+                    </Typography>
+                    <Stack spacing={1.6}>
+                        {[
+                            "Endless superficial swiping that leads nowhere",
+                            "Awkward text chats that drag on for weeks",
+                            "Catfishing & profiles from 5 years ago",
+                            "Unwanted cold DMs and spam requests",
+                            "Giving out your phone number on day one",
+                        ].map((point, i) => (
+                            <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1.2 }}>
+                                <CancelRoundedIcon sx={{ color: "#EF4444", fontSize: 18, mt: 0.2 }} />
+                                <Typography sx={{ fontWeight: 600, color: "#4B4E63", fontSize: "0.85rem" }}>
+                                    {point}
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Stack>
+                </Paper>
+            ) : (
+                <Paper
+                    elevation={0}
+                    className="neo-card"
+                    sx={{
+                        border: "3px solid #0D0E15 !important",
+                        borderRadius: "24px",
+                        p: 2.8,
+                        backgroundColor: "#FFFFFF",
+                        color: "#0D0E15",
+                        boxShadow: "4px 4px 0px #0D0E15 !important",
+                    }}
+                >
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 900, fontSize: "1.2rem", color: "#FD2E7A" }}>
+                            The Engaze Way
+                        </Typography>
+                        <Box className="sticker-tag" sx={{ backgroundColor: "#FFD233", fontSize: "0.74rem", py: 0.3, px: 1.2 }}>
+                            Next-Gen
+                        </Box>
+                    </Box>
+                    <Stack spacing={1.6}>
+                        {[
+                            "Immediate 1-on-1 video dates right in your browser",
+                            "Mutual likes only — zero unsolicited messages",
+                            "Encrypted peer-to-peer WebRTC video",
+                            "Test the real vibe before exchanging numbers",
+                            "Strict 18+ adult community with active moderation",
+                        ].map((point, i) => (
+                            <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1.2 }}>
+                                <CheckCircleRoundedIcon sx={{ color: "#10B981", fontSize: 18, mt: 0.2 }} />
+                                <Typography sx={{ fontWeight: 700, color: "#0D0E15", fontSize: "0.85rem" }}>
+                                    {point}
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Stack>
+                </Paper>
+            )}
+        </Box>
+    );
+}
+
 export default function LandingPage() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -988,212 +1328,9 @@ export default function LandingPage() {
                         </Grid>
                     </Grid>
 
-                    {/* Mobile Horizontal Swipe Track (FRND Card Slider style, < 900px) */}
-                    <Box sx={{ display: { xs: "block", md: "none" } }}>
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5, px: 0.5 }}>
-                            <Typography sx={{ fontSize: "0.78rem", fontWeight: 800, color: "#FD2E7A", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                                👈 Swipe Features 👉
-                            </Typography>
-                            <Box sx={{ display: "flex", gap: 0.6 }}>
-                                {[1, 2, 3, 4, 5].map((dot) => (
-                                    <Box key={dot} sx={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: dot === 1 ? "#FD2E7A" : "#D1D5DB" }} />
-                                ))}
-                            </Box>
-                        </Box>
-                        <Box
-                            className="engaze-swipe-track"
-                            sx={{
-                                gap: 2,
-                                mx: -2.5,
-                                px: 2.5,
-                                py: 1,
-                            }}
-                        >
-                            {/* Card 1 */}
-                            <Paper
-                                elevation={0}
-                                className="neo-card engaze-swipe-item"
-                                sx={{
-                                    backgroundColor: "#24C5F7",
-                                    color: "#0D0E15",
-                                    p: 2.5,
-                                    width: "82vw",
-                                    maxWidth: 310,
-                                    minHeight: 250,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "space-between",
-                                }}
-                            >
-                                <Box>
-                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                        <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", opacity: 0.65 }}>01</Typography>
-                                        <Box sx={{ width: 40, height: 40, borderRadius: "50%", backgroundColor: "#FFFFFF", border: "2px solid #0D0E15", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0px #0D0E15" }}>
-                                            <VideocamRoundedIcon sx={{ fontSize: 22, color: "#FD2E7A" }} />
-                                        </Box>
-                                    </Box>
-                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.25rem", lineHeight: 1.25, mb: 1.2 }}>
-                                        Live 1-on-1 Video Dates
-                                    </Typography>
-                                    <Typography sx={{ fontWeight: 600, fontSize: "0.88rem", lineHeight: 1.5, color: "#111422" }}>
-                                        Instant WebRTC video calls right in your browser. Test real-world vibes and authentic chemistry before ever giving out your phone number.
-                                    </Typography>
-                                </Box>
-                                <Box sx={{ pt: 2 }}>
-                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FFFFFF", fontSize: "0.78rem", py: 0.4, px: 1.4 }}>
-                                        Peer-to-Peer Encrypted
-                                    </Box>
-                                </Box>
-                            </Paper>
-
-                            {/* Card 2 */}
-                            <Paper
-                                elevation={0}
-                                className="neo-card engaze-swipe-item"
-                                sx={{
-                                    backgroundColor: "#FFD233",
-                                    color: "#0D0E15",
-                                    p: 2.5,
-                                    width: "82vw",
-                                    maxWidth: 310,
-                                    minHeight: 250,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "space-between",
-                                }}
-                            >
-                                <Box>
-                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                        <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", opacity: 0.65 }}>02</Typography>
-                                        <Box sx={{ width: 40, height: 40, borderRadius: "50%", backgroundColor: "#FFFFFF", border: "2px solid #0D0E15", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0px #0D0E15" }}>
-                                            <FavoriteRoundedIcon sx={{ fontSize: 22, color: "#FD2E7A" }} />
-                                        </Box>
-                                    </Box>
-                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.25rem", lineHeight: 1.25, mb: 1.2 }}>
-                                        Mutual Match Shield
-                                    </Typography>
-                                    <Typography sx={{ fontWeight: 600, fontSize: "0.88rem", lineHeight: 1.5, color: "#111422" }}>
-                                        Zero unsolicited cold messages, zero spam. Conversations and video calls only unlock when both singles mutually like each other.
-                                    </Typography>
-                                </Box>
-                                <Box sx={{ pt: 2 }}>
-                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FFFFFF", fontSize: "0.78rem", py: 0.4, px: 1.4 }}>
-                                        100% Consent-Driven
-                                    </Box>
-                                </Box>
-                            </Paper>
-
-                            {/* Card 3 */}
-                            <Paper
-                                elevation={0}
-                                className="neo-card engaze-swipe-item"
-                                sx={{
-                                    backgroundColor: "#FF7A29",
-                                    color: "#FFFFFF",
-                                    p: 2.5,
-                                    width: "82vw",
-                                    maxWidth: 310,
-                                    minHeight: 250,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "space-between",
-                                }}
-                            >
-                                <Box>
-                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                        <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", opacity: 0.75 }}>03</Typography>
-                                        <Box sx={{ width: 40, height: 40, borderRadius: "50%", backgroundColor: "#FFFFFF", border: "2px solid #0D0E15", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0px #0D0E15" }}>
-                                            <ChatBubbleRoundedIcon sx={{ fontSize: 20, color: "#FF7A29" }} />
-                                        </Box>
-                                    </Box>
-                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.25rem", lineHeight: 1.25, mb: 1.2 }}>
-                                        High-Speed Live Chat
-                                    </Typography>
-                                    <Typography sx={{ fontWeight: 600, fontSize: "0.88rem", lineHeight: 1.5, color: "#FFFFFF" }}>
-                                        High-speed WebSocket messaging with instant typing indicators, read receipts, and photo previews. Say goodbye to laggy messaging.
-                                    </Typography>
-                                </Box>
-                                <Box sx={{ pt: 2 }}>
-                                    <Box className="sticker-tag" sx={{ backgroundColor: "#0D0E15", color: "#FFFFFF", fontSize: "0.78rem", py: 0.4, px: 1.4 }}>
-                                        Live WebSockets
-                                    </Box>
-                                </Box>
-                            </Paper>
-
-                            {/* Card 4 */}
-                            <Paper
-                                elevation={0}
-                                className="neo-card engaze-swipe-item"
-                                sx={{
-                                    backgroundColor: "#FFFFFF",
-                                    color: "#0D0E15",
-                                    p: 2.5,
-                                    width: "82vw",
-                                    maxWidth: 310,
-                                    minHeight: 250,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "space-between",
-                                }}
-                            >
-                                <Box>
-                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                        <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", opacity: 0.5 }}>04</Typography>
-                                        <Box sx={{ width: 40, height: 40, borderRadius: "50%", backgroundColor: "#FD2E7A", border: "2px solid #0D0E15", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0px #0D0E15" }}>
-                                            <StarRoundedIcon sx={{ fontSize: 22, color: "#FFD233" }} />
-                                        </Box>
-                                    </Box>
-                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.25rem", lineHeight: 1.25, mb: 1.2 }}>
-                                        Rich Portrait Discovery
-                                    </Typography>
-                                    <Typography sx={{ fontWeight: 600, fontSize: "0.88rem", lineHeight: 1.5, color: "#4B4E63" }}>
-                                        Edge-to-edge candidate cards with verified bio highlights, interests, and smart age/gender filters. Swipe with full context.
-                                    </Typography>
-                                </Box>
-                                <Box sx={{ pt: 2 }}>
-                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FCEEF2", color: "#FD2E7A", fontSize: "0.78rem", py: 0.4, px: 1.4 }}>
-                                        Full-Screen Cards
-                                    </Box>
-                                </Box>
-                            </Paper>
-
-                            {/* Card 5 */}
-                            <Paper
-                                elevation={0}
-                                className="neo-card engaze-swipe-item"
-                                sx={{
-                                    backgroundColor: "#FD2E7A",
-                                    color: "#FFFFFF",
-                                    p: 2.5,
-                                    width: "82vw",
-                                    maxWidth: 310,
-                                    minHeight: 250,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "space-between",
-                                }}
-                            >
-                                <Box>
-                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                        <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", opacity: 0.75 }}>05</Typography>
-                                        <Box sx={{ width: 40, height: 40, borderRadius: "50%", backgroundColor: "#FFFFFF", border: "2px solid #0D0E15", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0px #0D0E15" }}>
-                                            <ShieldOutlinedIcon sx={{ fontSize: 22, color: "#FD2E7A" }} />
-                                        </Box>
-                                    </Box>
-                                    <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.25rem", lineHeight: 1.25, mb: 1.2 }}>
-                                        18+ Adult Safety
-                                    </Typography>
-                                    <Typography sx={{ fontWeight: 600, fontSize: "0.88rem", lineHeight: 1.5, color: "#FFFFFF" }}>
-                                        Strict age verification, automated GPS metadata stripping, one-tap instant reporting, and real-time moderation for bad actors.
-                                    </Typography>
-                                </Box>
-                                <Box sx={{ pt: 2 }}>
-                                    <Box className="sticker-tag" sx={{ backgroundColor: "#0D0E15", color: "#FFFFFF", fontSize: "0.78rem", py: 0.4, px: 1.4 }}>
-                                        Safe & Moderated
-                                    </Box>
-                                </Box>
-                            </Paper>
-                        </Box>
+                    {/* Mobile Modern Auto-Advancing Feature Slider (< 900px) */}
+                    <Box sx={{ display: { xs: "block", md: "none" }, px: 0.5, py: 1 }}>
+                        <MobileAutoFeatureCarousel />
                     </Box>
 
                     {/* Asymmetric Neo-Pop Feature Cards Grid (Desktop >= 900px) */}
@@ -1518,58 +1655,75 @@ export default function LandingPage() {
                         Dating isn't a job interview or a corporate checklist. Whether you're here for deep 2 AM talks, coffee banter, or testing instant face-to-face chemistry — Engaze brings people together who actually click.
                     </Typography>
 
-                    {/* Mobile 2-Row Horizontal Scrollable Tags (< 600px, FRND-style) */}
-                    <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1.5, mx: -2.5, px: 2.5 }}>
-                        <Box className="engaze-swipe-track" sx={{ gap: 1.2, py: 0.5 }}>
-                            {[
-                                { label: "1-on-1 Video Dating 📹", bg: "#FFFFFF", color: "#0D0E15", rotate: "-2deg" },
-                                { label: "Coffee & Banter ☕", bg: "#FFD233", color: "#0D0E15", rotate: "2deg" },
-                                { label: "Mutual Likes Only 🔒", bg: "#24C5F7", color: "#0D0E15", rotate: "-1deg" },
-                                { label: "Late Night Talks 🌙", bg: "#FD2E7A", color: "#FFFFFF", rotate: "2deg" },
-                                { label: "Concerts & Gigs 🎸", bg: "#7C5CFC", color: "#FFFFFF", rotate: "-2deg" },
-                                { label: "Foodie Adventures 🍕", bg: "#FF7A29", color: "#FFFFFF", rotate: "1deg" },
-                            ].map((item, idx) => (
-                                <Box
-                                    key={idx}
-                                    className="sticker-tag engaze-swipe-item"
-                                    sx={{
-                                        backgroundColor: item.bg,
-                                        color: item.color,
-                                        transform: `rotate(${item.rotate})`,
-                                        fontSize: "0.85rem",
-                                        py: 0.7,
-                                        px: 1.8,
-                                        whiteSpace: "nowrap",
-                                    }}
-                                >
-                                    {item.label}
-                                </Box>
-                            ))}
+                    {/* Mobile Continuous Auto-Scrolling Marquee Vibes (< 600px, FRND-style) */}
+                    <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1.5, mx: -2.5, overflow: "hidden" }}>
+                        <Box className="engaze-marquee-container">
+                            <Box className="engaze-marquee-track" sx={{ gap: 1.2, py: 0.5, pr: 1.2 }}>
+                                {[
+                                    { label: "1-on-1 Video Dating 📹", bg: "#FFFFFF", color: "#0D0E15", rotate: "-2deg" },
+                                    { label: "Coffee & Banter ☕", bg: "#FFD233", color: "#0D0E15", rotate: "2deg" },
+                                    { label: "Mutual Likes Only 🔒", bg: "#24C5F7", color: "#0D0E15", rotate: "-1deg" },
+                                    { label: "Late Night Talks 🌙", bg: "#FD2E7A", color: "#FFFFFF", rotate: "2deg" },
+                                    { label: "Concerts & Gigs 🎸", bg: "#7C5CFC", color: "#FFFFFF", rotate: "-2deg" },
+                                    { label: "Foodie Adventures 🍕", bg: "#FF7A29", color: "#FFFFFF", rotate: "1deg" },
+                                    { label: "1-on-1 Video Dating 📹", bg: "#FFFFFF", color: "#0D0E15", rotate: "-2deg" },
+                                    { label: "Coffee & Banter ☕", bg: "#FFD233", color: "#0D0E15", rotate: "2deg" },
+                                    { label: "Mutual Likes Only 🔒", bg: "#24C5F7", color: "#0D0E15", rotate: "-1deg" },
+                                    { label: "Late Night Talks 🌙", bg: "#FD2E7A", color: "#FFFFFF", rotate: "2deg" },
+                                    { label: "Concerts & Gigs 🎸", bg: "#7C5CFC", color: "#FFFFFF", rotate: "-2deg" },
+                                    { label: "Foodie Adventures 🍕", bg: "#FF7A29", color: "#FFFFFF", rotate: "1deg" },
+                                ].map((item, idx) => (
+                                    <Box
+                                        key={idx}
+                                        className="sticker-tag"
+                                        sx={{
+                                            backgroundColor: item.bg,
+                                            color: item.color,
+                                            transform: `rotate(${item.rotate})`,
+                                            fontSize: "0.85rem",
+                                            py: 0.7,
+                                            px: 1.8,
+                                            whiteSpace: "nowrap",
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        {item.label}
+                                    </Box>
+                                ))}
+                            </Box>
                         </Box>
-                        <Box className="engaze-swipe-track" sx={{ gap: 1.2, py: 0.5 }}>
-                            {[
-                                { label: "Weekend Getaways ✈️", bg: "#FFFFFF", color: "#0D0E15", rotate: "-2deg" },
-                                { label: "Zero Ghosting 🚫", bg: "#10B981", color: "#FFFFFF", rotate: "2deg" },
-                                { label: "Film & Cinema 🎬", bg: "#FFD233", color: "#0D0E15", rotate: "-1deg" },
-                                { label: "Dog Lovers 🐕", bg: "#0D0E15", color: "#FFFFFF", rotate: "2deg" },
-                                { label: "+ your unique spark ✨", bg: "#FD2E7A", color: "#FFFFFF", rotate: "-2deg", big: true },
-                            ].map((item, idx) => (
-                                <Box
-                                    key={idx}
-                                    className="sticker-tag engaze-swipe-item"
-                                    sx={{
-                                        backgroundColor: item.bg,
-                                        color: item.color,
-                                        transform: `rotate(${item.rotate})`,
-                                        fontSize: item.big ? "0.90rem" : "0.85rem",
-                                        py: item.big ? 0.8 : 0.7,
-                                        px: item.big ? 2.2 : 1.8,
-                                        whiteSpace: "nowrap",
-                                    }}
-                                >
-                                    {item.label}
-                                </Box>
-                            ))}
+                        <Box className="engaze-marquee-container">
+                            <Box className="engaze-marquee-track-reverse" sx={{ gap: 1.2, py: 0.5, pr: 1.2 }}>
+                                {[
+                                    { label: "Weekend Getaways ✈️", bg: "#FFFFFF", color: "#0D0E15", rotate: "-2deg" },
+                                    { label: "Zero Ghosting 🚫", bg: "#10B981", color: "#FFFFFF", rotate: "2deg" },
+                                    { label: "Film & Cinema 🎬", bg: "#FFD233", color: "#0D0E15", rotate: "-1deg" },
+                                    { label: "Dog Lovers 🐕", bg: "#0D0E15", color: "#FFFFFF", rotate: "2deg" },
+                                    { label: "+ your unique spark ✨", bg: "#FD2E7A", color: "#FFFFFF", rotate: "-2deg", big: true },
+                                    { label: "Weekend Getaways ✈️", bg: "#FFFFFF", color: "#0D0E15", rotate: "-2deg" },
+                                    { label: "Zero Ghosting 🚫", bg: "#10B981", color: "#FFFFFF", rotate: "2deg" },
+                                    { label: "Film & Cinema 🎬", bg: "#FFD233", color: "#0D0E15", rotate: "-1deg" },
+                                    { label: "Dog Lovers 🐕", bg: "#0D0E15", color: "#FFFFFF", rotate: "2deg" },
+                                    { label: "+ your unique spark ✨", bg: "#FD2E7A", color: "#FFFFFF", rotate: "-2deg", big: true },
+                                ].map((item, idx) => (
+                                    <Box
+                                        key={idx}
+                                        className="sticker-tag"
+                                        sx={{
+                                            backgroundColor: item.bg,
+                                            color: item.color,
+                                            transform: `rotate(${item.rotate})`,
+                                            fontSize: item.big ? "0.90rem" : "0.85rem",
+                                            py: item.big ? 0.8 : 0.7,
+                                            px: item.big ? 2.2 : 1.8,
+                                            whiteSpace: "nowrap",
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        {item.label}
+                                    </Box>
+                                ))}
+                            </Box>
                         </Box>
                     </Box>
 
@@ -1671,94 +1825,9 @@ export default function LandingPage() {
                         </Typography>
                     </Box>
 
-                    {/* Mobile Horizontal Comparison Swipe (< 900px) */}
-                    <Box sx={{ display: { xs: "block", md: "none" } }}>
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5, px: 0.5 }}>
-                            <Typography sx={{ fontSize: "0.78rem", fontWeight: 800, color: "#0D0E15", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                                👈 Swipe To Compare 👉
-                            </Typography>
-                            <Typography sx={{ fontSize: "0.74rem", fontWeight: 700, color: "#6B7280" }}>
-                                1 of 2
-                            </Typography>
-                        </Box>
-                        <Box className="engaze-swipe-track" sx={{ gap: 2, mx: -2.5, px: 2.5, py: 1 }}>
-                            {/* Card 1: Traditional Apps */}
-                            <Paper
-                                elevation={0}
-                                className="engaze-swipe-item"
-                                sx={{
-                                    border: "2.5px solid #0D0E15",
-                                    borderRadius: "24px",
-                                    p: 2.5,
-                                    backgroundColor: "#F3F4F6",
-                                    color: "#0D0E15",
-                                    width: "84vw",
-                                    maxWidth: 320,
-                                    boxShadow: "3px 3px 0px #D1D5DB",
-                                }}
-                            >
-                                <Typography variant="h5" sx={{ fontWeight: 900, fontSize: "1.25rem", mb: 2, opacity: 0.85 }}>
-                                    Traditional Dating Apps
-                                </Typography>
-                                <Stack spacing={1.8}>
-                                    {[
-                                        "Endless superficial swiping that leads nowhere",
-                                        "Awkward text chats that drag on for weeks",
-                                        "Catfishing & profiles from 5 years ago",
-                                        "Unwanted cold DMs and spam requests",
-                                        "Giving out your phone number on day one",
-                                    ].map((point, i) => (
-                                        <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1.2 }}>
-                                            <CancelRoundedIcon sx={{ color: "#EF4444", fontSize: 18, mt: 0.2 }} />
-                                            <Typography sx={{ fontWeight: 600, color: "#4B4E63", fontSize: "0.85rem" }}>
-                                                {point}
-                                            </Typography>
-                                        </Box>
-                                    ))}
-                                </Stack>
-                            </Paper>
-
-                            {/* Card 2: The Engaze Way */}
-                            <Paper
-                                elevation={0}
-                                className="neo-card engaze-swipe-item"
-                                sx={{
-                                    border: "3px solid #0D0E15 !important",
-                                    borderRadius: "24px",
-                                    p: 2.5,
-                                    backgroundColor: "#FFFFFF",
-                                    color: "#0D0E15",
-                                    width: "84vw",
-                                    maxWidth: 320,
-                                    boxShadow: "4px 4px 0px #0D0E15 !important",
-                                }}
-                            >
-                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                    <Typography variant="h5" sx={{ fontWeight: 900, fontSize: "1.25rem", color: "#FD2E7A" }}>
-                                        The Engaze Way
-                                    </Typography>
-                                    <Box className="sticker-tag" sx={{ backgroundColor: "#FFD233", fontSize: "0.74rem", py: 0.3, px: 1.2 }}>
-                                        Next-Gen
-                                    </Box>
-                                </Box>
-                                <Stack spacing={1.8}>
-                                    {[
-                                        "Immediate 1-on-1 video dates right in your browser",
-                                        "Mutual likes only — zero unsolicited messages",
-                                        "Encrypted peer-to-peer WebRTC video",
-                                        "Test the real vibe before exchanging numbers",
-                                        "Strict 18+ adult community with active moderation",
-                                    ].map((point, i) => (
-                                        <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1.2 }}>
-                                            <CheckCircleRoundedIcon sx={{ color: "#10B981", fontSize: 18, mt: 0.2 }} />
-                                            <Typography sx={{ fontWeight: 700, color: "#0D0E15", fontSize: "0.85rem" }}>
-                                                {point}
-                                            </Typography>
-                                        </Box>
-                                    ))}
-                                </Stack>
-                            </Paper>
-                        </Box>
+                    {/* Mobile Modern Segmented Comparison Switcher (< 900px) */}
+                    <Box sx={{ display: { xs: "block", md: "none" }, px: 0.5, py: 1 }}>
+                        <MobileDifferenceSwitch />
                     </Box>
 
                     {/* Side-by-Side Neo-Brutalist Comparison Cards (Desktop >= 900px) */}
@@ -2158,85 +2227,71 @@ export default function LandingPage() {
                         </Typography>
                     </Box>
 
-                    {/* Mobile Horizontal Swipe Track for Safety (< 600px) */}
-                    <Box sx={{ display: { xs: "block", sm: "none" } }}>
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5, px: 0.5 }}>
-                            <Typography sx={{ fontSize: "0.78rem", fontWeight: 800, color: "#10B981", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                                👈 Swipe Safety Features 👉
-                            </Typography>
-                            <Box sx={{ display: "flex", gap: 0.6 }}>
-                                {[1, 2, 3, 4].map((dot) => (
-                                    <Box key={dot} sx={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: dot === 1 ? "#10B981" : "#D1D5DB" }} />
-                                ))}
-                            </Box>
-                        </Box>
-                        <Box className="engaze-swipe-track" sx={{ gap: 2, mx: -2.5, px: 2.5, py: 1 }}>
-                            {[
-                                {
-                                    icon: <VerifiedUserRoundedIcon sx={{ fontSize: 24, color: "#FD2E7A" }} />,
-                                    title: "Strict 18+ Adult Policy",
-                                    desc: "Exclusively for adults aged 18 and older. Age confirmation is required during onboarding.",
-                                },
-                                {
-                                    icon: <LockOutlinedIcon sx={{ fontSize: 24, color: "#7C5CFC" }} />,
-                                    title: "GPS EXIF Data Stripped",
-                                    desc: "Every profile photo has its location metadata automatically sanitized to safeguard your real-world whereabouts.",
-                                },
-                                {
-                                    icon: <ShieldOutlinedIcon sx={{ fontSize: 24, color: "#10B981" }} />,
-                                    title: "One-Tap Reporting",
-                                    desc: "Instant reporting and blocking available on profiles and in live video calls. Moderation acts immediately.",
-                                },
-                                {
-                                    icon: <VideocamRoundedIcon sx={{ fontSize: 24, color: "#24C5F7" }} />,
-                                    title: "No Phone Number Sharing",
-                                    desc: "Video dates occur over secure browser streams. Never surrender your phone number or socials.",
-                                },
-                            ].map((card, i) => (
+                    {/* Mobile Modern 2x2 Compact Safety Grid (< 600px) */}
+                    <Grid container spacing={1.5} sx={{ display: { xs: "flex", sm: "none" }, mb: 1 }}>
+                        {[
+                            {
+                                icon: <VerifiedUserRoundedIcon sx={{ fontSize: 22, color: "#FD2E7A" }} />,
+                                title: "18+ Adult Policy",
+                                desc: "Strictly for adults aged 18+. Age verification required during onboarding.",
+                            },
+                            {
+                                icon: <LockOutlinedIcon sx={{ fontSize: 22, color: "#7C5CFC" }} />,
+                                title: "GPS EXIF Stripped",
+                                desc: "Photo GPS metadata automatically stripped to safeguard your location.",
+                            },
+                            {
+                                icon: <ShieldOutlinedIcon sx={{ fontSize: 22, color: "#10B981" }} />,
+                                title: "One-Tap Reporting",
+                                desc: "Instant reporting and blocking on profiles and in live video calls.",
+                            },
+                            {
+                                icon: <VideocamRoundedIcon sx={{ fontSize: 22, color: "#24C5F7" }} />,
+                                title: "Private Video Dates",
+                                desc: "Secure browser video streams without giving out your phone number.",
+                            },
+                        ].map((card, i) => (
+                            <Grid item xs={6} key={i}>
                                 <Paper
-                                    key={i}
                                     elevation={0}
-                                    className="neo-card engaze-swipe-item"
+                                    className="neo-card"
                                     sx={{
-                                        p: 2.2,
+                                        p: 1.8,
                                         backgroundColor: "#FFFFFF",
                                         color: "#0D0E15",
-                                        width: "80vw",
-                                        maxWidth: 290,
-                                        minHeight: 210,
+                                        borderRadius: "18px",
+                                        height: "100%",
                                         display: "flex",
                                         flexDirection: "column",
-                                        justifyContent: "space-between",
+                                        boxShadow: "3px 3px 0px #0D0E15",
                                     }}
                                 >
-                                    <Box>
-                                        <Box
-                                            sx={{
-                                                width: 44,
-                                                height: 44,
-                                                borderRadius: "14px",
-                                                backgroundColor: "#FCEEF2",
-                                                border: "2px solid #0D0E15",
-                                                boxShadow: "2px 2px 0px #0D0E15",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                mb: 2,
-                                            }}
-                                        >
-                                            {card.icon}
-                                        </Box>
-                                        <Typography variant="h5" sx={{ fontWeight: 900, fontSize: "1.15rem", mb: 1 }}>
-                                            {card.title}
-                                        </Typography>
-                                        <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "#4B4E63", lineHeight: 1.5 }}>
-                                            {card.desc}
-                                        </Typography>
+                                    <Box
+                                        sx={{
+                                            width: 38,
+                                            height: 38,
+                                            borderRadius: "12px",
+                                            backgroundColor: "#FCEEF2",
+                                            border: "2px solid #0D0E15",
+                                            boxShadow: "2px 2px 0px #0D0E15",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            mb: 1.2,
+                                        }}
+                                    >
+                                        {card.icon}
                                     </Box>
+                                    <Typography variant="h6" sx={{ fontWeight: 900, fontSize: "0.88rem", mb: 0.6, lineHeight: 1.25 }}>
+                                        {card.title}
+                                    </Typography>
+                                    <Typography sx={{ fontWeight: 600, fontSize: "0.74rem", color: "#4B4E63", lineHeight: 1.4 }}>
+                                        {card.desc}
+                                    </Typography>
                                 </Paper>
-                            ))}
-                        </Box>
-                    </Box>
+                            </Grid>
+                        ))}
+                    </Grid>
 
                     {/* Tablet/Desktop Grid Layout (>= 600px) */}
                     <Grid container spacing={3.5} sx={{ display: { xs: "none", sm: "flex" } }}>
