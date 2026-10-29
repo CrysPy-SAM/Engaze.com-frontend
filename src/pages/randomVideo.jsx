@@ -1807,20 +1807,23 @@ function RandomVideoPage() {
                         <Box
                             sx={{
                                 position: "absolute",
-                                bottom: 24,
+                                bottom: { xs: 16, sm: 24 },
                                 left: "50%",
                                 transform: "translateX(-50%)",
-                                backgroundColor: "rgba(11, 13, 23, 0.85)",
-                                backdropFilter: "blur(16px)",
+                                backgroundColor: "rgba(11, 13, 23, 0.88)",
+                                backdropFilter: "blur(18px)",
                                 borderRadius: "9999px",
-                                px: { xs: 2.5, sm: 3.5 },
-                                py: 1.2,
+                                px: { xs: 1.2, sm: 3 },
+                                py: { xs: 0.8, sm: 1.2 },
                                 display: "flex",
                                 alignItems: "center",
-                                gap: { xs: 1.5, sm: 2.5 },
+                                justifyContent: "center",
+                                gap: { xs: 0.8, sm: 2 },
                                 border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
+                                boxShadow: "0 12px 40px rgba(0,0,0,0.65)",
                                 zIndex: 10,
+                                maxWidth: "calc(100% - 16px)",
+                                boxSizing: "border-box",
                             }}
                         >
                             {/* Toggle Audio */}
@@ -1831,11 +1834,12 @@ function RandomVideoPage() {
                                         backgroundColor: audioEnabled ? "rgba(255,255,255,0.12)" : "#EF4444",
                                         color: "#FFFFFF",
                                         "&:hover": { backgroundColor: audioEnabled ? "rgba(255,255,255,0.22)" : "#DC2626" },
-                                        width: 46,
-                                        height: 46,
+                                        width: { xs: 38, sm: 46 },
+                                        height: { xs: 38, sm: 46 },
+                                        p: { xs: 0.8, sm: 1.2 },
                                     }}
                                 >
-                                    {audioEnabled ? <MicIcon /> : <MicOffIcon />}
+                                    {audioEnabled ? <MicIcon sx={{ fontSize: { xs: 20, sm: 24 } }} /> : <MicOffIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />}
                                 </IconButton>
                             </Tooltip>
 
@@ -1847,11 +1851,12 @@ function RandomVideoPage() {
                                         backgroundColor: videoEnabled ? "rgba(255,255,255,0.12)" : "#EF4444",
                                         color: "#FFFFFF",
                                         "&:hover": { backgroundColor: videoEnabled ? "rgba(255,255,255,0.22)" : "#DC2626" },
-                                        width: 46,
-                                        height: 46,
+                                        width: { xs: 38, sm: 46 },
+                                        height: { xs: 38, sm: 46 },
+                                        p: { xs: 0.8, sm: 1.2 },
                                     }}
                                 >
-                                    {videoEnabled ? <VideocamIcon /> : <VideocamOffIcon />}
+                                    {videoEnabled ? <VideocamIcon sx={{ fontSize: { xs: 20, sm: 24 } }} /> : <VideocamOffIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />}
                                 </IconButton>
                             </Tooltip>
 
@@ -1863,11 +1868,12 @@ function RandomVideoPage() {
                                         backgroundColor: "rgba(255, 255, 255, 0.12)",
                                         color: "#FFFFFF",
                                         "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.22)" },
-                                        width: 46,
-                                        height: 46,
+                                        width: { xs: 38, sm: 46 },
+                                        height: { xs: 38, sm: 46 },
+                                        p: { xs: 0.8, sm: 1.2 },
                                     }}
                                 >
-                                    <VolumeUpIcon />
+                                    <VolumeUpIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
                                 </IconButton>
                             </Tooltip>
 
@@ -1882,11 +1888,12 @@ function RandomVideoPage() {
                                         backgroundColor: "rgba(255, 255, 255, 0.12)",
                                         color: "#F59E0B",
                                         "&:hover": { backgroundColor: "rgba(245, 158, 11, 0.22)" },
-                                        width: 46,
-                                        height: 46,
+                                        width: { xs: 38, sm: 46 },
+                                        height: { xs: 38, sm: 46 },
+                                        p: { xs: 0.8, sm: 1.2 },
                                     }}
                                 >
-                                    <SecurityIcon />
+                                    <SecurityIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
                                 </IconButton>
                             </Tooltip>
 
@@ -1894,19 +1901,27 @@ function RandomVideoPage() {
                             <Tooltip title="Skip to Next Match">
                                 <Button
                                     variant="contained"
-                                    startIcon={<SkipNextIcon />}
+                                    startIcon={<SkipNextIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />}
                                     onClick={handleNextMatch}
                                     sx={{
                                         background: BRAND_COLORS.primaryGradient,
                                         color: "#FFFFFF",
                                         borderRadius: "9999px",
-                                        px: { xs: 2.5, sm: 3.5 },
+                                        px: { xs: 1.5, sm: 3 },
                                         fontWeight: 800,
-                                        height: 46,
+                                        height: { xs: 38, sm: 46 },
+                                        fontSize: { xs: "0.80rem", sm: "0.92rem" },
                                         boxShadow: "0 4px 15px rgba(253, 58, 115, 0.4)",
+                                        whiteSpace: "nowrap",
+                                        minWidth: "auto",
                                     }}
                                 >
-                                    Next Match
+                                    <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                                        Next Match
+                                    </Box>
+                                    <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+                                        Next
+                                    </Box>
                                 </Button>
                             </Tooltip>
 
@@ -1918,11 +1933,12 @@ function RandomVideoPage() {
                                         backgroundColor: "#EF4444",
                                         color: "#FFFFFF",
                                         "&:hover": { backgroundColor: "#DC2626" },
-                                        width: 46,
-                                        height: 46,
+                                        width: { xs: 38, sm: 46 },
+                                        height: { xs: 38, sm: 46 },
+                                        p: { xs: 0.8, sm: 1.2 },
                                     }}
                                 >
-                                    <CallEndIcon />
+                                    <CallEndIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
                                 </IconButton>
                             </Tooltip>
                         </Box>

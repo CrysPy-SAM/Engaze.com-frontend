@@ -2972,23 +2972,24 @@ export default function LandingPage() {
                             <Typography sx={{ color: "#9CA3AF", fontSize: "0.95rem", lineHeight: 1.6, maxWidth: 380, mb: 3 }}>
                                 Engaze is an online dating and live video connections platform connecting genuine singles through mutual match discovery and encrypted 1-on-1 browser video dates.
                             </Typography>
-                            <Stack direction="row" spacing={2}>
+                            <Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 1.5, sm: 2 }} alignItems={{ xs: "flex-start", sm: "center" }}>
                                 <Box
                                     component="a"
                                     href="mailto:support@engaze.date"
                                     sx={{
-                                        color: "#FD2E7A",
+                                        color: "#2589D8",
                                         fontWeight: 700,
                                         fontSize: "0.9rem",
                                         textDecoration: "none",
                                         display: "inline-flex",
                                         alignItems: "center",
                                         gap: 0.8,
+                                        wordBreak: "break-all",
                                         "&:hover": { textDecoration: "underline" },
                                     }}
                                 >
-                                    <SupportAgentRoundedIcon sx={{ fontSize: 18 }} />
-                                    support@engaze.date
+                                    <SupportAgentRoundedIcon sx={{ fontSize: 18, flexShrink: 0 }} />
+                                    <span>support@engaze.date</span>
                                 </Box>
                                 <Box
                                     component="a"
@@ -3001,11 +3002,12 @@ export default function LandingPage() {
                                         display: "inline-flex",
                                         alignItems: "center",
                                         gap: 0.8,
+                                        wordBreak: "break-all",
                                         "&:hover": { textDecoration: "underline" },
                                     }}
                                 >
-                                    <EmailRoundedIcon sx={{ fontSize: 18 }} />
-                                    contact@engaze.date
+                                    <EmailRoundedIcon sx={{ fontSize: 18, flexShrink: 0 }} />
+                                    <span>contact@engaze.date</span>
                                 </Box>
                             </Stack>
                         </Grid>
