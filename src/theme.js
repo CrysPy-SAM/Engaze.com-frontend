@@ -3,7 +3,8 @@ import { createTheme } from "@mui/material/styles";
 // ============================================================
 // ENGAZE PREMIUM DESIGN SYSTEM THEME
 // Authentic, romantic, modern, and trustworthy.
-// Palette: Light Sky-Blue, Deep Navy & Vibrant Engaze Blue with soft coral & lavender accents
+// Authenticated App Palette: Deep Midnight Navy (#0A111C) + Midnight Slate Surfaces (#121C2D)
+// with Vibrant Engaze Blue (#2589D8), Soft Coral (#FF5A70), and Crisp White Typography (#F8FAFC).
 // ============================================================
 
 export const BRAND_COLORS = {
@@ -14,9 +15,9 @@ export const BRAND_COLORS = {
     superLikeGradient: "linear-gradient(135deg, #00D2FF 0%, #0078FF 100%)",
     goldGradient: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
     engazePlusGradient: "linear-gradient(135deg, #2589D8 0%, #8B5CF6 100%)",
-    darkGradient: "linear-gradient(180deg, #142B45 0%, #0D1D30 100%)",
-    cardOverlay: "linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(20, 43, 69, 0.45) 65%, rgba(20, 43, 69, 0.92) 100%)",
-    cardStackOverlay: "linear-gradient(180deg, rgba(20, 43, 69, 0.08) 0%, rgba(20, 43, 69, 0.75) 100%)",
+    darkGradient: "linear-gradient(180deg, #121C2D 0%, #0A111C 100%)",
+    cardOverlay: "linear-gradient(180deg, rgba(0,0,0,0) 25%, rgba(10, 17, 28, 0.5) 60%, rgba(10, 17, 28, 0.95) 100%)",
+    cardStackOverlay: "linear-gradient(180deg, rgba(10, 17, 28, 0.15) 0%, rgba(10, 17, 28, 0.85) 100%)",
     chatBubbleSent: "linear-gradient(135deg, #2589D8 0%, #1D6FB0 100%)",
 
     // Solid Accents
@@ -30,58 +31,58 @@ export const BRAND_COLORS = {
     superLike: "#00D2FF",
     verifiedBlue: "#2589D8",
 
-    // Backgrounds & Surfaces (Engaze Light Canvas)
-    bgDark: "#F7FAFE",
-    backgroundDark: "#F7FAFE",
-    surfaceDark: "#FFFFFF",
-    surfaceDarkElevated: "#FFFFFF",
-    surfaceDarkCard: "#FFFFFF",
-    surfaceDarkBorder: "rgba(20, 43, 69, 0.08)",
-    chatBubbleReceived: "#F1F5F9",
+    // Backgrounds & Surfaces (Engaze Deep Midnight Navy System)
+    bgDark: "#0A111C",
+    backgroundDark: "#0A111C",
+    surfaceDark: "#121C2D",
+    surfaceDarkElevated: "#18253A",
+    surfaceDarkCard: "#121C2D",
+    surfaceDarkBorder: "rgba(255, 255, 255, 0.08)",
+    chatBubbleReceived: "#18253A",
 
-    // Neutral Text (Deep Navy & Slate)
-    textPrimary: "#142B45",
-    textSecondary: "#5A6B82",
-    textMuted: "#8E9CAE",
-    textDark: "#142B45",
-    textDarkMuted: "#5A6B82",
+    // Neutral Text (Crisp White & Slate)
+    textPrimary: "#F8FAFC",
+    textSecondary: "#94A3B8",
+    textMuted: "#64748B",
+    textDark: "#F8FAFC",
+    textDarkMuted: "#94A3B8",
 
     // Pop / Clean Border & Shadows
     hotPink: "#2589D8",
     electricPink: "#FF5A70",
-    inkBlack: "#142B45",
-    creamBg: "#FFFDF9",
-    creamSurface: "#FFFFFF",
-    blushBg: "#FFF5F6",
-    blushSurface: "#FFFFFF",
+    inkBlack: "#0A111C",
+    creamBg: "#0A111C",
+    creamSurface: "#121C2D",
+    blushBg: "#0D1524",
+    blushSurface: "#121C2D",
     sunYellow: "#FFD233",
     skyCyan: "#24C5F7",
-    borderDark: "1px solid rgba(20, 43, 69, 0.12)",
-    shadowPop: "0 4px 14px rgba(20, 43, 69, 0.06)",
-    shadowPopLg: "0 10px 30px rgba(20, 43, 69, 0.08)",
-    shadowPopXl: "0 18px 48px rgba(20, 43, 69, 0.12)",
+    borderDark: "1px solid rgba(255, 255, 255, 0.08)",
+    shadowPop: "0 4px 14px rgba(0, 0, 0, 0.25)",
+    shadowPopLg: "0 10px 30px rgba(0, 0, 0, 0.35)",
+    shadowPopXl: "0 18px 48px rgba(0, 0, 0, 0.45)",
 
-    // Engaze Original Sky-Blue & Deep Navy Identity
+    // Engaze Sky-Blue & Deep Navy Identity Tokens
     skyBlue: "#EAF6FF",
     brandBlue: "#2589D8",
     brandBlueHover: "#1E73B9",
-    deepNavy: "#142B45",
+    deepNavy: "#F8FAFC",
     accentLavender: "#B8A7FF",
     softCoral: "#FF8F9C",
     pureWhite: "#FFFFFF",
-    secondaryBg: "#F7FAFE",
-    mutedNavy: "#62748A",
-    borderNavySubtle: "1px solid rgba(20, 43, 69, 0.08)",
-    borderNavyLight: "1.5px solid rgba(20, 43, 69, 0.12)",
-    shadowSoftNavy: "0 8px 28px rgba(20, 43, 69, 0.06)",
-    shadowElevatedNavy: "0 14px 40px rgba(20, 43, 69, 0.1)",
+    secondaryBg: "#0D1524",
+    mutedNavy: "#94A3B8",
+    borderNavySubtle: "1px solid rgba(255, 255, 255, 0.08)",
+    borderNavyLight: "1.5px solid rgba(37, 137, 216, 0.25)",
+    shadowSoftNavy: "0 8px 28px rgba(0, 0, 0, 0.3)",
+    shadowElevatedNavy: "0 14px 40px rgba(0, 0, 0, 0.4)",
     blueGradient: "linear-gradient(135deg, #2589D8 0%, #1D6FB0 100%)",
     blueGradientHover: "linear-gradient(135deg, #1E73B9 0%, #175B92 100%)",
 };
 
 const theme = createTheme({
     palette: {
-        mode: "light",
+        mode: "dark",
         primary: {
             main: BRAND_COLORS.brandBlue,
             light: "#54A8E8",
@@ -95,8 +96,8 @@ const theme = createTheme({
             contrastText: "#FFFFFF",
         },
         background: {
-            default: "#F7FAFE",
-            paper: "#FFFFFF",
+            default: "#0A111C",
+            paper: "#121C2D",
         },
         text: {
             primary: BRAND_COLORS.textPrimary,
@@ -122,30 +123,30 @@ const theme = createTheme({
         h1: {
             fontWeight: 800,
             letterSpacing: "-0.025em",
-            color: BRAND_COLORS.deepNavy,
+            color: "#F8FAFC",
         },
         h2: {
             fontWeight: 800,
             letterSpacing: "-0.02em",
-            color: BRAND_COLORS.deepNavy,
+            color: "#F8FAFC",
         },
         h3: {
             fontWeight: 700,
             letterSpacing: "-0.015em",
-            color: BRAND_COLORS.deepNavy,
+            color: "#F8FAFC",
         },
         h4: {
             fontWeight: 700,
             letterSpacing: "-0.01em",
-            color: BRAND_COLORS.deepNavy,
+            color: "#F8FAFC",
         },
         h5: {
             fontWeight: 600,
-            color: BRAND_COLORS.deepNavy,
+            color: "#F8FAFC",
         },
         h6: {
             fontWeight: 600,
-            color: BRAND_COLORS.deepNavy,
+            color: "#F8FAFC",
         },
         button: {
             fontWeight: 700,
@@ -188,11 +189,11 @@ const theme = createTheme({
         MuiCard: {
             styleOverrides: {
                 root: {
-                    backgroundColor: "#FFFFFF",
+                    backgroundColor: "#121C2D",
                     border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                     borderRadius: 24,
                     backgroundImage: "none",
-                    boxShadow: "0 8px 24px rgba(20, 43, 69, 0.04)",
+                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
                 },
             },
         },
@@ -200,6 +201,7 @@ const theme = createTheme({
             styleOverrides: {
                 root: {
                     backgroundImage: "none",
+                    backgroundColor: "#121C2D",
                 },
             },
         },
@@ -216,13 +218,17 @@ const theme = createTheme({
                 root: {
                     "& .MuiOutlinedInput-root": {
                         borderRadius: 16,
-                        backgroundColor: "#FFFFFF",
+                        backgroundColor: "#142034",
+                        color: "#F8FAFC",
+                        "& fieldset": {
+                            borderColor: "rgba(255, 255, 255, 0.1)",
+                        },
                         "&:hover fieldset": {
                             borderColor: "rgba(37, 137, 216, 0.5)",
                         },
                         "&.Mui-focused fieldset": {
                             borderColor: BRAND_COLORS.brandBlue,
-                            boxShadow: "0 0 0 3px rgba(37, 137, 216, 0.15)",
+                            boxShadow: "0 0 0 3px rgba(37, 137, 216, 0.25)",
                         },
                     },
                 },

@@ -545,9 +545,9 @@ function ProfilePage() {
                         p: { xs: 2.5, md: 3 },
                         mb: 3.5,
                         borderRadius: "24px",
-                        bgcolor: "#FFFFFF",
-                        border: "1px solid rgba(20, 43, 69, 0.08)",
-                        boxShadow: "0 8px 24px rgba(20, 43, 69, 0.04)",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
                         display: "flex",
                         flexDirection: { xs: "column", sm: "row" },
                         alignItems: { xs: "flex-start", sm: "center" },
@@ -622,11 +622,11 @@ function ProfilePage() {
                         value={activeTab}
                         onChange={(_, val) => setActiveTab(val)}
                         sx={{
-                            bgcolor: "#FFFFFF",
+                            bgcolor: "#121C2D",
                             p: 0.6,
                             borderRadius: "9999px",
-                            border: "1px solid rgba(20, 43, 69, 0.08)",
-                            boxShadow: "0 2px 10px rgba(20, 43, 69, 0.03)",
+                            border: "1px solid rgba(255, 255, 255, 0.08)",
+                            boxShadow: "0 4px 16px rgba(0, 0, 0, 0.3)",
                             "& .MuiTabs-indicator": { display: "none" },
                         }}
                     >
@@ -726,7 +726,7 @@ function ProfilePage() {
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
                                                     borderRadius: "14px",
-                                                    bgcolor: "#FFFFFF",
+                                                    bgcolor: "#142034",
                                                 },
                                             }}
                                         />
@@ -763,7 +763,7 @@ function ProfilePage() {
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
                                                     borderRadius: "14px",
-                                                    bgcolor: "#FFFFFF",
+                                                    bgcolor: "#142034",
                                                 },
                                             }}
                                         />
@@ -778,7 +778,7 @@ function ProfilePage() {
                                                 onChange={(e) => setGender(e.target.value)}
                                                 sx={{
                                                     borderRadius: "14px",
-                                                    bgcolor: "#FFFFFF",
+                                                    bgcolor: "#142034",
                                                 }}
                                             >
                                                 <MenuItem value="male">Male</MenuItem>
@@ -803,7 +803,7 @@ function ProfilePage() {
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
                                                     borderRadius: "14px",
-                                                    bgcolor: "#FFFFFF",
+                                                    bgcolor: "#142034",
                                                 },
                                             }}
                                         />
@@ -827,7 +827,7 @@ function ProfilePage() {
                                                 onChange={(e) => setInterestedIn([e.target.value])}
                                                 sx={{
                                                     borderRadius: "14px",
-                                                    bgcolor: "#FFFFFF",
+                                                    bgcolor: "#142034",
                                                 }}
                                             >
                                                 <MenuItem value="everyone">Everyone</MenuItem>
@@ -886,7 +886,7 @@ function ProfilePage() {
                                         sx={{
                                             "& .MuiOutlinedInput-root": {
                                                 borderRadius: "12px",
-                                                bgcolor: "#FFFFFF",
+                                                bgcolor: "#142034",
                                             },
                                         }}
                                     />
@@ -1352,7 +1352,7 @@ function ProfilePage() {
                                                 sx={{
                                                     "& .MuiOutlinedInput-root": {
                                                         borderRadius: "12px",
-                                                        bgcolor: "#FFFFFF",
+                                                        bgcolor: "#142034",
                                                     },
                                                 }}
                                             />

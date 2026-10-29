@@ -1631,15 +1631,25 @@ export default function LandingPage() {
                         <Grid item xs={12} md={5}>
                             <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
                                 <Box
-                                    className="sticker-tag"
                                     sx={{
                                         alignSelf: "flex-start",
-                                        backgroundColor: "#FFD233",
-                                        color: "#0D0E15",
-                                        transform: "rotate(-2deg)",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 1,
+                                        backgroundColor: "rgba(255, 233, 226, 0.75)",
+                                        backdropFilter: "blur(10px)",
+                                        color: "#142B45",
+                                        border: "1px solid rgba(255, 193, 181, 0.55)",
+                                        boxShadow: "0 4px 14px rgba(255, 160, 140, 0.12)",
+                                        borderRadius: "9999px",
+                                        px: 2,
+                                        py: 0.75,
+                                        fontWeight: 700,
+                                        fontSize: "0.85rem",
                                     }}
                                 >
-                                    <span>✨ no paywalled chats or fake bots</span>
+                                    <Box component="span" sx={{ color: "#2589D8" }}>✨</Box>
+                                    <span>No paywalled chats or fake bots</span>
                                 </Box>
                                 <Typography
                                     variant="body1"

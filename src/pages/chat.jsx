@@ -906,10 +906,11 @@ function ChatPage() {
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     borderRadius: "14px",
-                                    bgcolor: "#F7FAFE",
+                                    bgcolor: "#142034",
+                                    color: "#F8FAFC",
                                     fontSize: "0.88rem",
-                                    "& fieldset": { borderColor: "rgba(20, 43, 69, 0.08)" },
-                                    "&:hover fieldset": { borderColor: "rgba(37, 137, 216, 0.3)" },
+                                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.08)" },
+                                    "&:hover fieldset": { borderColor: "rgba(37, 137, 216, 0.4)" },
                                 },
                             }}
                         />
@@ -1043,10 +1044,10 @@ function ChatPage() {
                                                     p: 1.5,
                                                     borderRadius: "16px",
                                                     transition: "all 0.2s ease",
-                                                    bgcolor: isSelected ? "rgba(37, 137, 216, 0.08)" : "transparent",
-                                                    border: isSelected ? "1px solid rgba(37, 137, 216, 0.25)" : "1px solid transparent",
+                                                    bgcolor: isSelected ? "rgba(37, 137, 216, 0.16)" : "transparent",
+                                                    border: isSelected ? "1px solid rgba(37, 137, 216, 0.4)" : "1px solid transparent",
                                                     "&:hover": {
-                                                        bgcolor: isSelected ? "rgba(37, 137, 216, 0.12)" : "rgba(37, 137, 216, 0.04)",
+                                                        bgcolor: isSelected ? "rgba(37, 137, 216, 0.22)" : "rgba(255, 255, 255, 0.04)",
                                                     },
                                                 }}
                                             >
@@ -1160,10 +1161,10 @@ function ChatPage() {
                                             edge="start"
                                             onClick={() => setMobileShowChat(false)}
                                             sx={{
-                                                color: BRAND_COLORS.deepNavy,
+                                                color: "#F8FAFC",
                                                 p: 0.8,
-                                                bgcolor: "rgba(20, 43, 69, 0.04)",
-                                                "&:hover": { bgcolor: "rgba(37, 137, 216, 0.08)" },
+                                                bgcolor: "rgba(255, 255, 255, 0.06)",
+                                                "&:hover": { bgcolor: "rgba(37, 137, 216, 0.15)" },
                                             }}
                                         >
                                             <ArrowBackIcon fontSize="small" />
@@ -1290,7 +1291,7 @@ function ChatPage() {
                                     flex: 1,
                                     p: { xs: 2, md: 3 },
                                     overflowY: "auto",
-                                    bgcolor: "#F7FAFE",
+                                    bgcolor: "#0A111C",
                                     display: "flex",
                                     flexDirection: "column",
                                     gap: 1.6,
@@ -1308,9 +1309,9 @@ function ChatPage() {
                                             px: 2,
                                             py: 0.5,
                                             borderRadius: "9999px",
-                                            bgcolor: "#FFFFFF",
-                                            border: "1px solid rgba(20, 43, 69, 0.08)",
-                                            boxShadow: "0 2px 6px rgba(20, 43, 69, 0.04)",
+                                            bgcolor: "#121C2D",
+                                            border: "1px solid rgba(255, 255, 255, 0.08)",
+                                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
                                             color: BRAND_COLORS.textSecondary,
                                             fontSize: "0.75rem",
                                             fontWeight: 700,
@@ -1470,12 +1471,12 @@ function ChatPage() {
                                                                 p: 1.6,
                                                                 px: 2.2,
                                                                 borderRadius: "20px",
-                                                                bgcolor: isMine ? BRAND_COLORS.brandBlue : "#FFFFFF",
-                                                                color: isMine ? "#FFFFFF" : BRAND_COLORS.deepNavy,
+                                                                bgcolor: isMine ? BRAND_COLORS.brandBlue : "#18253A",
+                                                                color: isMine ? "#FFFFFF" : "#F8FAFC",
                                                                 borderTopRightRadius: isMine ? "4px" : "20px",
                                                                 borderTopLeftRadius: !isMine ? "4px" : "20px",
-                                                                border: isMine ? "none" : "1px solid rgba(20, 43, 69, 0.08)",
-                                                                boxShadow: isMine ? "0 4px 14px rgba(37, 137, 216, 0.25)" : "0 2px 10px rgba(20, 43, 69, 0.04)",
+                                                                border: isMine ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
+                                                                boxShadow: isMine ? "0 4px 14px rgba(37, 137, 216, 0.35)" : "0 4px 16px rgba(0, 0, 0, 0.25)",
                                                                 wordBreak: "break-word",
                                                             }}
                                                         >
@@ -1636,12 +1637,13 @@ function ChatPage() {
                                         width: 42,
                                         height: 42,
                                         borderRadius: "50%",
-                                        bgcolor: "rgba(20, 43, 69, 0.04)",
-                                        border: "1px solid rgba(20, 43, 69, 0.08)",
-                                        color: BRAND_COLORS.deepNavy,
+                                        bgcolor: "rgba(255, 255, 255, 0.06)",
+                                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                                        color: "#F8FAFC",
                                         transition: "all 0.2s ease",
                                         "&:hover": {
-                                            bgcolor: "rgba(255, 255, 255, 0.12)",
+                                            bgcolor: "rgba(37, 137, 216, 0.15)",
+                                            borderColor: BRAND_COLORS.brandBlue,
                                             transform: "rotate(90deg)",
                                         },
                                     }}
@@ -1676,7 +1678,7 @@ function ChatPage() {
                                                     sx={{
                                                         color: showEmojiPicker ? BRAND_COLORS.brandBlue : BRAND_COLORS.textSecondary,
                                                          transition: "color 0.2s ease",
-                                                         "&:hover": { color: BRAND_COLORS.deepNavy },
+                                                         "&:hover": { color: "#F8FAFC" },
                                                     }}
                                                 >
                                                     <SentimentSatisfiedAltIcon fontSize="small" />
@@ -1693,11 +1695,12 @@ function ChatPage() {
                                     sx={{
                                         "& .MuiOutlinedInput-root": {
                                             borderRadius: "9999px",
-                                            bgcolor: "#FFFFFF",
+                                            bgcolor: "#142034",
+                                            color: "#F8FAFC",
                                             fontSize: "0.94rem",
-                                            boxShadow: "0 2px 8px rgba(20, 43, 69, 0.04)",
-                                            "& fieldset": { borderColor: "rgba(20, 43, 69, 0.08)" },
-                                            "&:hover fieldset": { borderColor: "rgba(37, 137, 216, 0.3)" },
+                                            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.25)",
+                                            "& fieldset": { borderColor: "rgba(255, 255, 255, 0.1)" },
+                                            "&:hover fieldset": { borderColor: "rgba(37, 137, 216, 0.4)" },
                                             "&.Mui-focused fieldset": { borderColor: BRAND_COLORS.brandBlue },
                                         },
                                     }}

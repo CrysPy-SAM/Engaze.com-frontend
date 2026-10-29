@@ -180,11 +180,11 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                     position="sticky"
                     elevation={0}
                     sx={{
-                        backgroundColor: "rgba(255, 255, 255, 0.94)",
+                        backgroundColor: "rgba(10, 17, 28, 0.90)",
                         backdropFilter: "blur(20px)",
                         WebkitBackdropFilter: "blur(20px)",
-                        borderBottom: "1px solid rgba(20, 43, 69, 0.08)",
-                        boxShadow: "0 2px 14px rgba(20, 43, 69, 0.04)",
+                        borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+                        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.4)",
                         zIndex: 1100,
                     }}
                 >
@@ -210,11 +210,11 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                 direction="row"
                                 spacing={0.8}
                                 sx={{
-                                    bgcolor: "#F4F8FC",
+                                    bgcolor: "#121C2D",
                                     p: 0.6,
                                     borderRadius: "9999px",
-                                    border: "1px solid rgba(20, 43, 69, 0.08)",
-                                    boxShadow: "0 2px 8px rgba(20, 43, 69, 0.03)",
+                                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                                    boxShadow: "0 4px 14px rgba(0, 0, 0, 0.25)",
                                 }}
                             >
                                 {navItems.map((item) => {
@@ -233,12 +233,12 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                 color: active ? "#FFFFFF" : BRAND_COLORS.textSecondary,
                                                 background: active ? BRAND_COLORS.brandBlue : "transparent",
                                                 border: "none",
-                                                boxShadow: active ? "0 4px 12px rgba(37, 137, 216, 0.32)" : "none",
+                                                boxShadow: active ? "0 4px 14px rgba(37, 137, 216, 0.35)" : "none",
                                                 position: "relative",
                                                 transition: "all 0.18s ease",
                                                 "&:hover": {
-                                                    background: active ? BRAND_COLORS.brandBlueHover : "rgba(37, 137, 216, 0.08)",
-                                                    color: active ? "#FFFFFF" : BRAND_COLORS.deepNavy,
+                                                    background: active ? BRAND_COLORS.brandBlueHover : "rgba(37, 137, 216, 0.12)",
+                                                    color: "#FFFFFF",
                                                 },
                                             }}
                                         >
@@ -277,12 +277,12 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                         width: { xs: 34, sm: 38 },
                                         height: { xs: 34, sm: 38 },
                                         borderRadius: "50%",
-                                        bgcolor: isNotifOpen ? "rgba(37, 137, 216, 0.1)" : "rgba(20, 43, 69, 0.04)",
-                                        color: unreadNotificationCount > 0 ? BRAND_COLORS.brandBlue : BRAND_COLORS.deepNavy,
-                                        border: `1px solid ${isNotifOpen ? BRAND_COLORS.brandBlue : "rgba(20, 43, 69, 0.08)"}`,
+                                        bgcolor: isNotifOpen ? "rgba(37, 137, 216, 0.2)" : "rgba(255, 255, 255, 0.06)",
+                                        color: unreadNotificationCount > 0 ? BRAND_COLORS.brandBlue : "#F8FAFC",
+                                        border: `1px solid ${isNotifOpen ? BRAND_COLORS.brandBlue : "rgba(255, 255, 255, 0.1)"}`,
                                         transition: "all 0.2s ease",
                                         "&:hover": {
-                                            bgcolor: "rgba(37, 137, 216, 0.08)",
+                                            bgcolor: "rgba(37, 137, 216, 0.15)",
                                             color: BRAND_COLORS.brandBlue,
                                         },
                                     }}
@@ -653,10 +653,10 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        backgroundColor: "rgba(255, 255, 255, 0.96)",
+                        backgroundColor: "rgba(10, 17, 28, 0.94)",
                         backdropFilter: "blur(24px)",
                         WebkitBackdropFilter: "blur(24px)",
-                        borderTop: "1px solid rgba(20, 43, 69, 0.08)",
+                        borderTop: "1px solid rgba(255, 255, 255, 0.08)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-around",
@@ -664,7 +664,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                         pt: 1,
                         pb: "max(12px, env(safe-area-inset-bottom))",
                         px: 1,
-                        boxShadow: "0 -4px 20px rgba(20, 43, 69, 0.06)",
+                        boxShadow: "0 -4px 24px rgba(0, 0, 0, 0.5)",
                     }}
                 >
                     {navItems.map((item) => {

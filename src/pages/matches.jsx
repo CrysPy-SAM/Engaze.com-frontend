@@ -332,7 +332,7 @@ function MatchesPage() {
     );
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#F7FAFE", pb: { xs: 12, md: 6 } }}>
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#0A111C", pb: { xs: 12, md: 6 } }}>
             {/* Unified Brand Navigation with Search & More Options */}
             <Navbar rightActions={matchesRightActions} />
 
@@ -355,7 +355,7 @@ function MatchesPage() {
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
-                                        <SearchRoundedIcon sx={{ color: BRAND_COLORS.coralPink }} />
+                                        <SearchRoundedIcon sx={{ color: BRAND_COLORS.brandBlue }} />
                                     </InputAdornment>
                                 ),
                                 endAdornment: searchQuery && (
@@ -369,10 +369,10 @@ function MatchesPage() {
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     borderRadius: "9999px",
-                                    bgcolor: "#FFFFFF",
-                                    border: "1px solid rgba(20, 43, 69, 0.08)",
-                                    boxShadow: "0 2px 10px rgba(20, 43, 69, 0.03)",
-                                    color: BRAND_COLORS.deepNavy,
+                                    bgcolor: "#121C2D",
+                                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                                    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
+                                    color: "#F8FAFC",
                                 },
                             }}
                         />
@@ -391,14 +391,14 @@ function MatchesPage() {
                             fontWeight: activeTab === "matches" ? 900 : 700,
                             fontSize: "0.85rem",
                             textTransform: "none",
-                            bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlue : "#FFFFFF",
-                            border: activeTab === "matches" ? "none" : "1px solid rgba(20, 43, 69, 0.1)",
+                            bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlue : "#121C2D",
+                            border: activeTab === "matches" ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
                             color: activeTab === "matches" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "matches" ? "0 4px 14px rgba(37, 137, 216, 0.32)" : "0 2px 6px rgba(20, 43, 69, 0.03)",
+                            boxShadow: activeTab === "matches" ? "0 4px 16px rgba(37, 137, 216, 0.4)" : "0 2px 6px rgba(0, 0, 0, 0.2)",
                             transition: "all 0.18s ease",
                             "&:hover": {
-                                bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlueHover : "rgba(37, 137, 216, 0.06)",
-                                color: activeTab === "matches" ? "#FFFFFF" : BRAND_COLORS.deepNavy,
+                                bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlueHover : "#18253A",
+                                color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
                         }}
@@ -415,14 +415,14 @@ function MatchesPage() {
                             fontWeight: activeTab === "requests" ? 900 : 700,
                             fontSize: "0.85rem",
                             textTransform: "none",
-                            bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlue : "#FFFFFF",
-                            border: activeTab === "requests" ? "none" : "1px solid rgba(20, 43, 69, 0.1)",
+                            bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlue : "#121C2D",
+                            border: activeTab === "requests" ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
                             color: activeTab === "requests" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "requests" ? "0 4px 14px rgba(37, 137, 216, 0.32)" : "0 2px 6px rgba(20, 43, 69, 0.03)",
+                            boxShadow: activeTab === "requests" ? "0 4px 16px rgba(37, 137, 216, 0.4)" : "0 2px 6px rgba(0, 0, 0, 0.2)",
                             transition: "all 0.18s ease",
                             "&:hover": {
-                                bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlueHover : "rgba(37, 137, 216, 0.06)",
-                                color: activeTab === "requests" ? "#FFFFFF" : BRAND_COLORS.deepNavy,
+                                bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlueHover : "#18253A",
+                                color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
                         }}
@@ -439,14 +439,14 @@ function MatchesPage() {
                             fontWeight: activeTab === "likes" ? 900 : 700,
                             fontSize: "0.85rem",
                             textTransform: "none",
-                            bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlue : "#FFFFFF",
-                            border: activeTab === "likes" ? "none" : "1px solid rgba(20, 43, 69, 0.1)",
+                            bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlue : "#121C2D",
+                            border: activeTab === "likes" ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
                             color: activeTab === "likes" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "likes" ? "0 4px 14px rgba(37, 137, 216, 0.32)" : "0 2px 6px rgba(20, 43, 69, 0.03)",
+                            boxShadow: activeTab === "likes" ? "0 4px 16px rgba(37, 137, 216, 0.4)" : "0 2px 6px rgba(0, 0, 0, 0.2)",
                             transition: "all 0.18s ease",
                             "&:hover": {
-                                bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlueHover : "rgba(37, 137, 216, 0.06)",
-                                color: activeTab === "likes" ? "#FFFFFF" : BRAND_COLORS.deepNavy,
+                                bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlueHover : "#18253A",
+                                color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
                         }}
@@ -595,14 +595,14 @@ function MatchesPage() {
                                             py: 1.5,
                                             px: { xs: 1.8, sm: 2.2 },
                                             borderRadius: "20px",
-                                            bgcolor: "#FFFFFF",
-                                            border: "1px solid rgba(20, 43, 69, 0.08)",
-                                            boxShadow: "0 2px 10px rgba(20, 43, 69, 0.03)",
+                                            bgcolor: "#121C2D",
+                                            border: "1px solid rgba(255, 255, 255, 0.08)",
+                                            boxShadow: "0 4px 16px rgba(0, 0, 0, 0.3)",
                                             transition: "all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1)",
                                             "&:hover": {
-                                                bgcolor: "#FFFFFF",
-                                                borderColor: "rgba(37, 137, 216, 0.3)",
-                                                boxShadow: "0 8px 24px rgba(37, 137, 216, 0.12)",
+                                                bgcolor: "#18253A",
+                                                borderColor: "rgba(37, 137, 216, 0.4)",
+                                                boxShadow: "0 8px 28px rgba(0, 0, 0, 0.45)",
                                                 transform: "translateY(-1.5px)",
                                             },
                                         }}

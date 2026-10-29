@@ -110,7 +110,7 @@ function HomeComponent() {
     ];
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#F7FAFE", pb: { xs: 12, md: 6 } }}>
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#0A111C", pb: { xs: 12, md: 6 } }}>
             {/* Unified Bottom Navigation Dock */}
             <Navbar hideTopNav={true} />
 
@@ -223,9 +223,9 @@ function HomeComponent() {
                     elevation={0}
                     sx={{
                         borderRadius: "24px",
-                        bgcolor: "#FFFFFF",
-                        border: "1px solid rgba(20, 43, 69, 0.08)",
-                        boxShadow: "0 8px 24px rgba(20, 43, 69, 0.04)",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
                         overflow: "hidden",
                         mb: 3,
                     }}
@@ -241,7 +241,7 @@ function HomeComponent() {
                                             px: { xs: 2, sm: 2.5 },
                                             transition: "all 0.2s ease",
                                             "&:hover": {
-                                                bgcolor: "rgba(37, 137, 216, 0.05)",
+                                                bgcolor: "rgba(37, 137, 216, 0.08)",
                                             },
                                         }}
                                     >
@@ -251,7 +251,7 @@ function HomeComponent() {
                                                     width: 36,
                                                     height: 36,
                                                     borderRadius: "50%",
-                                                    bgcolor: "rgba(37, 137, 216, 0.08)",
+                                                    bgcolor: "rgba(37, 137, 216, 0.15)",
                                                     display: "flex",
                                                     alignItems: "center",
                                                     justifyContent: "center",
@@ -263,7 +263,7 @@ function HomeComponent() {
 
                                         <ListItemText
                                             primary={
-                                                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, fontSize: "0.98rem" }}>
+                                                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#F8FAFC", fontSize: "0.98rem" }}>
                                                     {item.title}
                                                 </Typography>
                                             }
@@ -296,7 +296,7 @@ function HomeComponent() {
                                     </ListItemButton>
                                 </ListItem>
                                 {idx < menuItems.length - 1 && (
-                                    <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.06)", mx: 2 }} />
+                                    <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)", mx: 2 }} />
                                 )}
                             </React.Fragment>
                         ))}
@@ -310,16 +310,16 @@ function HomeComponent() {
                     sx={{
                         p: 2,
                         borderRadius: "20px",
-                        bgcolor: "#FFFFFF",
-                        border: "1px solid rgba(245, 158, 11, 0.3)",
-                        boxShadow: "0 4px 16px rgba(245, 158, 11, 0.06)",
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: "1px solid rgba(245, 158, 11, 0.25)",
+                        boxShadow: "0 4px 16px rgba(0, 0, 0, 0.25)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
                         cursor: "pointer",
                         transition: "all 0.2s ease",
                         "&:hover": {
-                            bgcolor: "rgba(245, 158, 11, 0.08)",
+                            bgcolor: "rgba(245, 158, 11, 0.12)",
                             borderColor: BRAND_COLORS.gold,
                         },
                     }}
