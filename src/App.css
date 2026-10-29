@@ -510,6 +510,35 @@ body {
   animation: floatGentle2 6.5s ease-in-out infinite;
 }
 
+/* 3D Liquid Waves Floating Animations */
+@keyframes liquidWaveSlow1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(8px, -10px) scale(1.025);
+  }
+}
+
+@keyframes liquidWaveSlow2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(-10px, 8px) scale(1.02);
+  }
+}
+
+.engaze-liquid-1 {
+  animation: liquidWaveSlow1 10s ease-in-out infinite;
+  transform-origin: top left;
+}
+
+.engaze-liquid-2 {
+  animation: liquidWaveSlow2 12s ease-in-out infinite;
+  transform-origin: top right;
+}
+
 /* Moving Feature Marquee Ticker */
 @keyframes marqueeScroll {
   0% {
@@ -570,6 +599,8 @@ body {
   }
   .engaze-float-1,
   .engaze-float-2,
+  .engaze-liquid-1,
+  .engaze-liquid-2,
   .engaze-marquee-track {
     animation: none !important;
   }
