@@ -104,6 +104,237 @@ const SquiggleDoodle = ({ sx = {}, color = "#8FA8FF" }) => (
     </Box>
 );
 
+
+// ============================================================
+// 3D LIQUID PEACH ORGANIC WAVES & SPECULAR HIGHLIGHTS
+// ============================================================
+const LiquidWaveTopLeft = () => (
+    <Box
+        component="svg"
+        viewBox="0 0 620 520"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="engaze-liquid-1"
+        sx={{
+            position: "absolute",
+            top: -50,
+            left: -70,
+            width: { xs: 320, sm: 460, md: 560, lg: 640 },
+            height: { xs: 260, sm: 380, md: 460, lg: 520 },
+            pointerEvents: "none",
+            zIndex: 1,
+            filter: "drop-shadow(0 20px 42px rgba(255, 175, 155, 0.32))",
+            opacity: 0.95,
+        }}
+    >
+        <defs>
+            <linearGradient id="peachGradTL1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FFE8DE" stopOpacity="0.96" />
+                <stop offset="45%" stopColor="#FFC8B5" stopOpacity="0.88" />
+                <stop offset="100%" stopColor="#FFB39E" stopOpacity="0.45" />
+            </linearGradient>
+            <linearGradient id="peachGradTL2" x1="15%" y1="10%" x2="85%" y2="85%">
+                <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.75" />
+                <stop offset="45%" stopColor="#FFD5C6" stopOpacity="0.5" />
+                <stop offset="100%" stopColor="#FFAA94" stopOpacity="0.2" />
+            </linearGradient>
+            <filter id="liquidGlowTL" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="8" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+        </defs>
+        <path
+            d="M-50 -30 Q 120 40 220 180 T 420 280 C 490 350 480 430 380 470 C 260 520 80 440 -30 400 Z"
+            fill="url(#peachGradTL1)"
+        />
+        <path
+            d="M-40 -20 Q 90 60 170 170 T 320 260 C 370 310 330 370 240 370 C 140 370 40 320 -40 280 Z"
+            fill="url(#peachGradTL2)"
+        />
+        <path
+            d="M-20 10 Q 70 80 130 160 T 240 230"
+            stroke="#FFFFFF"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeOpacity="0.65"
+            filter="url(#liquidGlowTL)"
+        />
+    </Box>
+);
+
+const LiquidWaveTopRight = () => (
+    <Box
+        component="svg"
+        viewBox="0 0 650 520"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="engaze-liquid-2"
+        sx={{
+            position: "absolute",
+            top: -60,
+            right: -80,
+            width: { xs: 320, sm: 460, md: 580, lg: 660 },
+            height: { xs: 260, sm: 380, md: 470, lg: 530 },
+            pointerEvents: "none",
+            zIndex: 1,
+            filter: "drop-shadow(0 22px 45px rgba(255, 160, 140, 0.32))",
+            opacity: 0.92,
+        }}
+    >
+        <defs>
+            <linearGradient id="peachGradTR1" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#FFEAE3" stopOpacity="0.96" />
+                <stop offset="40%" stopColor="#FFC8B4" stopOpacity="0.88" />
+                <stop offset="85%" stopColor="#FFAE97" stopOpacity="0.45" />
+                <stop offset="100%" stopColor="#FFE0D6" stopOpacity="0.1" />
+            </linearGradient>
+            <linearGradient id="peachGradTR2" x1="85%" y1="10%" x2="20%" y2="85%">
+                <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.7" />
+                <stop offset="55%" stopColor="#FFD8CB" stopOpacity="0.48" />
+                <stop offset="100%" stopColor="#FFB8A5" stopOpacity="0.15" />
+            </linearGradient>
+            <filter id="liquidGlowTR" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="7" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+        </defs>
+        <path
+            d="M700 -40 Q 520 60 410 190 T 210 300 C 130 370 160 450 260 480 C 390 520 560 420 690 370 Z"
+            fill="url(#peachGradTR1)"
+        />
+        <path
+            d="M680 -20 Q 540 80 450 180 T 290 270 C 230 320 280 370 370 365 C 470 360 590 310 680 260 Z"
+            fill="url(#peachGradTR2)"
+        />
+        <path
+            d="M660 10 Q 550 90 480 165 T 350 240"
+            stroke="#FFFFFF"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeOpacity="0.6"
+            filter="url(#liquidGlowTR)"
+        />
+    </Box>
+);
+
+const LiquidWaveBottomLeft = () => (
+    <Box
+        component="svg"
+        viewBox="0 0 650 500"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="engaze-liquid-2"
+        sx={{
+            position: "absolute",
+            bottom: -70,
+            left: -90,
+            width: { xs: 330, sm: 480, md: 600, lg: 680 },
+            height: { xs: 260, sm: 380, md: 470, lg: 520 },
+            pointerEvents: "none",
+            zIndex: 1,
+            filter: "drop-shadow(0 -16px 38px rgba(255, 170, 150, 0.28))",
+            opacity: 0.9,
+        }}
+    >
+        <defs>
+            <linearGradient id="peachGradBL1" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#FFD4C2" stopOpacity="0.96" />
+                <stop offset="45%" stopColor="#FFBEA8" stopOpacity="0.85" />
+                <stop offset="100%" stopColor="#FFF0E8" stopOpacity="0.25" />
+            </linearGradient>
+            <linearGradient id="peachGradBL2" x1="10%" y1="90%" x2="80%" y2="20%">
+                <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.65" />
+                <stop offset="50%" stopColor="#FFD7C9" stopOpacity="0.48" />
+                <stop offset="100%" stopColor="#FFAE98" stopOpacity="0.12" />
+            </linearGradient>
+        </defs>
+        <path
+            d="M-60 550 C 60 520 180 470 260 380 C 350 280 340 180 260 130 C 170 80 50 140 -50 220 Z"
+            fill="url(#peachGradBL1)"
+        />
+        <path
+            d="M-40 500 C 60 470 160 410 220 340 C 280 260 270 190 200 160 C 130 130 40 180 -40 240 Z"
+            fill="url(#peachGradBL2)"
+        />
+        <path
+            d="M-20 440 C 60 410 140 360 190 300"
+            stroke="#FFFFFF"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeOpacity="0.55"
+        />
+    </Box>
+);
+
+const LiquidWaveBottomRight = () => (
+    <Box
+        component="svg"
+        viewBox="0 0 650 500"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="engaze-liquid-1"
+        sx={{
+            position: "absolute",
+            bottom: -70,
+            right: -90,
+            width: { xs: 330, sm: 480, md: 600, lg: 680 },
+            height: { xs: 260, sm: 380, md: 470, lg: 520 },
+            pointerEvents: "none",
+            zIndex: 1,
+            filter: "drop-shadow(0 -18px 40px rgba(255, 165, 145, 0.3))",
+            opacity: 0.92,
+        }}
+    >
+        <defs>
+            <linearGradient id="peachGradBR1" x1="100%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stopColor="#FFD1BF" stopOpacity="0.96" />
+                <stop offset="45%" stopColor="#FFBAA2" stopOpacity="0.86" />
+                <stop offset="100%" stopColor="#FFF2EB" stopOpacity="0.25" />
+            </linearGradient>
+            <linearGradient id="peachGradBR2" x1="90%" y1="90%" x2="20%" y2="10%">
+                <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.68" />
+                <stop offset="50%" stopColor="#FFD5C6" stopOpacity="0.48" />
+                <stop offset="100%" stopColor="#FFAA92" stopOpacity="0.12" />
+            </linearGradient>
+        </defs>
+        <path
+            d="M710 550 C 590 520 470 470 390 380 C 300 280 310 180 390 130 C 480 80 600 140 700 220 Z"
+            fill="url(#peachGradBR1)"
+        />
+        <path
+            d="M690 500 C 590 470 490 410 430 340 C 370 260 380 190 450 160 C 520 130 610 180 690 240 Z"
+            fill="url(#peachGradBR2)"
+        />
+        <path
+            d="M670 440 C 590 410 510 360 460 300"
+            stroke="#FFFFFF"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeOpacity="0.55"
+        />
+    </Box>
+);
+
+// 3D Translucent Glossy Liquid Pearl Droplet
+const LiquidPearlDrop = ({ sx = {}, size = 26 }) => (
+    <Box
+        sx={{
+            position: "absolute",
+            width: size,
+            height: size,
+            borderRadius: "50%",
+            background: "radial-gradient(circle at 32% 30%, #FFFFFF 0%, #FFE2D6 40%, #FFB6A0 80%, #FF9E85 100%)",
+            boxShadow: "0 8px 20px rgba(235, 130, 110, 0.35), inset 0 2px 5px rgba(255, 255, 255, 0.85), inset -1px -2px 4px rgba(220, 100, 80, 0.25)",
+            pointerEvents: "none",
+            userSelect: "none",
+            zIndex: 1,
+            ...sx,
+        }}
+    />
+);
+
+// ============================================================
+// 3D LIQUID PEACH ORGANIC WAVES & SPECULAR HIGHLIGHTS
 // Modern Senior-Developer Mobile Auto-Swipe Carousel for Feature Cards
 function MobileAutoFeatureCarousel() {
     const [activeIndex, setActiveIndex] = useState(0);
@@ -703,61 +934,90 @@ export default function LandingPage() {
 
             {/* ============================================================
                 2. HERO SECTION
-                Soft sky blue background with circular profile portraits framing
-                the deep navy headline, playful chat bubbles & clear CTAs.
+                Peach, blush pink & warm ivory 3D liquid background with
+                flowing organic wave contours, specular highlights, floating
+                circular profile portraits, playful chat bubbles & clear CTAs.
+                STRICTLY CONFINED to this hero section.
                 ============================================================ */}
             <Box
                 component="section"
                 sx={{
                     position: "relative",
-                    background: "linear-gradient(145deg, #EAF6FF 0%, #E3F1FF 55%, #F0ECFF 100%)",
+                    background: "radial-gradient(ellipse 85% 75% at 50% 28%, #FFFDFB 0%, #FFF5EE 30%, #FFE9E2 60%, #FFD8C8 100%)",
                     color: "#142B45",
                     pt: { xs: 4, sm: 6, md: 8 },
-                    pb: { xs: 5, sm: 6, md: 7 },
+                    pb: { xs: 5, sm: 6, md: 7.5 },
                     px: { xs: 2, sm: 3, md: 5 },
                     overflow: "hidden",
-                    borderBottom: "1px solid rgba(20, 43, 69, 0.08)",
+                    borderBottom: "1px solid rgba(225, 160, 145, 0.22)",
                     minHeight: { xs: "auto", md: 540, lg: 600 },
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                 }}
             >
-                {/* Soft Organic Background Blobs (#CDE6FA) */}
+                {/* 3D Liquid Waves on Corners */}
+                <LiquidWaveTopLeft />
+                <LiquidWaveTopRight />
+                <LiquidWaveBottomLeft />
+                <LiquidWaveBottomRight />
+
+                {/* Soft Radial 3D Liquid Glow Blurs */}
                 <Box
                     sx={{
                         position: "absolute",
-                        top: -80,
-                        left: -80,
-                        width: { xs: 220, md: 380 },
-                        height: { xs: 220, md: 380 },
+                        top: -90,
+                        left: -90,
+                        width: { xs: 240, md: 400 },
+                        height: { xs: 240, md: 400 },
                         borderRadius: "50%",
-                        background: "radial-gradient(circle, rgba(205, 230, 250, 0.65) 0%, rgba(234, 246, 255, 0) 70%)",
+                        background: "radial-gradient(circle, rgba(255, 216, 200, 0.75) 0%, rgba(255, 248, 242, 0) 70%)",
                         pointerEvents: "none",
+                        filter: "blur(20px)",
                     }}
                 />
                 <Box
                     sx={{
                         position: "absolute",
-                        bottom: -80,
-                        right: -80,
-                        width: { xs: 220, md: 380 },
-                        height: { xs: 220, md: 380 },
+                        bottom: -90,
+                        right: -90,
+                        width: { xs: 240, md: 420 },
+                        height: { xs: 240, md: 420 },
                         borderRadius: "50%",
-                        background: "radial-gradient(circle, rgba(240, 236, 255, 0.65) 0%, rgba(240, 236, 255, 0) 70%)",
+                        background: "radial-gradient(circle, rgba(255, 193, 181, 0.7) 0%, rgba(255, 229, 232, 0) 70%)",
                         pointerEvents: "none",
+                        filter: "blur(24px)",
+                    }}
+                />
+                {/* Central Soft Translucent Glow behind text for crisp contrast */}
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        width: { xs: "90%", md: 740 },
+                        height: { xs: 340, md: 440 },
+                        borderRadius: "50%",
+                        background: "radial-gradient(ellipse, rgba(255, 255, 255, 0.75) 0%, rgba(255, 252, 249, 0.5) 50%, rgba(255, 248, 242, 0) 80%)",
+                        pointerEvents: "none",
+                        zIndex: 1,
                     }}
                 />
 
+                {/* 3D Glossy Liquid Pearl Droplets */}
+                <LiquidPearlDrop sx={{ top: { xs: 25, md: 55 }, left: { xs: "8%", md: "15%" }, display: { xs: "none", sm: "block" } }} size={24} />
+                <LiquidPearlDrop sx={{ bottom: { xs: 30, md: 70 }, right: { xs: "8%", md: "15%" }, display: { xs: "none", sm: "block" } }} size={28} />
+
                 {/* Decorative Hand-Drawn Vector Doodles (Desktop/Tablet sm+) */}
-                <Box sx={{ display: { xs: "none", md: "block" }, pointerEvents: "none" }}>
-                    <BurstLines sx={{ position: "absolute", top: { sm: 15, md: 20 }, left: { sm: 40, md: "6%" } }} rotation={0} color="#2589D8" />
-                    <HeartDoodle sx={{ position: "absolute", top: { sm: 70, md: 80 }, left: { sm: 160, md: "16%" } }} rotation={15} color="#FF8F9C" />
-                    <SquiggleDoodle sx={{ position: "absolute", top: { md: 180, lg: 200 }, left: { md: "5%", lg: "6%" } }} color="#B8A7FF" />
-                    <BurstLines sx={{ position: "absolute", top: { sm: 15, md: 20 }, right: { sm: 40, md: "6%" } }} rotation={120} color="#2589D8" />
-                    <BurstLines sx={{ position: "absolute", bottom: { sm: 15, md: 20 }, left: { sm: 80, md: "8%" } }} rotation={60} color="#2589D8" />
-                    <HeartDoodle sx={{ position: "absolute", bottom: { sm: 160, md: 180 }, right: { sm: 110, md: "14%" } }} rotation={-15} color="#FF8F9C" />
-                    <BurstLines sx={{ position: "absolute", bottom: { sm: 140, md: 160 }, right: { sm: 15, md: "3%" } }} rotation={120} color="#2589D8" />
+                <Box sx={{ display: { xs: "none", md: "block" }, pointerEvents: "none", zIndex: 2 }}>
+                    <BurstLines sx={{ position: "absolute", top: { sm: 25, md: 40 }, left: { sm: 40, md: "6%" } }} rotation={0} color="#FF8F9C" />
+                    <HeartDoodle sx={{ position: "absolute", top: { sm: 80, md: 100 }, left: { sm: 160, md: "16%" } }} rotation={15} color="#FF6B81" />
+                    <SquiggleDoodle sx={{ position: "absolute", top: { md: 210, lg: 235 }, left: { md: "5%", lg: "6%" } }} color="#FFB39E" />
+                    <BurstLines sx={{ position: "absolute", top: { sm: 25, md: 40 }, right: { sm: 40, md: "6%" } }} rotation={120} color="#2589D8" />
+                    <BurstLines sx={{ position: "absolute", bottom: { sm: 30, md: 45 }, left: { sm: 80, md: "8%" } }} rotation={60} color="#2589D8" />
+                    <HeartDoodle sx={{ position: "absolute", bottom: { sm: 160, md: 180 }, right: { sm: 110, md: "14%" } }} rotation={-15} color="#FF6B81" />
+                    <BurstLines sx={{ position: "absolute", bottom: { sm: 140, md: 160 }, right: { sm: 15, md: "3%" } }} rotation={120} color="#FF8F9C" />
                 </Box>
 
                 {/* Four Circular Profile Portraits (Framing the Corners on sm+) */}
@@ -769,16 +1029,16 @@ export default function LandingPage() {
                     className="engaze-hero-portrait engaze-float-1"
                     sx={{
                         position: "absolute",
-                        top: { sm: 20, md: 30, lg: 35 },
+                        top: { sm: 25, md: 35, lg: 42 },
                         left: { sm: 15, md: "3%", lg: "4%" },
                         width: { sm: 85, md: 108, lg: 120 },
                         height: { sm: 85, md: 108, lg: 120 },
                         borderRadius: "50%",
                         border: "5px solid #FFFFFF",
-                        boxShadow: "0 14px 32px rgba(20, 43, 69, 0.12)",
+                        boxShadow: "0 14px 34px rgba(220, 120, 100, 0.22)",
                         backgroundColor: "#8FA8FF",
                         objectFit: "cover",
-                        zIndex: 2,
+                        zIndex: 3,
                         display: { xs: "none", sm: "block" },
                     }}
                 />
@@ -791,16 +1051,16 @@ export default function LandingPage() {
                     className="engaze-hero-portrait engaze-float-2"
                     sx={{
                         position: "absolute",
-                        top: { sm: 20, md: 30, lg: 35 },
+                        top: { sm: 25, md: 35, lg: 42 },
                         right: { sm: 15, md: "3%", lg: "4%" },
                         width: { sm: 90, md: 114, lg: 126 },
                         height: { sm: 90, md: 114, lg: 126 },
                         borderRadius: "50%",
                         border: "5px solid #FFFFFF",
-                        boxShadow: "0 14px 32px rgba(20, 43, 69, 0.12)",
+                        boxShadow: "0 14px 34px rgba(220, 120, 100, 0.22)",
                         backgroundColor: "#A98BFF",
                         objectFit: "cover",
-                        zIndex: 2,
+                        zIndex: 3,
                         display: { xs: "none", sm: "block" },
                     }}
                 />
@@ -819,10 +1079,10 @@ export default function LandingPage() {
                         height: { sm: 94, md: 120, lg: 132 },
                         borderRadius: "50%",
                         border: "5px solid #FFFFFF",
-                        boxShadow: "0 14px 32px rgba(20, 43, 69, 0.12)",
+                        boxShadow: "0 14px 34px rgba(220, 120, 100, 0.22)",
                         backgroundColor: "#FFD84D",
                         objectFit: "cover",
-                        zIndex: 2,
+                        zIndex: 3,
                         display: { xs: "none", sm: "block" },
                     }}
                 />
@@ -841,10 +1101,10 @@ export default function LandingPage() {
                         height: { sm: 98, md: 124, lg: 136 },
                         borderRadius: "50%",
                         border: "5px solid #FFFFFF",
-                        boxShadow: "0 14px 32px rgba(20, 43, 69, 0.12)",
+                        boxShadow: "0 14px 34px rgba(220, 120, 100, 0.22)",
                         backgroundColor: "#F06C9B",
                         objectFit: "cover",
-                        zIndex: 2,
+                        zIndex: 3,
                         display: { xs: "none", sm: "block" },
                     }}
                 />
@@ -855,7 +1115,7 @@ export default function LandingPage() {
                     className="engaze-chat-bubble engaze-float-2"
                     sx={{
                         position: "absolute",
-                        top: { lg: 115 },
+                        top: { lg: 122 },
                         left: { lg: "11%", xl: "12%" },
                         backgroundColor: "#FFFFFF",
                         color: "#142B45",
@@ -883,7 +1143,7 @@ export default function LandingPage() {
                     className="engaze-chat-bubble engaze-float-1"
                     sx={{
                         position: "absolute",
-                        top: { lg: 110 },
+                        top: { lg: 118 },
                         right: { lg: "11%", xl: "12%" },
                         backgroundColor: "#F0ECFF",
                         color: "#142B45",
@@ -1229,6 +1489,28 @@ export default function LandingPage() {
                         </Typography>
                     </Box>
                 </Container>
+
+                {/* Organic Liquid Wave Transition cleanly capping the Hero section into Section 3 (#FFFCF8) */}
+                <Box
+                    component="svg"
+                    viewBox="0 0 1440 54"
+                    preserveAspectRatio="none"
+                    sx={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        width: "100%",
+                        height: { xs: 20, sm: 30, md: 42 },
+                        zIndex: 2,
+                        pointerEvents: "none",
+                        display: "block",
+                    }}
+                >
+                    <path
+                        d="M0,28 C280,48 480,10 720,28 C960,46 1160,12 1440,28 L1440,54 L0,54 Z"
+                        fill="#FFFCF8"
+                    />
+                </Box>
             </Box>
                          
 
@@ -1590,6 +1872,7 @@ export default function LandingPage() {
                         </Grid>
                     </Grid>
                 </Container>
+
             </Box>
 
             {/* ============================================================
@@ -1774,6 +2057,7 @@ export default function LandingPage() {
                         ))}
                     </Box>
                 </Container>
+
             </Box>
 
             {/* ============================================================
@@ -1913,6 +2197,7 @@ export default function LandingPage() {
                         </Grid>
                     </Grid>
                 </Container>
+
             </Box>
 
             {/* ============================================================
@@ -2174,6 +2459,7 @@ export default function LandingPage() {
                         </Grid>
                     </Grid>
                 </Container>
+
             </Box>
 
             {/* ============================================================
@@ -2355,6 +2641,7 @@ export default function LandingPage() {
                         ))}
                     </Grid>
                 </Container>
+
             </Box>
 
             {/* ============================================================
@@ -2464,6 +2751,7 @@ export default function LandingPage() {
                         ))}
                     </Stack>
                 </Container>
+
             </Box>
 
             {/* ============================================================
@@ -2587,6 +2875,7 @@ export default function LandingPage() {
                         </Button>
                     </Paper>
                 </Container>
+
             </Box>
 
             {/* ============================================================
@@ -2724,6 +3013,7 @@ export default function LandingPage() {
                         </Stack>
                     </Box>
                 </Container>
+
             </Box>
         </Box>
     );
