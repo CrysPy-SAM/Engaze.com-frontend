@@ -17,11 +17,10 @@ import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
-import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
 
 export default function SafetyCenter() {
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: BRAND_COLORS.bgDark, color: "#FFFFFF", overflowX: "hidden" }}>
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#F7FAFE", color: BRAND_COLORS.deepNavy, overflowX: "hidden" }}>
             {/* Top Navigation Bar */}
             <Box
                 component="header"
@@ -31,12 +30,13 @@ export default function SafetyCenter() {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                    backgroundColor: "rgba(11, 13, 23, 0.8)",
+                    borderBottom: "1px solid rgba(20, 43, 69, 0.08)",
+                    backgroundColor: "rgba(255, 255, 255, 0.92)",
                     backdropFilter: "blur(20px)",
                     position: "sticky",
                     top: 0,
                     zIndex: 100,
+                    boxShadow: "0 2px 14px rgba(20, 43, 69, 0.04)",
                 }}
             >
                 <Box
@@ -54,13 +54,13 @@ export default function SafetyCenter() {
                         to="/"
                         startIcon={<ArrowBackRoundedIcon />}
                         sx={{
-                            color: "rgba(255, 255, 255, 0.85)",
+                            color: BRAND_COLORS.deepNavy,
                             borderRadius: 9999,
-                            px: 2,
+                            px: 2.5,
                             fontSize: "0.9rem",
                             fontWeight: 600,
                             textTransform: "none",
-                            "&:hover": { color: "#FFFFFF", bgcolor: "rgba(255,255,255,0.06)" },
+                            "&:hover": { color: BRAND_COLORS.brandBlue, bgcolor: "rgba(37, 137, 216, 0.08)" },
                         }}
                     >
                         Home
@@ -70,21 +70,20 @@ export default function SafetyCenter() {
                         to="/auth"
                         variant="contained"
                         sx={{
-                            bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
+                            bgcolor: BRAND_COLORS.brandBlue,
                             color: "#FFFFFF",
-                            border: "2px solid #0D0E15",
-                            boxShadow: "2.5px 2.5px 0px #0D0E15",
                             borderRadius: 9999,
                             px: 3,
                             py: 0.9,
                             fontSize: "0.9rem",
-                            fontWeight: 800,
+                            fontWeight: 700,
                             textTransform: "none",
-                            transition: "all 0.15s ease",
+                            boxShadow: "0 4px 14px rgba(37, 137, 216, 0.32)",
+                            transition: "all 0.2s ease",
                             "&:hover": {
-                                bgcolor: "#E61A68",
-                                boxShadow: "3.5px 3.5px 0px #0D0E15",
-                                transform: "translate(-1px, -1px)",
+                                bgcolor: BRAND_COLORS.brandBlueHover,
+                                boxShadow: "0 6px 20px rgba(37, 137, 216, 0.42)",
+                                transform: "translateY(-1px)",
                             },
                         }}
                     >
@@ -94,7 +93,7 @@ export default function SafetyCenter() {
             </Box>
 
             {/* Document Header */}
-            <Container maxWidth="lg" sx={{ pt: { xs: 6, md: 9 }, pb: { xs: 6, md: 10 } }}>
+            <Container maxWidth="lg" sx={{ pt: { xs: 6, md: 8 }, pb: { xs: 6, md: 10 } }}>
                 <Box sx={{ mb: 6, textAlign: "center", maxWidth: 760, mx: "auto" }}>
                     <Box
                         sx={{
@@ -104,8 +103,8 @@ export default function SafetyCenter() {
                             px: 1.8,
                             py: 0.6,
                             borderRadius: 9999,
-                            bgcolor: "rgba(16, 185, 129, 0.12)",
-                            border: "1px solid rgba(16, 185, 129, 0.3)",
+                            bgcolor: "rgba(16, 185, 129, 0.1)",
+                            border: "1px solid rgba(16, 185, 129, 0.25)",
                             color: BRAND_COLORS.emerald,
                             fontSize: "0.82rem",
                             fontWeight: 700,
@@ -115,7 +114,7 @@ export default function SafetyCenter() {
                         <ShieldOutlinedIcon sx={{ fontSize: 16 }} />
                         ENGZ-SAFETY-GUIDE-01
                     </Box>
-                    <Typography variant="h1" sx={{ fontSize: { xs: "2.2rem", sm: "3.2rem" }, fontWeight: 900, mb: 2, letterSpacing: "-0.03em" }}>
+                    <Typography variant="h1" sx={{ fontSize: { xs: "2.2rem", sm: "3.2rem" }, fontWeight: 900, mb: 2, letterSpacing: "-0.03em", color: BRAND_COLORS.deepNavy }}>
                         Safety & Community Guidelines
                     </Typography>
                     <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "1.1rem", lineHeight: 1.6 }}>
@@ -124,23 +123,38 @@ export default function SafetyCenter() {
                 </Box>
 
                 {/* Built-in Safety Features Grid */}
-                <Typography variant="h4" sx={{ fontWeight: 800, mb: 3, textAlign: "center" }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, mb: 3.5, textAlign: "center", color: BRAND_COLORS.deepNavy }}>
                     Platform Safety Built by Design
                 </Typography>
 
                 <Grid container spacing={3.5} sx={{ mb: 8 }}>
                     <Grid item xs={12} md={4}>
                         <Paper
+                            elevation={0}
                             sx={{
                                 p: 4,
                                 height: "100%",
                                 borderRadius: "24px",
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                backgroundColor: "#FFFFFF",
+                                border: "1px solid rgba(20, 43, 69, 0.08)",
+                                boxShadow: "0 10px 30px rgba(20, 43, 69, 0.04)",
                             }}
                         >
-                            <FavoriteRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 36, mb: 2 }} />
-                            <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
+                            <Box
+                                sx={{
+                                    width: 52,
+                                    height: 52,
+                                    borderRadius: "16px",
+                                    bgcolor: "rgba(255, 90, 112, 0.1)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mb: 2.5,
+                                }}
+                            >
+                                <FavoriteRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 28 }} />
+                            </Box>
+                            <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
                                 1. Mutual-Opt-In Matching
                             </Typography>
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7 }}>
@@ -151,16 +165,31 @@ export default function SafetyCenter() {
 
                     <Grid item xs={12} md={4}>
                         <Paper
+                            elevation={0}
                             sx={{
                                 p: 4,
                                 height: "100%",
                                 borderRadius: "24px",
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                backgroundColor: "#FFFFFF",
+                                border: "1px solid rgba(20, 43, 69, 0.08)",
+                                boxShadow: "0 10px 30px rgba(20, 43, 69, 0.04)",
                             }}
                         >
-                            <VideocamRoundedIcon sx={{ color: BRAND_COLORS.violet, fontSize: 36, mb: 2 }} />
-                            <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
+                            <Box
+                                sx={{
+                                    width: 52,
+                                    height: 52,
+                                    borderRadius: "16px",
+                                    bgcolor: "rgba(139, 92, 246, 0.1)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mb: 2.5,
+                                }}
+                            >
+                                <VideocamRoundedIcon sx={{ color: BRAND_COLORS.violet, fontSize: 28 }} />
+                            </Box>
+                            <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
                                 2. Browser 1-on-1 Video Dates
                             </Typography>
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7 }}>
@@ -171,134 +200,126 @@ export default function SafetyCenter() {
 
                     <Grid item xs={12} md={4}>
                         <Paper
+                            elevation={0}
                             sx={{
                                 p: 4,
                                 height: "100%",
                                 borderRadius: "24px",
-                                backgroundColor: BRAND_COLORS.surfaceDark,
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                backgroundColor: "#FFFFFF",
+                                border: "1px solid rgba(20, 43, 69, 0.08)",
+                                boxShadow: "0 10px 30px rgba(20, 43, 69, 0.04)",
                             }}
                         >
-                            <LockOutlinedIcon sx={{ color: BRAND_COLORS.emerald, fontSize: 36, mb: 2 }} />
-                            <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
-                                3. One-Tap Reporting & Blocking
+                            <Box
+                                sx={{
+                                    width: 52,
+                                    height: 52,
+                                    borderRadius: "16px",
+                                    bgcolor: "rgba(16, 185, 129, 0.1)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mb: 2.5,
+                                }}
+                            >
+                                <LockOutlinedIcon sx={{ color: BRAND_COLORS.emerald, fontSize: 28 }} />
+                            </Box>
+                            <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
+                                3. Zero-Call-Recording Policy
                             </Typography>
                             <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7 }}>
-                                If anyone makes you feel uncomfortable, you can instantly terminate a live call and block or report their profile. Blocked members are immediately prevented from reaching you again.
+                                Engaze never records, monitors, or saves your video or audio conversations. Real-time media feeds travel directly between peer browsers via WebRTC encryption, preserving your privacy at all times.
                             </Typography>
                         </Paper>
                     </Grid>
                 </Grid>
 
-                {/* Practical Safety Tips */}
+                {/* Practical Advice Container */}
                 <Paper
+                    elevation={0}
                     sx={{
                         p: { xs: 3, sm: 5, md: 6 },
-                        borderRadius: "28px",
-                        backgroundColor: BRAND_COLORS.surfaceDark,
-                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                        mb: 8,
+                        borderRadius: "24px",
+                        backgroundColor: "#FFFFFF",
+                        border: "1px solid rgba(20, 43, 69, 0.08)",
+                        boxShadow: "0 10px 36px rgba(20, 43, 69, 0.05)",
+                        lineHeight: 1.8,
+                        mb: 6,
                     }}
                 >
-                    <Typography variant="h4" sx={{ fontWeight: 800, mb: 4, color: "#FFFFFF" }}>
-                        Best Practices for Dating Safely
-                    </Typography>
-
-                    <Stack spacing={3.5}>
+                    <Stack spacing={4}>
                         <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: BRAND_COLORS.coralPink, mb: 1 }}>
-                                Never Send Money or Financial Information
+                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
+                                Best Practices for Online Dating
                             </Typography>
-                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7 }}>
-                                Never send money, wire transfers, cryptocurrency, gift cards, or bank details to anyone you meet online — regardless of the reason or emergency claimed. Report anyone who asks for money immediately to support@engaze.date.
-                            </Typography>
+                            <Stack spacing={1.5} sx={{ pl: 2 }}>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    &bull; <strong>Keep Personal Info Private:</strong> Do not share your home address, workplace, financial details, or bank information with anyone you meet online.
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    &bull; <strong>Stay on the Platform Initially:</strong> Use Engaze's messaging and built-in video calling to establish chemistry before offering third-party social media or phone numbers.
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    &bull; <strong>Never Send Money:</strong> Never transfer funds, cryptocurrency, or gift cards to anyone you meet online, regardless of their circumstances or story.
+                                </Typography>
+                            </Stack>
                         </Box>
 
-                        <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder }} />
+                        <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.08)" }} />
 
                         <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: BRAND_COLORS.violet, mb: 1 }}>
-                                Keep Early Chats on the Engaze Platform
+                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
+                                Guidelines for In-Person Dates
                             </Typography>
-                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7 }}>
-                                Keep communications within Engaze's chat and video call features while you are getting to know someone. Avoid sharing your home address, workplace, or personal phone number until mutual trust has been firmly established.
-                            </Typography>
+                            <Stack spacing={1.5} sx={{ pl: 2 }}>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    &bull; <strong>Meet in Public:</strong> Always plan your first few dates in populated, public locations such as a cafe, restaurant, or park during daytime or busy evening hours.
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    &bull; <strong>Inform a Friend:</strong> Let a friend or family member know who you are meeting, where you will be, and when you expect to return.
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    &bull; <strong>Control Your Own Transportation:</strong> Arrange your own ride to and from the date so you have total autonomy to leave at any moment you choose.
+                                </Typography>
+                            </Stack>
                         </Box>
 
-                        <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder }} />
+                        <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.08)" }} />
 
                         <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: BRAND_COLORS.emerald, mb: 1 }}>
-                                Do a Video Vibe Check Before In-Person Meetings
+                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
+                                Reporting & Blocking Disruptive Behavior
                             </Typography>
-                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7 }}>
-                                Take advantage of Engaze's built-in 1-on-1 video call feature before agreeing to meet someone offline. A brief 5-minute video date confirms that your match is genuine and helps you evaluate real chemistry.
+                            <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary, mb: 2 }}>
+                                You have full control over who can interact with you on Engaze:
                             </Typography>
-                        </Box>
-
-                        <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder }} />
-
-                        <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: BRAND_COLORS.skyBlue, mb: 1 }}>
-                                Meet in Public & Tell Someone You Trust
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, lineHeight: 1.7 }}>
-                                When meeting for the first time, choose a populated public location (such as a busy cafe or restaurant). Arrange your own transportation to and from the venue, and inform a friend or family member where you are going and when you expect to return.
-                            </Typography>
+                            <Stack spacing={1.5} sx={{ pl: 2 }}>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    &bull; <strong>Instant Block:</strong> You can block any match at any time from their profile or chat menu. Blocking immediately removes the connection and prevents further messages or call attempts.
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                    &bull; <strong>Report Concerns:</strong> If another member engages in harassment, hate speech, inappropriate behavior, or scamming, report them immediately through the Safety Action dialog or via email to <strong>safety@engaze.date</strong>.
+                                </Typography>
+                            </Stack>
                         </Box>
                     </Stack>
                 </Paper>
-
-                {/* Reporting Support Card */}
-                <Paper
-                    sx={{
-                        p: { xs: 3, sm: 5 },
-                        borderRadius: "24px",
-                        background: "linear-gradient(135deg, rgba(253, 58, 115, 0.12) 0%, rgba(139, 92, 246, 0.12) 100%)",
-                        border: "1px solid rgba(253, 58, 115, 0.3)",
-                        textAlign: "center",
-                    }}
-                >
-                    <ReportProblemRoundedIcon sx={{ fontSize: 44, color: BRAND_COLORS.coralPink, mb: 1.5 }} />
-                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5 }}>
-                        Need to Report Unsafe Behavior?
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, maxWidth: 600, mx: "auto", mb: 3, lineHeight: 1.7 }}>
-                        Our moderation team reviews reports of harassment, suspicious profiles, and guideline violations. You can report directly inside the app or email our dedicated support desk.
-                    </Typography>
-                    <Button
-                        component="a"
-                        href="mailto:support@engaze.date"
-                        variant="contained"
-                        sx={{
-                            background: BRAND_COLORS.primaryGradient,
-                            borderRadius: 9999,
-                            px: 4,
-                            py: 1.2,
-                            fontWeight: 700,
-                            textTransform: "none",
-                        }}
-                    >
-                        Email Support: support@engaze.date
-                    </Button>
-                </Paper>
             </Container>
 
-            {/* Simple Clean Footer */}
+            {/* Clean Footer */}
             <Box
                 component="footer"
                 sx={{
                     py: 4,
-                    borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                    borderTop: "1px solid rgba(20, 43, 69, 0.08)",
                     textAlign: "center",
-                    backgroundColor: "rgba(11, 13, 23, 0.95)",
+                    backgroundColor: "#FFFFFF",
                 }}
             >
-                <Typography variant="body2" sx={{ color: BRAND_COLORS.textMuted }}>
-                    &copy; {new Date().getFullYear()} Engaze.com &bull; All Rights Reserved. &bull; <Link to="/privacy" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>Privacy Policy</Link> &bull; <Link to="/terms" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>Terms of Service</Link>
+                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                    &copy; {new Date().getFullYear()} Engaze.com &bull; All Rights Reserved. &bull; <Link to="/privacy" style={{ color: BRAND_COLORS.brandBlue, textDecoration: "none", fontWeight: 600 }}>Privacy Policy</Link> &bull; <Link to="/terms" style={{ color: BRAND_COLORS.brandBlue, textDecoration: "none", fontWeight: 600 }}>Terms of Service</Link>
                 </Typography>
             </Box>
         </Box>
     );
 }
-

@@ -488,8 +488,8 @@ function DiscoveryPage() {
         <Box
             sx={{
                 minHeight: "100vh",
-                backgroundColor: BRAND_COLORS.bgDark,
-                color: "#FFFFFF",
+                backgroundColor: "#F7FAFE",
+                color: BRAND_COLORS.deepNavy,
                 display: "flex",
                 flexDirection: "column",
                 overflowX: "hidden",
@@ -686,8 +686,8 @@ function DiscoveryPage() {
                                     overflow: "hidden",
                                     position: "relative",
                                     bgcolor: BRAND_COLORS.surfaceDark,
-                                    border: `1px solid rgba(255, 255, 255, 0.12)`,
-                                    boxShadow: "0 24px 60px rgba(0, 0, 0, 0.75)",
+                                    border: "1px solid rgba(20, 43, 69, 0.08)",
+                                    boxShadow: "0 20px 50px rgba(20, 43, 69, 0.12)",
                                     touchAction: "pan-y",
                                     cursor: isDragging ? "grabbing" : "grab",
                                     zIndex: 2,
@@ -958,19 +958,20 @@ function DiscoveryPage() {
                                         width: { xs: 48, sm: 54 },
                                         height: { xs: 48, sm: 54 },
                                         borderRadius: "50%",
-                                        bgcolor: "#FFD233",
-                                        border: "2.5px solid #0D0E15",
-                                        color: "#0D0E15",
-                                        boxShadow: "3px 3px 0px #0D0E15",
+                                        bgcolor: "#FFFFFF",
+                                        border: "1px solid rgba(20, 43, 69, 0.12)",
+                                        color: "#F59E0B",
+                                        boxShadow: "0 6px 18px rgba(20, 43, 69, 0.06)",
                                         "&:hover": {
-                                            bgcolor: "#FFE066",
-                                            borderColor: "#0D0E15",
-                                            boxShadow: "4px 4px 0px #0D0E15",
+                                            bgcolor: "#FFFBEB",
+                                            borderColor: "#F59E0B",
+                                            boxShadow: "0 8px 24px rgba(245, 158, 11, 0.2)",
+                                            transform: "translateY(-2px)",
                                         },
                                     }}
                                 >
                                     {resettingFeed ? (
-                                        <CircularProgress size={22} sx={{ color: "#0D0E15" }} />
+                                        <CircularProgress size={22} sx={{ color: "#F59E0B" }} />
                                     ) : (
                                         <ReplayRoundedIcon sx={{ fontSize: 24 }} />
                                     )}
@@ -989,13 +990,14 @@ function DiscoveryPage() {
                                         height: { xs: 66, sm: 74 },
                                         borderRadius: "50%",
                                         bgcolor: "#FFFFFF",
-                                        border: "2.5px solid #0D0E15",
+                                        border: "1px solid rgba(239, 68, 68, 0.2)",
                                         color: "#EF4444",
-                                        boxShadow: "3.5px 3.5px 0px #0D0E15",
+                                        boxShadow: "0 8px 24px rgba(239, 68, 68, 0.12)",
                                         "&:hover": {
-                                            bgcolor: "#FFF5F5",
-                                            borderColor: "#0D0E15",
-                                            boxShadow: "4.5px 4.5px 0px #0D0E15",
+                                            bgcolor: "#FEF2F2",
+                                            borderColor: "#EF4444",
+                                            boxShadow: "0 12px 30px rgba(239, 68, 68, 0.25)",
+                                            transform: "translateY(-3px)",
                                         },
                                     }}
                                 >
@@ -1014,14 +1016,14 @@ function DiscoveryPage() {
                                         width: { xs: 66, sm: 74 },
                                         height: { xs: 66, sm: 74 },
                                         borderRadius: "50%",
-                                        bgcolor: "#FD2E7A",
-                                        border: "2.5px solid #0D0E15",
+                                        bgcolor: BRAND_COLORS.brandBlue,
+                                        border: "none",
                                         color: "#FFFFFF",
-                                        boxShadow: "3.5px 3.5px 0px #0D0E15",
+                                        boxShadow: "0 8px 24px rgba(37, 137, 216, 0.35)",
                                         "&:hover": {
-                                            bgcolor: "#E61C68",
-                                            borderColor: "#0D0E15",
-                                            boxShadow: "4.5px 4.5px 0px #0D0E15",
+                                            bgcolor: BRAND_COLORS.brandBlueHover,
+                                            boxShadow: "0 14px 34px rgba(37, 137, 216, 0.45)",
+                                            transform: "translateY(-3px)",
                                         },
                                     }}
                                 >
@@ -1040,14 +1042,15 @@ function DiscoveryPage() {
                                         width: { xs: 48, sm: 54 },
                                         height: { xs: 48, sm: 54 },
                                         borderRadius: "50%",
-                                        bgcolor: "#24C5F7",
-                                        border: "2.5px solid #0D0E15",
-                                        color: "#0D0E15",
-                                        boxShadow: "3px 3px 0px #0D0E15",
+                                        bgcolor: "#FFFFFF",
+                                        border: "1px solid rgba(0, 163, 255, 0.25)",
+                                        color: "#00A3FF",
+                                        boxShadow: "0 6px 18px rgba(0, 163, 255, 0.12)",
                                         "&:hover": {
-                                            bgcolor: "#56D5FA",
-                                            borderColor: "#0D0E15",
-                                            boxShadow: "4px 4px 0px #0D0E15",
+                                            bgcolor: "#F0F9FF",
+                                            borderColor: "#00A3FF",
+                                            boxShadow: "0 10px 24px rgba(0, 163, 255, 0.22)",
+                                            transform: "translateY(-2px)",
                                         },
                                     }}
                                 >
@@ -1126,10 +1129,10 @@ function DiscoveryPage() {
                                     sx={{
                                         borderRadius: "9999px",
                                         py: 1.2,
-                                        color: "#FFFFFF",
-                                        borderColor: BRAND_COLORS.surfaceDarkBorder,
+                                        color: BRAND_COLORS.deepNavy,
+                                        borderColor: "rgba(20, 43, 69, 0.15)",
                                         "&:hover": {
-                                            borderColor: BRAND_COLORS.violet,
+                                            borderColor: BRAND_COLORS.brandBlue,
                                             bgcolor: "rgba(139, 92, 246, 0.1)",
                                         },
                                     }}
@@ -1154,7 +1157,7 @@ function DiscoveryPage() {
                             borderRadius: "28px",
                             bgcolor: BRAND_COLORS.surfaceDark,
                             border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                            boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
+                            boxShadow: "0 20px 50px rgba(20, 43, 69, 0.15)",
                             overflow: "hidden",
                             m: 2,
                         },
@@ -1194,10 +1197,10 @@ function DiscoveryPage() {
                         </IconButton>
                     </Box>
 
-                    <DialogContent sx={{ p: 3, pt: 1, bgcolor: BRAND_COLORS.surfaceDark }}>
+                    <DialogContent sx={{ p: 3, pt: 1, bgcolor: "#FFFFFF" }}>
                         <Box sx={{ mb: 2 }}>
                             <Stack direction="row" spacing={1} alignItems="center">
-                                <Typography variant="h5" sx={{ fontWeight: 900, color: "#fff" }}>
+                                <Typography variant="h5" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy }}>
                                     {currentProfile.name}
                                     {currentProfile.age ? `, ${currentProfile.age}` : ""}
                                 </Typography>
@@ -1212,7 +1215,7 @@ function DiscoveryPage() {
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.coralPink, fontWeight: 800, letterSpacing: "0.5px" }}>
                                     ABOUT ME
                                 </Typography>
-                                <Typography variant="body1" sx={{ color: "#FFFFFF", mt: 0.5, lineHeight: 1.6 }}>
+                                <Typography variant="body1" sx={{ color: BRAND_COLORS.deepNavy, mt: 0.5, lineHeight: 1.6 }}>
                                     {currentProfile.bio}
                                 </Typography>
                             </Box>
@@ -1229,9 +1232,9 @@ function DiscoveryPage() {
                                             key={tag}
                                             label={tag}
                                             sx={{
-                                                bgcolor: "rgba(253, 58, 115, 0.15)",
-                                                border: "1px solid rgba(253, 58, 115, 0.35)",
-                                                color: "#fff",
+                                                bgcolor: "rgba(37, 137, 216, 0.08)",
+                                                border: "1px solid rgba(37, 137, 216, 0.2)",
+                                                color: BRAND_COLORS.brandBlue,
                                                 fontWeight: 600,
                                             }}
                                         />
@@ -1476,7 +1479,7 @@ function DiscoveryPage() {
             >
                 <DialogContent sx={{ p: 0 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF" }}>
+                        <Typography variant="h6" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy }}>
                             Discovery Preferences
                         </Typography>
                         <IconButton onClick={() => setFilterDialogOpen(false)} size="small" sx={{ color: BRAND_COLORS.textSecondary }}>
@@ -1490,12 +1493,12 @@ function DiscoveryPage() {
                             mb: 3,
                             p: 2,
                             borderRadius: "16px",
-                            bgcolor: "rgba(255, 255, 255, 0.04)",
-                            border: "1px dashed rgba(255, 255, 255, 0.16)",
+                            bgcolor: "#F7FAFE",
+                            border: "1px dashed rgba(20, 43, 69, 0.15)",
                         }}
                     >
                         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: BRAND_COLORS.deepNavy }}>
                                 Distance Filtering
                             </Typography>
                             <Chip
@@ -1505,7 +1508,7 @@ function DiscoveryPage() {
                                     height: 20,
                                     fontSize: "0.68rem",
                                     fontWeight: 700,
-                                    bgcolor: "rgba(255, 255, 255, 0.08)",
+                                    bgcolor: "rgba(20, 43, 69, 0.06)",
                                     color: BRAND_COLORS.textSecondary,
                                 }}
                             />
@@ -1518,10 +1521,10 @@ function DiscoveryPage() {
                     {/* Age Range Dual Slider */}
                     <Box sx={{ mb: 3.5 }}>
                         <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: BRAND_COLORS.deepNavy }}>
                                 Age Range
                             </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 800, color: BRAND_COLORS.coralPink }}>
+                            <Typography variant="body2" sx={{ fontWeight: 800, color: BRAND_COLORS.brandBlue }}>
                                 {ageRange[0]} - {ageRange[1]}
                             </Typography>
                         </Stack>
@@ -1532,9 +1535,9 @@ function DiscoveryPage() {
                             onChange={(_, val) => setAgeRange(val)}
                             valueLabelDisplay="auto"
                             sx={{
-                                color: BRAND_COLORS.coralPink,
+                                color: BRAND_COLORS.brandBlue,
                                 "& .MuiSlider-thumb": {
-                                    boxShadow: "0 0 10px rgba(253, 58, 115, 0.6)",
+                                    boxShadow: "0 0 10px rgba(37, 137, 216, 0.5)",
                                 },
                             }}
                         />
@@ -1542,7 +1545,7 @@ function DiscoveryPage() {
 
                     {/* Interested In Selection */}
                     <Box sx={{ mb: 3.5 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#FFFFFF", mb: 1.2 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: BRAND_COLORS.deepNavy, mb: 1.2 }}>
                             Show Me
                         </Typography>
                         <Stack direction="row" spacing={1}>
@@ -1583,7 +1586,7 @@ function DiscoveryPage() {
                             py: 1.4,
                             fontWeight: 800,
                             fontSize: "0.95rem",
-                            boxShadow: "0 6px 20px rgba(253, 58, 115, 0.4)",
+                            boxShadow: "0 4px 14px rgba(37, 137, 216, 0.35)",
                             mt: 2,
                         }}
                     >

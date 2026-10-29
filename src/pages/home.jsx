@@ -110,7 +110,7 @@ function HomeComponent() {
     ];
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: BRAND_COLORS.bgDark, pb: { xs: 12, md: 6 } }}>
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#F7FAFE", pb: { xs: 12, md: 6 } }}>
             {/* Unified Bottom Navigation Dock */}
             <Navbar hideTopNav={true} />
 
@@ -132,8 +132,8 @@ function HomeComponent() {
                         sx={{
                             width: 68,
                             height: 68,
-                            border: `2.5px solid ${BRAND_COLORS.coralPink}`,
-                            boxShadow: "0 4px 18px rgba(253, 58, 115, 0.4)",
+                            border: "2.5px solid #2589D8",
+                            boxShadow: "0 4px 18px rgba(37, 137, 216, 0.25)",
                         }}
                     >
                         {userData?.name?.charAt(0) || "U"}
@@ -141,7 +141,7 @@ function HomeComponent() {
 
                     <Box sx={{ flex: 1 }}>
                         <Stack direction="row" spacing={0.8} alignItems="center">
-                            <Typography variant="h5" sx={{ fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                            <Typography variant="h5" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, letterSpacing: "-0.02em" }}>
                                 {userData?.name || "Member"}
                             </Typography>
                         </Stack>
@@ -153,7 +153,7 @@ function HomeComponent() {
                             sx={{
                                 color: BRAND_COLORS.textSecondary,
                                 transition: "color 0.2s ease",
-                                "&:hover": { color: "#FFFFFF" },
+                                "&:hover": { color: BRAND_COLORS.brandBlue },
                             }}
                         >
                             <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -178,11 +178,11 @@ function HomeComponent() {
                         gap: 2,
                         mb: 3,
                         cursor: "pointer",
-                        boxShadow: "0 12px 35px rgba(253, 58, 115, 0.4)",
+                        boxShadow: "0 10px 30px rgba(37, 137, 216, 0.28)",
                         transition: "all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
                         "&:hover": {
                             transform: "translateY(-3px) scale(1.01)",
-                            boxShadow: "0 16px 45px rgba(253, 58, 115, 0.55)",
+                            boxShadow: "0 14px 40px rgba(37, 137, 216, 0.38)",
                         },
                         "&:active": {
                             transform: "scale(0.98)",
@@ -223,8 +223,9 @@ function HomeComponent() {
                     elevation={0}
                     sx={{
                         borderRadius: "24px",
-                        bgcolor: BRAND_COLORS.surfaceDark,
-                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        bgcolor: "#FFFFFF",
+                        border: "1px solid rgba(20, 43, 69, 0.08)",
+                        boxShadow: "0 8px 24px rgba(20, 43, 69, 0.04)",
                         overflow: "hidden",
                         mb: 3,
                     }}
@@ -240,7 +241,7 @@ function HomeComponent() {
                                             px: { xs: 2, sm: 2.5 },
                                             transition: "all 0.2s ease",
                                             "&:hover": {
-                                                bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                bgcolor: "rgba(37, 137, 216, 0.05)",
                                             },
                                         }}
                                     >
@@ -250,7 +251,7 @@ function HomeComponent() {
                                                     width: 36,
                                                     height: 36,
                                                     borderRadius: "50%",
-                                                    bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                    bgcolor: "rgba(37, 137, 216, 0.08)",
                                                     display: "flex",
                                                     alignItems: "center",
                                                     justifyContent: "center",
@@ -262,7 +263,7 @@ function HomeComponent() {
 
                                         <ListItemText
                                             primary={
-                                                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#FFFFFF", fontSize: "0.98rem" }}>
+                                                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, fontSize: "0.98rem" }}>
                                                     {item.title}
                                                 </Typography>
                                             }
@@ -295,7 +296,7 @@ function HomeComponent() {
                                     </ListItemButton>
                                 </ListItem>
                                 {idx < menuItems.length - 1 && (
-                                    <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.04)", mx: 2 }} />
+                                    <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.06)", mx: 2 }} />
                                 )}
                             </React.Fragment>
                         ))}
@@ -309,8 +310,9 @@ function HomeComponent() {
                     sx={{
                         p: 2,
                         borderRadius: "20px",
-                        bgcolor: BRAND_COLORS.surfaceDark,
-                        border: "1px solid rgba(245, 158, 11, 0.35)",
+                        bgcolor: "#FFFFFF",
+                        border: "1px solid rgba(245, 158, 11, 0.3)",
+                        boxShadow: "0 4px 16px rgba(245, 158, 11, 0.06)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
@@ -324,7 +326,7 @@ function HomeComponent() {
                 >
                     <Stack direction="row" spacing={1.5} alignItems="center">
                         <WorkspacePremiumRoundedIcon sx={{ color: BRAND_COLORS.gold, fontSize: 24 }} />
-                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF" }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy }}>
                             Upgrade to Engaze Plus
                         </Typography>
                     </Stack>
@@ -344,7 +346,7 @@ function HomeComponent() {
                         maxWidth: 440,
                         width: "100%",
                         p: { xs: 2.5, sm: 3.5 },
-                        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
+                        boxShadow: "0 24px 60px rgba(20, 43, 69, 0.15)",
                     },
                 }}
             >
@@ -352,7 +354,7 @@ function HomeComponent() {
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                         <Stack direction="row" spacing={1} alignItems="center">
                             <WorkspacePremiumRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 32 }} />
-                            <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF" }}>
+                            <Typography variant="h5" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy }}>
                                 Engaze Plus (Coming Soon)
                             </Typography>
                         </Stack>
@@ -369,7 +371,7 @@ function HomeComponent() {
                         {plusPerks.map((perk, i) => (
                             <Stack key={i} direction="row" spacing={1.5} alignItems="center">
                                 <CheckCircleRoundedIcon sx={{ color: BRAND_COLORS.emerald, fontSize: 20 }} />
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: "#FFFFFF" }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: BRAND_COLORS.deepNavy }}>
                                     {perk}
                                 </Typography>
                             </Stack>
@@ -416,13 +418,13 @@ function HomeComponent() {
                         maxWidth: 440,
                         width: "100%",
                         p: { xs: 2.5, sm: 3.5 },
-                        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
+                        boxShadow: "0 24px 60px rgba(20, 43, 69, 0.15)",
                     },
                 }}
             >
                 <DialogContent sx={{ p: 0 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF" }}>
+                        <Typography variant="h6" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy }}>
                             Account Settings
                         </Typography>
                         <IconButton onClick={() => setSettingsModalOpen(false)} size="small" sx={{ color: BRAND_COLORS.textSecondary }}>
@@ -434,10 +436,10 @@ function HomeComponent() {
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <Box sx={{ pr: 2 }}>
                                 <Stack direction="row" spacing={1} alignItems="center">
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: BRAND_COLORS.deepNavy }}>
                                         Push Notifications
                                     </Typography>
-                                    <Chip label="Coming Soon" size="small" sx={{ height: 18, fontSize: "0.65rem", bgcolor: "rgba(255, 255, 255, 0.08)", color: BRAND_COLORS.textSecondary }} />
+                                    <Chip label="Coming Soon" size="small" sx={{ height: 18, fontSize: "0.65rem", bgcolor: "rgba(20, 43, 69, 0.06)", color: BRAND_COLORS.textSecondary }} />
                                 </Stack>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
                                     In-app notifications are active. Native push delivery is in development.
@@ -446,11 +448,11 @@ function HomeComponent() {
                             <Switch disabled checked={false} />
                         </Box>
 
-                        <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)" }} />
+                        <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.06)" }} />
 
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <Box sx={{ pr: 2 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: BRAND_COLORS.deepNavy }}>
                                     Read Receipts
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
@@ -460,15 +462,15 @@ function HomeComponent() {
                             <Chip label="Active" size="small" sx={{ height: 20, fontSize: "0.7rem", fontWeight: 700, bgcolor: "rgba(16, 185, 129, 0.15)", color: BRAND_COLORS.emerald }} />
                         </Box>
 
-                        <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)" }} />
+                        <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.06)" }} />
 
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <Box sx={{ pr: 2 }}>
                                 <Stack direction="row" spacing={1} alignItems="center">
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: BRAND_COLORS.deepNavy }}>
                                         Incognito Discovery
                                     </Typography>
-                                    <Chip label="Coming Soon" size="small" sx={{ height: 18, fontSize: "0.65rem", bgcolor: "rgba(255, 255, 255, 0.08)", color: BRAND_COLORS.textSecondary }} />
+                                    <Chip label="Coming Soon" size="small" sx={{ height: 18, fontSize: "0.65rem", bgcolor: "rgba(20, 43, 69, 0.06)", color: BRAND_COLORS.textSecondary }} />
                                 </Stack>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
                                     Private browsing mode is currently in development.
@@ -515,13 +517,13 @@ function HomeComponent() {
                         maxWidth: 440,
                         width: "100%",
                         p: { xs: 2.5, sm: 3.5 },
-                        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8)",
+                        boxShadow: "0 24px 60px rgba(20, 43, 69, 0.15)",
                     },
                 }}
             >
                 <DialogContent sx={{ p: 0 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF" }}>
+                        <Typography variant="h6" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy }}>
                             Help & Support
                         </Typography>
                         <IconButton onClick={() => setSupportModalOpen(false)} size="small" sx={{ color: BRAND_COLORS.textSecondary }}>
@@ -544,8 +546,8 @@ function HomeComponent() {
                                 gap: 2,
                                 p: 2,
                                 borderRadius: "16px",
-                                bgcolor: "rgba(255, 255, 255, 0.03)",
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                bgcolor: "#F7FAFE",
+                                border: "1px solid rgba(20, 43, 69, 0.08)",
                                 textDecoration: "none",
                                 color: "#FFFFFF",
                                 transition: "all 0.2s ease",
@@ -571,7 +573,7 @@ function HomeComponent() {
                                 <SupportAgentRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 24 }} />
                             </Box>
                             <Box sx={{ minWidth: 0, flex: 1 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.2 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, mb: 0.2 }}>
                                     Customer Support & Help
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>
@@ -590,8 +592,8 @@ function HomeComponent() {
                                 gap: 2,
                                 p: 2,
                                 borderRadius: "16px",
-                                bgcolor: "rgba(255, 255, 255, 0.03)",
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                bgcolor: "#F7FAFE",
+                                border: "1px solid rgba(20, 43, 69, 0.08)",
                                 textDecoration: "none",
                                 color: "#FFFFFF",
                                 transition: "all 0.2s ease",
@@ -617,7 +619,7 @@ function HomeComponent() {
                                 <EmailRoundedIcon sx={{ color: BRAND_COLORS.violet, fontSize: 22 }} />
                             </Box>
                             <Box sx={{ minWidth: 0, flex: 1 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.2 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, mb: 0.2 }}>
                                     General & Business Enquiries
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>

@@ -16,7 +16,7 @@ import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 
 export default function PrivacyPolicy() {
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: BRAND_COLORS.bgDark, color: "#FFFFFF", overflowX: "hidden" }}>
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#F7FAFE", color: BRAND_COLORS.deepNavy, overflowX: "hidden" }}>
             {/* Top Navigation Bar */}
             <Box
                 component="header"
@@ -26,12 +26,13 @@ export default function PrivacyPolicy() {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                    backgroundColor: "rgba(11, 13, 23, 0.8)",
+                    borderBottom: "1px solid rgba(20, 43, 69, 0.08)",
+                    backgroundColor: "rgba(255, 255, 255, 0.92)",
                     backdropFilter: "blur(20px)",
                     position: "sticky",
                     top: 0,
                     zIndex: 100,
+                    boxShadow: "0 2px 14px rgba(20, 43, 69, 0.04)",
                 }}
             >
                 <Box
@@ -49,13 +50,13 @@ export default function PrivacyPolicy() {
                         to="/"
                         startIcon={<ArrowBackRoundedIcon />}
                         sx={{
-                            color: "rgba(255, 255, 255, 0.85)",
+                            color: BRAND_COLORS.deepNavy,
                             borderRadius: 9999,
-                            px: 2,
+                            px: 2.5,
                             fontSize: "0.9rem",
                             fontWeight: 600,
                             textTransform: "none",
-                            "&:hover": { color: "#FFFFFF", bgcolor: "rgba(255,255,255,0.06)" },
+                            "&:hover": { color: BRAND_COLORS.brandBlue, bgcolor: "rgba(37, 137, 216, 0.08)" },
                         }}
                     >
                         Home
@@ -65,21 +66,20 @@ export default function PrivacyPolicy() {
                         to="/auth"
                         variant="contained"
                         sx={{
-                            bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
+                            bgcolor: BRAND_COLORS.brandBlue,
                             color: "#FFFFFF",
-                            border: "2px solid #0D0E15",
-                            boxShadow: "2.5px 2.5px 0px #0D0E15",
                             borderRadius: 9999,
                             px: 3,
                             py: 0.9,
                             fontSize: "0.9rem",
-                            fontWeight: 800,
+                            fontWeight: 700,
                             textTransform: "none",
-                            transition: "all 0.15s ease",
+                            boxShadow: "0 4px 14px rgba(37, 137, 216, 0.32)",
+                            transition: "all 0.2s ease",
                             "&:hover": {
-                                bgcolor: "#E61A68",
-                                boxShadow: "3.5px 3.5px 0px #0D0E15",
-                                transform: "translate(-1px, -1px)",
+                                bgcolor: BRAND_COLORS.brandBlueHover,
+                                boxShadow: "0 6px 20px rgba(37, 137, 216, 0.42)",
+                                transform: "translateY(-1px)",
                             },
                         }}
                     >
@@ -89,7 +89,7 @@ export default function PrivacyPolicy() {
             </Box>
 
             {/* Document Header */}
-            <Container maxWidth="md" sx={{ pt: { xs: 6, md: 9 }, pb: { xs: 6, md: 10 } }}>
+            <Container maxWidth="md" sx={{ pt: { xs: 6, md: 8 }, pb: { xs: 6, md: 10 } }}>
                 <Box sx={{ mb: 4 }}>
                     <Box
                         sx={{
@@ -99,9 +99,9 @@ export default function PrivacyPolicy() {
                             px: 1.8,
                             py: 0.6,
                             borderRadius: 9999,
-                            bgcolor: "rgba(253, 58, 115, 0.12)",
-                            border: "1px solid rgba(253, 58, 115, 0.3)",
-                            color: BRAND_COLORS.coralPink,
+                            bgcolor: "rgba(37, 137, 216, 0.1)",
+                            border: "1px solid rgba(37, 137, 216, 0.25)",
+                            color: BRAND_COLORS.brandBlue,
                             fontSize: "0.82rem",
                             fontWeight: 700,
                             mb: 2,
@@ -110,45 +110,48 @@ export default function PrivacyPolicy() {
                         <ShieldOutlinedIcon sx={{ fontSize: 16 }} />
                         ENGZ-LEGAL-POL-01
                     </Box>
-                    <Typography variant="h1" sx={{ fontSize: { xs: "2.2rem", sm: "3rem" }, fontWeight: 900, mb: 1.5, letterSpacing: "-0.03em" }}>
+                    <Typography variant="h1" sx={{ fontSize: { xs: "2.2rem", sm: "3rem" }, fontWeight: 900, mb: 1.5, letterSpacing: "-0.03em", color: BRAND_COLORS.deepNavy }}>
                         Privacy Policy
                     </Typography>
-                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textMuted }}>
+                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
                         Effective Date: October 2026 &bull; Canonical URL: https://www.engaze.date/privacy
                     </Typography>
                 </Box>
 
                 {/* Notice of Draft Status / Entity Details Pending */}
                 <Paper
+                    elevation={0}
                     sx={{
                         p: 2.5,
                         mb: 4,
                         borderRadius: "16px",
-                        backgroundColor: "rgba(234, 179, 8, 0.08)",
-                        border: "1px solid rgba(234, 179, 8, 0.25)",
+                        backgroundColor: "rgba(245, 158, 11, 0.08)",
+                        border: "1px solid rgba(245, 158, 11, 0.25)",
                     }}
                 >
-                    <Typography variant="subtitle2" sx={{ color: BRAND_COLORS.amberGold, fontWeight: 800, mb: 0.5 }}>
+                    <Typography variant="subtitle2" sx={{ color: "#B45309", fontWeight: 800, mb: 0.5 }}>
                         Notice: Preliminary Operational Policy Draft
                     </Typography>
-                    <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.8)", fontSize: "0.85rem", lineHeight: 1.6 }}>
+                    <Typography variant="body2" sx={{ color: "#78350F", fontSize: "0.85rem", lineHeight: 1.6 }}>
                         This document details the current technical and data protection practices of the Engaze platform (https://www.engaze.date/). Designated corporate entity registration details, registered agent contact, and specific governing legal jurisdiction are subject to formal confirmation upon corporate filing by the platform administration. Inquiries may be directed to contact@engaze.date.
                     </Typography>
                 </Paper>
 
                 {/* Content Paper */}
                 <Paper
+                    elevation={0}
                     sx={{
                         p: { xs: 3, sm: 5, md: 6 },
                         borderRadius: "24px",
-                        backgroundColor: BRAND_COLORS.surfaceDark,
-                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        backgroundColor: "#FFFFFF",
+                        border: "1px solid rgba(20, 43, 69, 0.08)",
+                        boxShadow: "0 10px 36px rgba(20, 43, 69, 0.05)",
                         lineHeight: 1.8,
                     }}
                 >
                     <Stack spacing={4}>
                         <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
+                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
                                 1. Overview & Commitment
                             </Typography>
                             <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary }}>
@@ -159,10 +162,10 @@ export default function PrivacyPolicy() {
                             </Typography>
                         </Box>
 
-                        <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder }} />
+                        <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.08)" }} />
 
                         <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
+                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
                                 2. Eligibility & Age Restriction
                             </Typography>
                             <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary }}>
@@ -170,10 +173,10 @@ export default function PrivacyPolicy() {
                             </Typography>
                         </Box>
 
-                        <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder }} />
+                        <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.08)" }} />
 
                         <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
+                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
                                 3. Information We Collect
                             </Typography>
                             <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary, mb: 2 }}>
@@ -195,10 +198,10 @@ export default function PrivacyPolicy() {
                             </Stack>
                         </Box>
 
-                        <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder }} />
+                        <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.08)" }} />
 
                         <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
+                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
                                 4. How Your Information is Used
                             </Typography>
                             <Stack spacing={1.5} sx={{ pl: 2 }}>
@@ -220,10 +223,10 @@ export default function PrivacyPolicy() {
                             </Stack>
                         </Box>
 
-                        <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder }} />
+                        <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.08)" }} />
 
                         <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
+                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
                                 5. Information Sharing & Third Parties
                             </Typography>
                             <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary }}>
@@ -234,7 +237,7 @@ export default function PrivacyPolicy() {
                                     &bull; <strong>Public Profile Display:</strong> Your display name, photos, bio, and dating preferences are visible to other registered adult members during discovery. Contact details such as your email are never publicly displayed.
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
-                                    &bull; <strong>Infrastructure Providers:</strong> We use reputable cloud infrastructure and hosting providers (such as Vercel and backend cloud providers) to operate our servers under confidentiality and security agreements.
+                                    &bull; <strong>Infrastructure Providers:</strong> We use reputable cloud infrastructure and hosting providers to operate our servers under confidentiality and security agreements.
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
                                     &bull; <strong>Legal Compliance:</strong> We may disclose information if required to do so by applicable law, court order, or governmental authority.
@@ -242,10 +245,10 @@ export default function PrivacyPolicy() {
                             </Stack>
                         </Box>
 
-                        <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder }} />
+                        <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.08)" }} />
 
                         <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
+                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
                                 6. Your Rights & Account Deletion
                             </Typography>
                             <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary }}>
@@ -253,20 +256,20 @@ export default function PrivacyPolicy() {
                             </Typography>
                         </Box>
 
-                        <Divider sx={{ borderColor: BRAND_COLORS.surfaceDarkBorder }} />
+                        <Divider sx={{ borderColor: "rgba(20, 43, 69, 0.08)" }} />
 
                         <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: "#FFFFFF" }}>
+                            <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, color: BRAND_COLORS.deepNavy }}>
                                 7. Contact Us
                             </Typography>
                             <Typography variant="body1" sx={{ color: BRAND_COLORS.textSecondary, mb: 2 }}>
                                 For any questions regarding this Privacy Policy, data practices, or account inquiries, you can reach us at:
                             </Typography>
                             <Stack spacing={1}>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.coralPink, fontWeight: 700 }}>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.brandBlue, fontWeight: 700 }}>
                                     Customer Support: support@engaze.date
                                 </Typography>
-                                <Typography variant="body2" sx={{ color: BRAND_COLORS.violet, fontWeight: 700 }}>
+                                <Typography variant="body2" sx={{ color: BRAND_COLORS.brandBlueHover, fontWeight: 700 }}>
                                     General Enquiries: contact@engaze.date
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, mt: 1, display: "block" }}>
@@ -278,18 +281,18 @@ export default function PrivacyPolicy() {
                 </Paper>
             </Container>
 
-            {/* Simple Clean Footer */}
+            {/* Clean Footer */}
             <Box
                 component="footer"
                 sx={{
                     py: 4,
-                    borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                    borderTop: "1px solid rgba(20, 43, 69, 0.08)",
                     textAlign: "center",
-                    backgroundColor: "rgba(11, 13, 23, 0.95)",
+                    backgroundColor: "#FFFFFF",
                 }}
             >
-                <Typography variant="body2" sx={{ color: BRAND_COLORS.textMuted }}>
-                    &copy; {new Date().getFullYear()} Engaze.com &bull; All Rights Reserved. &bull; <Link to="/terms" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>Terms of Service</Link> &bull; <Link to="/safety" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>Safety Center</Link>
+                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
+                    &copy; {new Date().getFullYear()} Engaze.com &bull; All Rights Reserved. &bull; <Link to="/terms" style={{ color: BRAND_COLORS.brandBlue, textDecoration: "none", fontWeight: 600 }}>Terms of Service</Link> &bull; <Link to="/safety" style={{ color: BRAND_COLORS.brandBlue, textDecoration: "none", fontWeight: 600 }}>Safety Center</Link>
                 </Typography>
             </Box>
         </Box>

@@ -14,7 +14,7 @@ export default function NotFound() {
         <Box
             sx={{
                 minHeight: "100vh",
-                bgcolor: BRAND_COLORS.bgDark,
+                bgcolor: "#F7FAFE",
                 display: "flex",
                 flexDirection: "column",
                 position: "relative",
@@ -33,7 +33,7 @@ export default function NotFound() {
                     width: { xs: 320, sm: 540 },
                     height: { xs: 320, sm: 540 },
                     borderRadius: "50%",
-                    background: "radial-gradient(circle, rgba(253, 58, 115, 0.15) 0%, rgba(139, 92, 246, 0.08) 50%, transparent 75%)",
+                    background: "radial-gradient(circle, rgba(37, 137, 216, 0.12) 0%, rgba(184, 167, 255, 0.08) 50%, transparent 75%)",
                     filter: "blur(60px)",
                     pointerEvents: "none",
                     zIndex: 0,
@@ -61,9 +61,9 @@ export default function NotFound() {
                         width: 96,
                         height: 96,
                         borderRadius: "28px",
-                        background: "rgba(255, 255, 255, 0.03)",
-                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                        boxShadow: "0 12px 32px rgba(0, 0, 0, 0.4)",
+                        background: "#FFFFFF",
+                        border: "1px solid rgba(20, 43, 69, 0.08)",
+                        boxShadow: "0 12px 32px rgba(20, 43, 69, 0.06)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -73,8 +73,7 @@ export default function NotFound() {
                     <CompassCalibrationRoundedIcon
                         sx={{
                             fontSize: 48,
-                            color: BRAND_COLORS.coralPink,
-                            filter: "drop-shadow(0 4px 12px rgba(253, 58, 115, 0.4))",
+                            color: BRAND_COLORS.brandBlue,
                         }}
                     />
                 </Box>
@@ -99,8 +98,8 @@ export default function NotFound() {
                 <Typography
                     variant="h4"
                     sx={{
-                        fontWeight: 700,
-                        color: "#FFFFFF",
+                        fontWeight: 800,
+                        color: BRAND_COLORS.deepNavy,
                         mb: 1.5,
                         fontSize: { xs: "1.4rem", sm: "1.75rem" },
                     }}
@@ -146,13 +145,13 @@ export default function NotFound() {
                         sx={{
                             px: 3.5,
                             py: 1.4,
-                            color: "#FFFFFF",
-                            borderColor: BRAND_COLORS.surfaceDarkBorder,
+                            color: BRAND_COLORS.deepNavy,
+                            borderColor: "rgba(20, 43, 69, 0.16)",
                             borderRadius: 9999,
                             fontWeight: 600,
                             "&:hover": {
-                                borderColor: "rgba(255, 255, 255, 0.3)",
-                                bgcolor: "rgba(255, 255, 255, 0.04)",
+                                borderColor: BRAND_COLORS.brandBlue,
+                                bgcolor: "rgba(37, 137, 216, 0.06)",
                             },
                         }}
                     >
@@ -163,4 +162,3 @@ export default function NotFound() {
         </Box>
     );
 }
-

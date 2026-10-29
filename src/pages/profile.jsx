@@ -545,9 +545,9 @@ function ProfilePage() {
                         p: { xs: 2.5, md: 3 },
                         mb: 3.5,
                         borderRadius: "24px",
-                        bgcolor: "#141624",
-                        border: "2.5px solid #0D0E15",
-                        boxShadow: "4px 4px 0px #0D0E15",
+                        bgcolor: "#FFFFFF",
+                        border: "1px solid rgba(20, 43, 69, 0.08)",
+                        boxShadow: "0 8px 24px rgba(20, 43, 69, 0.04)",
                         display: "flex",
                         flexDirection: { xs: "column", sm: "row" },
                         alignItems: { xs: "flex-start", sm: "center" },
@@ -577,7 +577,7 @@ function ProfilePage() {
                             )}
                         </Box>
                         <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF", fontSize: "1.05rem" }}>
+                            <Typography variant="h6" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, fontSize: "1.05rem" }}>
                                 {isProfileComplete
                                     ? "Profile Complete & Live on Discovery"
                                     : "Complete Your Profile"}
@@ -622,11 +622,11 @@ function ProfilePage() {
                         value={activeTab}
                         onChange={(_, val) => setActiveTab(val)}
                         sx={{
-                            bgcolor: "#141624",
-                            p: 0.8,
+                            bgcolor: "#FFFFFF",
+                            p: 0.6,
                             borderRadius: "9999px",
-                            border: "2.5px solid #0D0E15",
-                            boxShadow: "3px 3px 0px #0D0E15",
+                            border: "1px solid rgba(20, 43, 69, 0.08)",
+                            boxShadow: "0 2px 10px rgba(20, 43, 69, 0.03)",
                             "& .MuiTabs-indicator": { display: "none" },
                         }}
                     >
@@ -644,10 +644,10 @@ function ProfilePage() {
                                 color: BRAND_COLORS.textSecondary,
                                 transition: "all 0.15s ease",
                                 "&.Mui-selected": {
-                                    bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
+                                    bgcolor: BRAND_COLORS.brandBlue,
                                     color: "#FFFFFF",
-                                    border: "2px solid #0D0E15",
-                                    boxShadow: "2px 2px 0px #0D0E15",
+                                    border: "none",
+                                    boxShadow: "0 4px 14px rgba(37, 137, 216, 0.32)",
                                 },
                             }}
                         />
@@ -665,10 +665,10 @@ function ProfilePage() {
                                 color: BRAND_COLORS.textSecondary,
                                 transition: "all 0.15s ease",
                                 "&.Mui-selected": {
-                                    bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
+                                    bgcolor: BRAND_COLORS.brandBlue,
                                     color: "#FFFFFF",
-                                    border: "2px solid #0D0E15",
-                                    boxShadow: "2px 2px 0px #0D0E15",
+                                    border: "none",
+                                    boxShadow: "0 4px 14px rgba(37, 137, 216, 0.32)",
                                 },
                             }}
                         />
@@ -686,10 +686,10 @@ function ProfilePage() {
                                 color: BRAND_COLORS.textSecondary,
                                 transition: "all 0.15s ease",
                                 "&.Mui-selected": {
-                                    bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
+                                    bgcolor: BRAND_COLORS.brandBlue,
                                     color: "#FFFFFF",
-                                    border: "2px solid #0D0E15",
-                                    boxShadow: "2px 2px 0px #0D0E15",
+                                    border: "none",
+                                    boxShadow: "0 4px 14px rgba(37, 137, 216, 0.32)",
                                 },
                             }}
                         />
@@ -710,7 +710,7 @@ function ProfilePage() {
                                     border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                 }}
                             >
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 3 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, mb: 3 }}>
                                     Basic Information
                                 </Typography>
 
@@ -726,7 +726,7 @@ function ProfilePage() {
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
                                                     borderRadius: "14px",
-                                                    bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                    bgcolor: "#FFFFFF",
                                                 },
                                             }}
                                         />
@@ -763,7 +763,7 @@ function ProfilePage() {
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
                                                     borderRadius: "14px",
-                                                    bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                    bgcolor: "#FFFFFF",
                                                 },
                                             }}
                                         />
@@ -778,7 +778,7 @@ function ProfilePage() {
                                                 onChange={(e) => setGender(e.target.value)}
                                                 sx={{
                                                     borderRadius: "14px",
-                                                    bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                    bgcolor: "#FFFFFF",
                                                 }}
                                             >
                                                 <MenuItem value="male">Male</MenuItem>
@@ -803,7 +803,7 @@ function ProfilePage() {
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
                                                     borderRadius: "14px",
-                                                    bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                    bgcolor: "#FFFFFF",
                                                 },
                                             }}
                                         />
@@ -827,7 +827,7 @@ function ProfilePage() {
                                                 onChange={(e) => setInterestedIn([e.target.value])}
                                                 sx={{
                                                     borderRadius: "14px",
-                                                    bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                    bgcolor: "#FFFFFF",
                                                 }}
                                             >
                                                 <MenuItem value="everyone">Everyone</MenuItem>
@@ -886,7 +886,7 @@ function ProfilePage() {
                                         sx={{
                                             "& .MuiOutlinedInput-root": {
                                                 borderRadius: "12px",
-                                                bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                bgcolor: "#FFFFFF",
                                             },
                                         }}
                                     />
@@ -971,21 +971,21 @@ function ProfilePage() {
                                         onClick={handleSaveProfile}
                                         disabled={saving}
                                         sx={{
-                                            bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
+                                            bgcolor: BRAND_COLORS.brandBlue,
                                             color: "#FFFFFF",
-                                            fontWeight: 900,
+                                            fontWeight: 800,
                                             borderRadius: "9999px",
-                                            border: "2.5px solid #0D0E15",
-                                            boxShadow: "3.5px 3.5px 0px #0D0E15",
+                                            border: "none",
+                                            boxShadow: "0 4px 14px rgba(37, 137, 216, 0.32)",
                                             px: 5,
                                             py: 1.5,
                                             textTransform: "none",
                                             fontSize: "1rem",
-                                            transition: "all 0.15s ease",
+                                            transition: "all 0.2s ease",
                                             "&:hover": {
-                                                bgcolor: "#E61A68",
-                                                boxShadow: "5px 5px 0px #0D0E15",
-                                                transform: "translate(-2px, -2px)",
+                                                bgcolor: BRAND_COLORS.brandBlueHover,
+                                                boxShadow: "0 6px 20px rgba(37, 137, 216, 0.42)",
+                                                transform: "translateY(-1px)",
                                             },
                                         }}
                                         startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SparklesIcon />}
@@ -1007,7 +1007,7 @@ function ProfilePage() {
                                     border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                 }}
                             >
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 0.5 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, mb: 0.5 }}>
                                     Profile Photos
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 2 }}>
@@ -1352,7 +1352,7 @@ function ProfilePage() {
                                                 sx={{
                                                     "& .MuiOutlinedInput-root": {
                                                         borderRadius: "12px",
-                                                        bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                        bgcolor: "#FFFFFF",
                                                     },
                                                 }}
                                             />

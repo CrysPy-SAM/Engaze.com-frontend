@@ -502,17 +502,17 @@ function SearchPage() {
                                 borderRadius: "9999px",
                                 bgcolor: BRAND_COLORS.surfaceDark,
                                 border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                color: "#FFFFFF",
+                                color: BRAND_COLORS.deepNavy,
                                 px: 2,
                                 py: 0.5,
                                 fontSize: "0.95rem",
                                 transition: "all 0.2s ease",
                                 "&:hover": {
-                                    borderColor: "rgba(253, 58, 115, 0.4)",
+                                    borderColor: "rgba(37, 137, 216, 0.4)",
                                 },
                                 "&.Mui-focused": {
-                                    borderColor: BRAND_COLORS.coralPink,
-                                    boxShadow: "0 0 16px rgba(253, 58, 115, 0.25)",
+                                    borderColor: BRAND_COLORS.brandBlue,
+                                    boxShadow: "0 0 16px rgba(37, 137, 216, 0.25)",
                                 },
                             },
                         }}
@@ -644,7 +644,7 @@ function SearchPage() {
                                 }}
                             >
                                 <SearchRoundedIcon sx={{ fontSize: 56, color: "rgba(253, 58, 115, 0.3)", mb: 2 }} />
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", mb: 0.8 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, mb: 0.8 }}>
                                     Search People & Connect
                                 </Typography>
                                 <Typography variant="body2" sx={{ maxWidth: 360, mx: "auto", color: BRAND_COLORS.textSecondary }}>
@@ -698,10 +698,10 @@ function SearchPage() {
                                             cursor: "pointer",
                                             transition: "all 0.2s ease",
                                             "&:hover": {
-                                                borderColor: "rgba(253, 58, 115, 0.45)",
-                                                bgcolor: "rgba(255, 255, 255, 0.04)",
+                                                borderColor: "rgba(37, 137, 216, 0.35)",
+                                                bgcolor: "#FFFFFF",
                                                 transform: "translateY(-1px)",
-                                                boxShadow: "0 6px 20px rgba(0, 0, 0, 0.4)",
+                                                boxShadow: "0 8px 24px rgba(37, 137, 216, 0.1)",
                                             },
                                         }}
                                     >
@@ -721,8 +721,8 @@ function SearchPage() {
                                                     sx={{
                                                         width: 52,
                                                         height: 52,
-                                                        border: `2px solid ${BRAND_COLORS.coralPink}`,
-                                                        boxShadow: "0 2px 10px rgba(253, 58, 115, 0.3)",
+                                                        border: "2px solid #2589D8",
+                                                        boxShadow: "0 2px 10px rgba(37, 137, 216, 0.25)",
                                                         flexShrink: 0,
                                                     }}
                                                 >
@@ -752,7 +752,7 @@ function SearchPage() {
                                                     <Typography
                                                         variant="caption"
                                                         sx={{
-                                                            color: BRAND_COLORS.coralPink,
+                                                            color: BRAND_COLORS.brandBlue,
                                                             fontWeight: 700,
                                                             fontSize: "0.78rem",
                                                             display: "block",
@@ -849,7 +849,7 @@ function SearchPage() {
                                 }}
                             >
                                 <SearchRoundedIcon sx={{ fontSize: 50, color: "rgba(255, 255, 255, 0.15)", mb: 1.5 }} />
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", mb: 0.8 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, mb: 0.8 }}>
                                     No results found
                                 </Typography>
                                 <Typography variant="body2" sx={{ maxWidth: 360, mx: "auto", color: BRAND_COLORS.textSecondary }}>
@@ -996,7 +996,7 @@ function SearchPage() {
                         />
                     </Box>
 
-                    <Typography variant="h5" sx={{ fontWeight: 900, mb: 1, color: "#fff" }}>
+                    <Typography variant="h5" sx={{ fontWeight: 900, mb: 1, color: BRAND_COLORS.deepNavy }}>
                         It&apos;s a Connection!
                     </Typography>
                     <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3 }}>

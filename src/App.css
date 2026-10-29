@@ -3,14 +3,14 @@
    ============================================================ */
 
 :root {
-  --brand-gradient: linear-gradient(135deg, #FD3A73 0%, #FF7A00 100%);
-  --brand-gradient-hover: linear-gradient(135deg, #E62A62 0%, #E66800 100%);
+  --brand-gradient: linear-gradient(135deg, #2589D8 0%, #1D6FB0 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #1E73B9 0%, #175B92 100%);
   --secondary-gradient: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
-  --bg-dark: #0B0D17;
-  --surface-dark: #131625;
-  --surface-elevated: #1C2035;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(253, 58, 115, 0.4);
+  --bg-dark: #F7FAFE;
+  --surface-dark: #FFFFFF;
+  --surface-elevated: #FFFFFF;
+  --border-subtle: rgba(20, 43, 69, 0.08);
+  --border-active: rgba(37, 137, 216, 0.4);
 }
 
 /* Custom modern scrollbar */
@@ -19,14 +19,14 @@
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0D17;
+  background: #F4F8FC;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(20, 43, 69, 0.18);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(253, 58, 115, 0.5);
+  background: #2589D8;
 }
 
 body {

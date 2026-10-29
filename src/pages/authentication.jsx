@@ -162,7 +162,9 @@ export default function Authentication() {
             sx={{
                 minHeight: "100vh",
                 bgcolor: "#FFFFFF",
-                overflow: "hidden",
+                width: "100%",
+                m: 0,
+                overflowX: "hidden",
             }}
         >
             <CssBaseline />
@@ -170,7 +172,6 @@ export default function Authentication() {
             {/* Left Hero Storytelling Panel (Desktop / Tablet sm+) */}
             <Grid
                 item
-                xs={false}
                 sm={5}
                 md={6}
                 lg={6.5}
@@ -178,12 +179,14 @@ export default function Authentication() {
                     position: "relative",
                     background: "linear-gradient(145deg, #E8F4FD 0%, #DCEEFC 100%)",
                     color: "#0A1A4A",
-                    display: { xs: "none", sm: "flex" },
+                    display: { xs: "none !important", sm: "flex !important" },
                     flexDirection: "column",
                     justifyContent: "space-between",
-                    p: { sm: 4, md: 6, lg: 8 },
+                    p: { xs: 0, sm: 4, md: 6, lg: 8 },
                     overflow: "hidden",
-                    borderRight: "1px solid rgba(10, 26, 74, 0.08)",
+                    borderRight: { xs: "none", sm: "1px solid rgba(10, 26, 74, 0.08)" },
+                    width: { xs: "0px !important", sm: "auto" },
+                    minWidth: { xs: 0, sm: "auto" },
                 }}
             >
                 {/* Soft Organic Background Blobs */}
@@ -429,7 +432,10 @@ export default function Authentication() {
                     justifyContent: "center",
                     alignItems: "center",
                     minHeight: "100vh",
-                    p: { xs: 2.5, sm: 4, md: 6, lg: 8 },
+                    p: { xs: 2, sm: 4, md: 6, lg: 8 },
+                    boxSizing: "border-box",
+                    width: { xs: "100% !important", sm: "auto" },
+                    maxWidth: "100%",
                 }}
             >
                 <Box
@@ -437,7 +443,7 @@ export default function Authentication() {
                         maxWidth: 440,
                         width: "100%",
                         bgcolor: "#FFFFFF",
-                        p: { xs: 3, sm: 4 },
+                        p: { xs: 2.5, sm: 4 },
                         borderRadius: { xs: "24px", sm: "28px" },
                         boxShadow: {
                             xs: "0 10px 30px rgba(10, 108, 255, 0.08)",
@@ -447,6 +453,8 @@ export default function Authentication() {
                             xs: "1px solid rgba(10, 26, 74, 0.08)",
                             sm: "none",
                         },
+                        boxSizing: "border-box",
+                        mx: "auto",
                     }}
                 >
                     {/* Mobile Brand Header */}

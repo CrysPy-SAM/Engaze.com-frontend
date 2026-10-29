@@ -332,7 +332,7 @@ function MatchesPage() {
     );
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: BRAND_COLORS.bgDark, pb: { xs: 12, md: 6 } }}>
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#F7FAFE", pb: { xs: 12, md: 6 } }}>
             {/* Unified Brand Navigation with Search & More Options */}
             <Navbar rightActions={matchesRightActions} />
 
@@ -369,9 +369,10 @@ function MatchesPage() {
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     borderRadius: "9999px",
-                                    bgcolor: BRAND_COLORS.surfaceDark,
-                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                    color: "#FFFFFF",
+                                    bgcolor: "#FFFFFF",
+                                    border: "1px solid rgba(20, 43, 69, 0.08)",
+                                    boxShadow: "0 2px 10px rgba(20, 43, 69, 0.03)",
+                                    color: BRAND_COLORS.deepNavy,
                                 },
                             }}
                         />
@@ -390,14 +391,14 @@ function MatchesPage() {
                             fontWeight: activeTab === "matches" ? 900 : 700,
                             fontSize: "0.85rem",
                             textTransform: "none",
-                            bgcolor: activeTab === "matches" ? (BRAND_COLORS.hotPink || "#FD2E7A") : "#141624",
-                            border: activeTab === "matches" ? "2.5px solid #0D0E15" : "2px solid rgba(255, 255, 255, 0.12)",
+                            bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlue : "#FFFFFF",
+                            border: activeTab === "matches" ? "none" : "1px solid rgba(20, 43, 69, 0.1)",
                             color: activeTab === "matches" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "matches" ? "3px 3px 0px #0D0E15" : "none",
+                            boxShadow: activeTab === "matches" ? "0 4px 14px rgba(37, 137, 216, 0.32)" : "0 2px 6px rgba(20, 43, 69, 0.03)",
                             transition: "all 0.18s ease",
                             "&:hover": {
-                                bgcolor: activeTab === "matches" ? "#E61A68" : "rgba(255, 255, 255, 0.08)",
-                                color: "#FFFFFF",
+                                bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlueHover : "rgba(37, 137, 216, 0.06)",
+                                color: activeTab === "matches" ? "#FFFFFF" : BRAND_COLORS.deepNavy,
                                 transform: "translateY(-1px)",
                             },
                         }}
@@ -414,14 +415,14 @@ function MatchesPage() {
                             fontWeight: activeTab === "requests" ? 900 : 700,
                             fontSize: "0.85rem",
                             textTransform: "none",
-                            bgcolor: activeTab === "requests" ? (BRAND_COLORS.hotPink || "#FD2E7A") : "#141624",
-                            border: activeTab === "requests" ? "2.5px solid #0D0E15" : "2px solid rgba(255, 255, 255, 0.12)",
+                            bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlue : "#FFFFFF",
+                            border: activeTab === "requests" ? "none" : "1px solid rgba(20, 43, 69, 0.1)",
                             color: activeTab === "requests" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "requests" ? "3px 3px 0px #0D0E15" : "none",
+                            boxShadow: activeTab === "requests" ? "0 4px 14px rgba(37, 137, 216, 0.32)" : "0 2px 6px rgba(20, 43, 69, 0.03)",
                             transition: "all 0.18s ease",
                             "&:hover": {
-                                bgcolor: activeTab === "requests" ? "#E61A68" : "rgba(255, 255, 255, 0.08)",
-                                color: "#FFFFFF",
+                                bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlueHover : "rgba(37, 137, 216, 0.06)",
+                                color: activeTab === "requests" ? "#FFFFFF" : BRAND_COLORS.deepNavy,
                                 transform: "translateY(-1px)",
                             },
                         }}
@@ -438,14 +439,14 @@ function MatchesPage() {
                             fontWeight: activeTab === "likes" ? 900 : 700,
                             fontSize: "0.85rem",
                             textTransform: "none",
-                            bgcolor: activeTab === "likes" ? (BRAND_COLORS.hotPink || "#FD2E7A") : "#141624",
-                            border: activeTab === "likes" ? "2.5px solid #0D0E15" : "2px solid rgba(255, 255, 255, 0.12)",
+                            bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlue : "#FFFFFF",
+                            border: activeTab === "likes" ? "none" : "1px solid rgba(20, 43, 69, 0.1)",
                             color: activeTab === "likes" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "likes" ? "3px 3px 0px #0D0E15" : "none",
+                            boxShadow: activeTab === "likes" ? "0 4px 14px rgba(37, 137, 216, 0.32)" : "0 2px 6px rgba(20, 43, 69, 0.03)",
                             transition: "all 0.18s ease",
                             "&:hover": {
-                                bgcolor: activeTab === "likes" ? "#E61A68" : "rgba(255, 255, 255, 0.08)",
-                                color: "#FFFFFF",
+                                bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlueHover : "rgba(37, 137, 216, 0.06)",
+                                color: activeTab === "likes" ? "#FFFFFF" : BRAND_COLORS.deepNavy,
                                 transform: "translateY(-1px)",
                             },
                         }}
@@ -458,7 +459,7 @@ function MatchesPage() {
                     <>
                 {/* 1. MATCHES SECTION HEADER (Matches 5) */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 1.8 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                    <Typography variant="h5" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy, letterSpacing: "-0.02em" }}>
                         Matches
                     </Typography>
                     <Box
@@ -594,13 +595,14 @@ function MatchesPage() {
                                             py: 1.5,
                                             px: { xs: 1.8, sm: 2.2 },
                                             borderRadius: "20px",
-                                            bgcolor: "#141624",
-                                            border: "2px solid rgba(255, 255, 255, 0.08)",
+                                            bgcolor: "#FFFFFF",
+                                            border: "1px solid rgba(20, 43, 69, 0.08)",
+                                            boxShadow: "0 2px 10px rgba(20, 43, 69, 0.03)",
                                             transition: "all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1)",
                                             "&:hover": {
-                                                bgcolor: "#1A1D2E",
-                                                border: "2px solid #0D0E15",
-                                                boxShadow: "3px 3px 0px #0D0E15",
+                                                bgcolor: "#FFFFFF",
+                                                borderColor: "rgba(37, 137, 216, 0.3)",
+                                                boxShadow: "0 8px 24px rgba(37, 137, 216, 0.12)",
                                                 transform: "translateY(-1.5px)",
                                             },
                                         }}
@@ -632,7 +634,7 @@ function MatchesPage() {
                                                         variant="subtitle1"
                                                         sx={{
                                                             fontWeight: unread ? 800 : 700,
-                                                            color: "#FFFFFF",
+                                                            color: BRAND_COLORS.deepNavy,
                                                             fontSize: "0.98rem",
                                                         }}
                                                     >
@@ -738,9 +740,9 @@ function MatchesPage() {
                             p: 4.5,
                             textAlign: "center",
                             borderRadius: "24px",
-                            bgcolor: "#141624",
-                            border: "2.5px solid #0D0E15",
-                            boxShadow: "5px 5px 0px #0D0E15",
+                            bgcolor: "#FFFFFF",
+                            border: "1px solid rgba(20, 43, 69, 0.08)",
+                            boxShadow: "0 10px 30px rgba(20, 43, 69, 0.04)",
                             mt: 3,
                         }}
                     >
@@ -749,9 +751,7 @@ function MatchesPage() {
                                 width: 76,
                                 height: 76,
                                 borderRadius: "50%",
-                                bgcolor: "rgba(253, 46, 122, 0.15)",
-                                border: "2px solid #FD2E7A",
-                                boxShadow: "2.5px 2.5px 0px #0D0E15",
+                                bgcolor: "rgba(255, 90, 112, 0.1)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -759,9 +759,9 @@ function MatchesPage() {
                                 mb: 2.2,
                             }}
                         >
-                            <FavoriteRoundedIcon sx={{ fontSize: 38, color: BRAND_COLORS.hotPink || "#FD2E7A" }} />
+                            <FavoriteRoundedIcon sx={{ fontSize: 38, color: BRAND_COLORS.coralPink }} />
                         </Box>
-                        <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF", mb: 1, letterSpacing: "-0.01em" }}>
+                        <Typography variant="h6" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy, mb: 1, letterSpacing: "-0.01em" }}>
                             No Matches Yet
                         </Typography>
                         <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3, maxWidth: 360, mx: "auto", lineHeight: 1.6 }}>
@@ -771,7 +771,7 @@ function MatchesPage() {
                             variant="contained"
                             onClick={() => navigate("/discovery")}
                             sx={{
-                                bgcolor: BRAND_COLORS.hotPink || "#FD2E7A",
+                                bgcolor: BRAND_COLORS.coralPink,
                                 color: "#FFFFFF",
                                 border: "2.5px solid #0D0E15",
                                 boxShadow: "3.5px 3.5px 0px #0D0E15",
@@ -806,7 +806,7 @@ function MatchesPage() {
                         )}
 
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 1.8 }}>
-                            <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                            <Typography variant="h5" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy, letterSpacing: "-0.02em" }}>
                                 Match Requests
                             </Typography>
                             {incomingRequests.length > 0 && (
@@ -848,8 +848,9 @@ function MatchesPage() {
                                     p: 5,
                                     textAlign: "center",
                                     borderRadius: "24px",
-                                    bgcolor: "rgba(255, 255, 255, 0.02)",
-                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                    bgcolor: "#FFFFFF",
+                                    border: "1px solid rgba(20, 43, 69, 0.08)",
+                                    boxShadow: "0 8px 24px rgba(20, 43, 69, 0.04)",
                                     my: 4,
                                 }}
                             >
@@ -867,7 +868,7 @@ function MatchesPage() {
                                 >
                                     <NotificationsRoundedIcon sx={{ fontSize: 36, color: BRAND_COLORS.coralPink }} />
                                 </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#FFFFFF", mb: 1 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, mb: 1 }}>
                                     No Pending Match Requests
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, maxWidth: 360, margin: "0 auto", mb: 3 }}>
@@ -905,15 +906,16 @@ function MatchesPage() {
                                             sx={{
                                                 borderRadius: "20px",
                                                 overflow: "hidden",
-                                                bgcolor: "rgba(255, 255, 255, 0.03)",
-                                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                                bgcolor: "#FFFFFF",
+                                                border: "1px solid rgba(20, 43, 69, 0.08)",
+                                                boxShadow: "0 8px 24px rgba(20, 43, 69, 0.04)",
                                                 display: "flex",
                                                 flexDirection: "column",
                                                 transition: "all 0.25s ease",
                                                 "&:hover": {
-                                                    borderColor: "rgba(253, 58, 115, 0.4)",
+                                                    borderColor: "rgba(37, 137, 216, 0.3)",
                                                     transform: "translateY(-3px)",
-                                                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
+                                                    boxShadow: "0 12px 32px rgba(37, 137, 216, 0.12)",
                                                 },
                                             }}
                                         >
@@ -1084,7 +1086,7 @@ function MatchesPage() {
                                 >
                                     <WhatshotRoundedIcon sx={{ fontSize: 32 }} />
                                 </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", mb: 1 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, mb: 1 }}>
                                     No Pending Likes Yet
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, maxWidth: 360, mx: "auto", mb: 3 }}>
