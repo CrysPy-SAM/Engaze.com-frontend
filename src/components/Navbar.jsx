@@ -401,13 +401,13 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                         borderRadius: "20px",
                                         bgcolor: BRAND_COLORS.surfaceDark,
                                         border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                        boxShadow: "0 16px 40px rgba(20, 43, 69, 0.12)",
+                                        boxShadow: "0 16px 40px rgba(0, 0, 0, 0.45)",
                                         p: 1,
                                     },
                                 }}
                             >
                                 <Box sx={{ px: 2, py: 1.2 }}>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#F8FAFC" }}>
                                         {userData?.name || "Engaze Member"}
                                     </Typography>
                                     <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
@@ -424,7 +424,8 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                         borderRadius: "12px",
                                         gap: 1.5,
                                         py: 1,
-                                        "&:hover": { bgcolor: "rgba(37, 137, 216, 0.06)" },
+                                        color: "#F8FAFC",
+                                        "&:hover": { bgcolor: "rgba(255, 255, 255, 0.06)" },
                                     }}
                                 >
                                     <EditRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.brandBlue }} />
@@ -441,7 +442,8 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                         borderRadius: "12px",
                                         gap: 1.5,
                                         py: 1,
-                                        "&:hover": { bgcolor: "rgba(37, 137, 216, 0.06)" },
+                                        color: "#F8FAFC",
+                                        "&:hover": { bgcolor: "rgba(255, 255, 255, 0.06)" },
                                     }}
                                 >
                                     <SecurityRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.brandBlue }} />
@@ -458,9 +460,9 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                         borderRadius: "12px",
                                         gap: 1.5,
                                         py: 1,
-                                        color: "inherit",
+                                        color: "#F8FAFC",
                                         textDecoration: "none",
-                                        "&:hover": { bgcolor: "rgba(37, 137, 216, 0.06)" },
+                                        "&:hover": { bgcolor: "rgba(255, 255, 255, 0.06)" },
                                     }}
                                 >
                                     <HelpOutlineRoundedIcon fontSize="small" sx={{ color: BRAND_COLORS.violet }} />
@@ -479,7 +481,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                         gap: 1.5,
                                         py: 1,
                                         color: "#EF4444",
-                                        "&:hover": { bgcolor: "rgba(239, 68, 68, 0.1)" },
+                                        "&:hover": { bgcolor: "rgba(239, 68, 68, 0.12)" },
                                     }}
                                 >
                                     <LogoutRoundedIcon fontSize="small" />
@@ -502,9 +504,9 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                         width: { xs: 320, sm: 380 },
                                         maxHeight: 480,
                                         borderRadius: "20px",
-                                        bgcolor: "#FFFFFF",
-                                        border: "1px solid rgba(20, 43, 69, 0.08)",
-                                        boxShadow: "0 16px 44px rgba(20, 43, 69, 0.12)",
+                                        bgcolor: BRAND_COLORS.surfaceDark,
+                                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                        boxShadow: "0 16px 44px rgba(0, 0, 0, 0.5)",
                                         overflow: "hidden",
                                         display: "flex",
                                         flexDirection: "column",
@@ -522,7 +524,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                     }}
                                 >
                                     <Stack direction="row" spacing={1} alignItems="center">
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#F8FAFC" }}>
                                             Notifications
                                         </Typography>
                                         {unreadNotificationCount > 0 && (
@@ -581,11 +583,11 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                     sx={{
                                                         px: 2,
                                                         py: 1.4,
-                                                        borderBottom: "1px solid rgba(20, 43, 69, 0.05)",
-                                                        bgcolor: notif.read ? "transparent" : "rgba(37, 137, 216, 0.05)",
+                                                        borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                                        bgcolor: notif.read ? "transparent" : "rgba(37, 137, 216, 0.12)",
                                                         transition: "background-color 0.2s ease",
                                                         "&:hover": {
-                                                            bgcolor: notif.read ? "rgba(20, 43, 69, 0.03)" : "rgba(37, 137, 216, 0.09)",
+                                                            bgcolor: notif.read ? "rgba(255, 255, 255, 0.04)" : "rgba(37, 137, 216, 0.18)",
                                                         },
                                                     }}
                                                 >
@@ -596,6 +598,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                             sx={{
                                                                 width: 38,
                                                                 height: 38,
+                                                                bgcolor: "rgba(255, 255, 255, 0.1)",
                                                                 border: notif.type === "match" ? `2px solid ${BRAND_COLORS.coralPink}` : "none",
                                                             }}
                                                         >
@@ -604,7 +607,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                     </ListItemAvatar>
                                                     <ListItemText
                                                         primary={
-                                                            <Typography variant="body2" sx={{ fontWeight: notif.read ? 600 : 800, color: BRAND_COLORS.deepNavy, lineHeight: 1.3 }}>
+                                                            <Typography variant="body2" sx={{ fontWeight: notif.read ? 600 : 800, color: "#F8FAFC", lineHeight: 1.3 }}>
                                                                 {notif.type === "match"
                                                                     ? `🎉 You and ${notif.sender?.name} matched!`
                                                                     : notif.type === "match_request"

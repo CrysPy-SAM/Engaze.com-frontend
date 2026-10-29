@@ -202,6 +202,63 @@ const theme = createTheme({
                 root: {
                     backgroundImage: "none",
                     backgroundColor: "#121C2D",
+                    color: "#F8FAFC",
+                },
+            },
+        },
+        MuiDialog: {
+            styleOverrides: {
+                paper: {
+                    backgroundColor: "#121C2D",
+                    backgroundImage: "none",
+                    color: "#F8FAFC",
+                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                    borderRadius: 24,
+                    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.55)",
+                },
+            },
+        },
+        MuiMenu: {
+            styleOverrides: {
+                paper: {
+                    backgroundColor: "#121C2D",
+                    backgroundImage: "none",
+                    color: "#F8FAFC",
+                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                    borderRadius: 20,
+                    boxShadow: "0 16px 48px rgba(0, 0, 0, 0.5)",
+                },
+            },
+        },
+        MuiPopover: {
+            styleOverrides: {
+                paper: {
+                    backgroundColor: "#121C2D",
+                    backgroundImage: "none",
+                    color: "#F8FAFC",
+                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                    borderRadius: 20,
+                    boxShadow: "0 16px 48px rgba(0, 0, 0, 0.5)",
+                },
+            },
+        },
+        MuiMenuItem: {
+            styleOverrides: {
+                root: {
+                    color: "#F8FAFC",
+                    "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.06)",
+                    },
+                },
+            },
+        },
+        MuiListItemText: {
+            styleOverrides: {
+                primary: {
+                    color: "#F8FAFC",
+                },
+                secondary: {
+                    color: BRAND_COLORS.textSecondary,
                 },
             },
         },

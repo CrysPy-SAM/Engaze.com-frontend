@@ -1197,7 +1197,7 @@ function DiscoveryPage() {
                         </IconButton>
                     </Box>
 
-                    <DialogContent sx={{ p: 3, pt: 1, bgcolor: "#FFFFFF" }}>
+                    <DialogContent sx={{ p: 3, pt: 1, bgcolor: BRAND_COLORS.surfaceDark }}>
                         <Box sx={{ mb: 2 }}>
                             <Stack direction="row" spacing={1} alignItems="center">
                                 <Typography variant="h5" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy }}>

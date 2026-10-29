@@ -698,10 +698,10 @@ function SearchPage() {
                                             cursor: "pointer",
                                             transition: "all 0.2s ease",
                                             "&:hover": {
-                                                borderColor: "rgba(37, 137, 216, 0.35)",
-                                                bgcolor: "#FFFFFF",
+                                                borderColor: "rgba(37, 137, 216, 0.45)",
+                                                bgcolor: BRAND_COLORS.surfaceDarkElevated,
                                                 transform: "translateY(-1px)",
-                                                boxShadow: "0 8px 24px rgba(37, 137, 216, 0.1)",
+                                                boxShadow: "0 8px 24px rgba(37, 137, 216, 0.2)",
                                             },
                                         }}
                                     >

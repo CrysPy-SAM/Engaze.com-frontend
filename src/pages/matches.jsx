@@ -740,9 +740,9 @@ function MatchesPage() {
                             p: 4.5,
                             textAlign: "center",
                             borderRadius: "24px",
-                            bgcolor: "#FFFFFF",
-                            border: "1px solid rgba(20, 43, 69, 0.08)",
-                            boxShadow: "0 10px 30px rgba(20, 43, 69, 0.04)",
+                            bgcolor: BRAND_COLORS.surfaceDark,
+                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
                             mt: 3,
                         }}
                     >
@@ -848,9 +848,9 @@ function MatchesPage() {
                                     p: 5,
                                     textAlign: "center",
                                     borderRadius: "24px",
-                                    bgcolor: "#FFFFFF",
-                                    border: "1px solid rgba(20, 43, 69, 0.08)",
-                                    boxShadow: "0 8px 24px rgba(20, 43, 69, 0.04)",
+                                    bgcolor: BRAND_COLORS.surfaceDark,
+                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
                                     my: 4,
                                 }}
                             >
@@ -906,16 +906,16 @@ function MatchesPage() {
                                             sx={{
                                                 borderRadius: "20px",
                                                 overflow: "hidden",
-                                                bgcolor: "#FFFFFF",
-                                                border: "1px solid rgba(20, 43, 69, 0.08)",
-                                                boxShadow: "0 8px 24px rgba(20, 43, 69, 0.04)",
+                                                bgcolor: BRAND_COLORS.surfaceDark,
+                                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                                boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
                                                 display: "flex",
                                                 flexDirection: "column",
                                                 transition: "all 0.25s ease",
                                                 "&:hover": {
-                                                    borderColor: "rgba(37, 137, 216, 0.3)",
+                                                    borderColor: "rgba(37, 137, 216, 0.4)",
                                                     transform: "translateY(-3px)",
-                                                    boxShadow: "0 12px 32px rgba(37, 137, 216, 0.12)",
+                                                    boxShadow: "0 12px 32px rgba(37, 137, 216, 0.2)",
                                                 },
                                             }}
                                         >

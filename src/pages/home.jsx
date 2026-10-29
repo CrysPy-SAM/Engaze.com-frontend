@@ -546,13 +546,13 @@ function HomeComponent() {
                                 gap: 2,
                                 p: 2,
                                 borderRadius: "16px",
-                                bgcolor: "#F7FAFE",
-                                border: "1px solid rgba(20, 43, 69, 0.08)",
+                                bgcolor: BRAND_COLORS.surfaceDarkElevated,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                 textDecoration: "none",
                                 color: "#FFFFFF",
                                 transition: "all 0.2s ease",
                                 "&:hover": {
-                                    bgcolor: "rgba(253, 58, 115, 0.08)",
+                                    bgcolor: "rgba(253, 58, 115, 0.12)",
                                     borderColor: BRAND_COLORS.coralPink,
                                     transform: "translateY(-1px)",
                                 },
@@ -573,7 +573,7 @@ function HomeComponent() {
                                 <SupportAgentRoundedIcon sx={{ color: BRAND_COLORS.coralPink, fontSize: 24 }} />
                             </Box>
                             <Box sx={{ minWidth: 0, flex: 1 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, mb: 0.2 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#F8FAFC", mb: 0.2 }}>
                                     Customer Support & Help
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>
@@ -592,13 +592,13 @@ function HomeComponent() {
                                 gap: 2,
                                 p: 2,
                                 borderRadius: "16px",
-                                bgcolor: "#F7FAFE",
-                                border: "1px solid rgba(20, 43, 69, 0.08)",
+                                bgcolor: BRAND_COLORS.surfaceDarkElevated,
+                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                 textDecoration: "none",
                                 color: "#FFFFFF",
                                 transition: "all 0.2s ease",
                                 "&:hover": {
-                                    bgcolor: "rgba(139, 92, 246, 0.08)",
+                                    bgcolor: "rgba(139, 92, 246, 0.12)",
                                     borderColor: BRAND_COLORS.violet,
                                     transform: "translateY(-1px)",
                                 },
@@ -619,7 +619,7 @@ function HomeComponent() {
                                 <EmailRoundedIcon sx={{ color: BRAND_COLORS.violet, fontSize: 22 }} />
                             </Box>
                             <Box sx={{ minWidth: 0, flex: 1 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: BRAND_COLORS.deepNavy, mb: 0.2 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#F8FAFC", mb: 0.2 }}>
                                     General & Business Enquiries
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, display: "block" }}>
