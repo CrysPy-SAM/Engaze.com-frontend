@@ -480,9 +480,9 @@ export default function LandingPage() {
                         width: "100%",
                         maxWidth: 1040,
                         backgroundColor: "#FFFFFF",
-                        border: "1.5px solid rgba(10, 26, 74, 0.08)",
+                        border: "1.5px solid rgba(20, 43, 69, 0.08)",
                         borderRadius: "9999px",
-                        boxShadow: "0 8px 24px rgba(10, 108, 255, 0.10)",
+                        boxShadow: "0 8px 24px rgba(37, 137, 216, 0.10)",
                         px: { xs: 2, sm: 3, md: 3.5 },
                         py: { xs: 0.75, md: 1.0 },
                         display: "flex",
@@ -497,7 +497,7 @@ export default function LandingPage() {
                         aria-label="Engaze Dating Platform Homepage"
                         sx={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}
                     >
-                        <EngazeLogo size={30} fontSize="1.3rem" textColor="#0A1A4A" />
+                        <EngazeLogo size={30} fontSize="1.3rem" textColor="#142B45" />
                     </Box>
 
                     {/* Desktop Navigation Links */}
@@ -524,13 +524,13 @@ export default function LandingPage() {
                                     scrollToSection(link.id);
                                 }}
                                 sx={{
-                                    color: "#0A1A4A",
+                                    color: "#142B45",
                                     fontWeight: 700,
                                     textDecoration: "none",
                                     fontSize: "0.88rem",
                                     letterSpacing: "-0.01em",
                                     transition: "color 0.18s ease",
-                                    "&:hover": { color: "#0A6CFF" },
+                                    "&:hover": { color: "#2589D8" },
                                 }}
                             >
                                 {link.label}
@@ -546,12 +546,12 @@ export default function LandingPage() {
                             variant="text"
                             sx={{
                                 display: { xs: "none", sm: "inline-flex" },
-                                color: "#0A1A4A",
+                                color: "#142B45",
                                 fontWeight: 800,
                                 fontSize: "0.88rem",
                                 textTransform: "none",
                                 px: { sm: 1.8 },
-                                "&:hover": { color: "#0A6CFF", backgroundColor: "transparent" },
+                                "&:hover": { color: "#2589D8", backgroundColor: "transparent" },
                             }}
                         >
                             Sign In
@@ -563,7 +563,7 @@ export default function LandingPage() {
                             className="engaze-btn-primary"
                             variant="contained"
                             sx={{
-                                backgroundColor: "#0A6CFF",
+                                backgroundColor: "#2589D8",
                                 color: "#FFFFFF",
                                 px: { xs: 2.2, sm: 2.8 },
                                 py: { xs: 0.75, sm: 0.95 },
@@ -573,9 +573,10 @@ export default function LandingPage() {
                                 gap: 0.8,
                                 textTransform: "none",
                                 borderRadius: "9999px",
-                                boxShadow: "0 6px 18px rgba(10, 108, 255, 0.28)",
+                                boxShadow: "0 6px 18px rgba(37, 137, 216, 0.28)",
+                                transition: "all 0.2s ease",
                                 "&:hover": {
-                                    backgroundColor: "#0857D0",
+                                    backgroundColor: "#1E73B9",
                                     transform: "translateY(-1px)",
                                 },
                             }}
@@ -591,7 +592,7 @@ export default function LandingPage() {
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    color: "#0A6CFF",
+                                    color: "#2589D8",
                                     fontSize: "0.80rem",
                                     lineHeight: 1,
                                     fontWeight: 900,
@@ -709,13 +710,13 @@ export default function LandingPage() {
                 component="section"
                 sx={{
                     position: "relative",
-                    background: "linear-gradient(180deg, #E8F4FD 0%, #DCEEFC 100%)",
-                    color: "#0A1A4A",
+                    background: "linear-gradient(145deg, #EAF6FF 0%, #E3F1FF 55%, #F0ECFF 100%)",
+                    color: "#142B45",
                     pt: { xs: 4, sm: 6, md: 8 },
                     pb: { xs: 5, sm: 6, md: 7 },
                     px: { xs: 2, sm: 3, md: 5 },
                     overflow: "hidden",
-                    borderBottom: "1px solid rgba(10, 26, 74, 0.08)",
+                    borderBottom: "1px solid rgba(20, 43, 69, 0.08)",
                     minHeight: { xs: "auto", md: 540, lg: 600 },
                     display: "flex",
                     alignItems: "center",
@@ -731,7 +732,7 @@ export default function LandingPage() {
                         width: { xs: 220, md: 380 },
                         height: { xs: 220, md: 380 },
                         borderRadius: "50%",
-                        background: "radial-gradient(circle, rgba(205, 230, 250, 0.65) 0%, rgba(232, 244, 253, 0) 70%)",
+                        background: "radial-gradient(circle, rgba(205, 230, 250, 0.65) 0%, rgba(234, 246, 255, 0) 70%)",
                         pointerEvents: "none",
                     }}
                 />
@@ -743,38 +744,38 @@ export default function LandingPage() {
                         width: { xs: 220, md: 380 },
                         height: { xs: 220, md: 380 },
                         borderRadius: "50%",
-                        background: "radial-gradient(circle, rgba(205, 230, 250, 0.65) 0%, rgba(232, 244, 253, 0) 70%)",
+                        background: "radial-gradient(circle, rgba(240, 236, 255, 0.65) 0%, rgba(240, 236, 255, 0) 70%)",
                         pointerEvents: "none",
                     }}
                 />
 
                 {/* Decorative Hand-Drawn Vector Doodles (Desktop/Tablet sm+) */}
                 <Box sx={{ display: { xs: "none", md: "block" }, pointerEvents: "none" }}>
-                    <BurstLines sx={{ position: "absolute", top: { sm: 15, md: 20 }, left: { sm: 40, md: "6%" } }} rotation={0} />
-                    <HeartDoodle sx={{ position: "absolute", top: { sm: 70, md: 80 }, left: { sm: 160, md: "16%" } }} rotation={15} />
-                    <SquiggleDoodle sx={{ position: "absolute", top: { md: 180, lg: 200 }, left: { md: "5%", lg: "6%" } }} />
-                    <BurstLines sx={{ position: "absolute", top: { sm: 15, md: 20 }, right: { sm: 40, md: "6%" } }} rotation={120} />
-                    <BurstLines sx={{ position: "absolute", bottom: { sm: 15, md: 20 }, left: { sm: 80, md: "8%" } }} rotation={60} />
-                    <HeartDoodle sx={{ position: "absolute", bottom: { sm: 160, md: 180 }, right: { sm: 110, md: "14%" } }} rotation={-15} />
-                    <BurstLines sx={{ position: "absolute", bottom: { sm: 140, md: 160 }, right: { sm: 15, md: "3%" } }} rotation={120} />
+                    <BurstLines sx={{ position: "absolute", top: { sm: 15, md: 20 }, left: { sm: 40, md: "6%" } }} rotation={0} color="#2589D8" />
+                    <HeartDoodle sx={{ position: "absolute", top: { sm: 70, md: 80 }, left: { sm: 160, md: "16%" } }} rotation={15} color="#FF8F9C" />
+                    <SquiggleDoodle sx={{ position: "absolute", top: { md: 180, lg: 200 }, left: { md: "5%", lg: "6%" } }} color="#B8A7FF" />
+                    <BurstLines sx={{ position: "absolute", top: { sm: 15, md: 20 }, right: { sm: 40, md: "6%" } }} rotation={120} color="#2589D8" />
+                    <BurstLines sx={{ position: "absolute", bottom: { sm: 15, md: 20 }, left: { sm: 80, md: "8%" } }} rotation={60} color="#2589D8" />
+                    <HeartDoodle sx={{ position: "absolute", bottom: { sm: 160, md: 180 }, right: { sm: 110, md: "14%" } }} rotation={-15} color="#FF8F9C" />
+                    <BurstLines sx={{ position: "absolute", bottom: { sm: 140, md: 160 }, right: { sm: 15, md: "3%" } }} rotation={120} color="#2589D8" />
                 </Box>
 
                 {/* Four Circular Profile Portraits (Framing the Corners on sm+) */}
                 {/* 1. Upper-Left Avatar (Smiling Woman on Periwinkle Circle #8FA8FF) */}
                 <Box
                     component="img"
-                    src={process.env.PUBLIC_URL + "/images/hero-1.png"}
+                    src={process.env.PUBLIC_URL + "/images/hero_top_left.png"}
                     alt="Engaze member smiling"
                     className="engaze-hero-portrait engaze-float-1"
                     sx={{
                         position: "absolute",
                         top: { sm: 20, md: 30, lg: 35 },
                         left: { sm: 15, md: "3%", lg: "4%" },
-                        width: { sm: 85, md: 110, lg: 130 },
-                        height: { sm: 85, md: 110, lg: 130 },
+                        width: { sm: 85, md: 108, lg: 120 },
+                        height: { sm: 85, md: 108, lg: 120 },
                         borderRadius: "50%",
-                        border: "6px solid #FFFFFF",
-                        boxShadow: "0 14px 30px rgba(10, 26, 74, 0.12)",
+                        border: "5px solid #FFFFFF",
+                        boxShadow: "0 14px 32px rgba(20, 43, 69, 0.12)",
                         backgroundColor: "#8FA8FF",
                         objectFit: "cover",
                         zIndex: 2,
@@ -785,18 +786,18 @@ export default function LandingPage() {
                 {/* 2. Upper-Right Avatar (Smiling Man on Purple Circle #A98BFF) */}
                 <Box
                     component="img"
-                    src={process.env.PUBLIC_URL + "/images/hero-2.png"}
+                    src={process.env.PUBLIC_URL + "/images/hero_top_right.png"}
                     alt="Engaze member laughing"
                     className="engaze-hero-portrait engaze-float-2"
                     sx={{
                         position: "absolute",
                         top: { sm: 20, md: 30, lg: 35 },
                         right: { sm: 15, md: "3%", lg: "4%" },
-                        width: { sm: 85, md: 110, lg: 130 },
-                        height: { sm: 85, md: 110, lg: 130 },
+                        width: { sm: 90, md: 114, lg: 126 },
+                        height: { sm: 90, md: 114, lg: 126 },
                         borderRadius: "50%",
-                        border: "6px solid #FFFFFF",
-                        boxShadow: "0 14px 30px rgba(10, 26, 74, 0.12)",
+                        border: "5px solid #FFFFFF",
+                        boxShadow: "0 14px 32px rgba(20, 43, 69, 0.12)",
                         backgroundColor: "#A98BFF",
                         objectFit: "cover",
                         zIndex: 2,
@@ -807,18 +808,18 @@ export default function LandingPage() {
                 {/* 3. Lower-Left Avatar (Smiling Man on Yellow Circle #FFD84D) */}
                 <Box
                     component="img"
-                    src={process.env.PUBLIC_URL + "/images/hero-3.png"}
+                    src={process.env.PUBLIC_URL + "/images/hero_bottom_left.png"}
                     alt="Engaze member profile"
                     className="engaze-hero-portrait engaze-float-2"
                     sx={{
                         position: "absolute",
                         bottom: { sm: 20, md: 30, lg: 40 },
                         left: { sm: 15, md: "3%", lg: "4%" },
-                        width: { sm: 85, md: 110, lg: 135 },
-                        height: { sm: 85, md: 110, lg: 135 },
+                        width: { sm: 94, md: 120, lg: 132 },
+                        height: { sm: 94, md: 120, lg: 132 },
                         borderRadius: "50%",
-                        border: "6px solid #FFFFFF",
-                        boxShadow: "0 14px 30px rgba(10, 26, 74, 0.12)",
+                        border: "5px solid #FFFFFF",
+                        boxShadow: "0 14px 32px rgba(20, 43, 69, 0.12)",
                         backgroundColor: "#FFD84D",
                         objectFit: "cover",
                         zIndex: 2,
@@ -829,18 +830,18 @@ export default function LandingPage() {
                 {/* 4. Lower-Right Avatar (Smiling Woman on Pink Circle #F06C9B) */}
                 <Box
                     component="img"
-                    src={process.env.PUBLIC_URL + "/images/hero-4.png"}
+                    src={process.env.PUBLIC_URL + "/images/hero_bottom_right.png"}
                     alt="Engaze member connecting"
                     className="engaze-hero-portrait engaze-float-1"
                     sx={{
                         position: "absolute",
                         bottom: { sm: 20, md: 30, lg: 40 },
                         right: { sm: 15, md: "3%", lg: "4%" },
-                        width: { sm: 85, md: 110, lg: 135 },
-                        height: { sm: 85, md: 110, lg: 135 },
+                        width: { sm: 98, md: 124, lg: 136 },
+                        height: { sm: 98, md: 124, lg: 136 },
                         borderRadius: "50%",
-                        border: "6px solid #FFFFFF",
-                        boxShadow: "0 14px 30px rgba(10, 26, 74, 0.12)",
+                        border: "5px solid #FFFFFF",
+                        boxShadow: "0 14px 32px rgba(20, 43, 69, 0.12)",
                         backgroundColor: "#F06C9B",
                         objectFit: "cover",
                         zIndex: 2,
@@ -857,11 +858,11 @@ export default function LandingPage() {
                         top: { lg: 115 },
                         left: { lg: "11%", xl: "12%" },
                         backgroundColor: "#FFFFFF",
-                        color: "#0A1A4A",
-                        border: "1px solid rgba(10, 108, 255, 0.15)",
+                        color: "#142B45",
+                        border: "1px solid rgba(37, 137, 216, 0.16)",
                         borderRadius: "16px",
                         transform: "rotate(-12deg)",
-                        boxShadow: "0 8px 24px rgba(10, 108, 255, 0.12)",
+                        boxShadow: "0 8px 24px rgba(37, 137, 216, 0.12)",
                         px: 2,
                         py: 0.8,
                         fontSize: "0.82rem",
@@ -871,25 +872,25 @@ export default function LandingPage() {
                         gap: 1,
                     }}
                 >
-                    <VideocamRoundedIcon sx={{ fontSize: 17, color: "#0A6CFF" }} />
-                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#0A1A4A" }}>
+                    <VideocamRoundedIcon sx={{ fontSize: 17, color: "#2589D8" }} />
+                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#142B45" }}>
                         Face-to-face vibe check? 📹
                     </Typography>
                 </Box>
 
-                {/* Bubble 2: Lavender (#C9B6F5) (+8deg) */}
+                {/* Bubble 2: Lavender (#F0ECFF) (+8deg) */}
                 <Box
                     className="engaze-chat-bubble engaze-float-1"
                     sx={{
                         position: "absolute",
                         top: { lg: 110 },
                         right: { lg: "11%", xl: "12%" },
-                        backgroundColor: "#C9B6F5",
-                        color: "#0A1A4A",
-                        border: "1px solid rgba(10, 26, 74, 0.10)",
+                        backgroundColor: "#F0ECFF",
+                        color: "#142B45",
+                        border: "1px solid rgba(184, 167, 255, 0.28)",
                         borderRadius: "16px",
                         transform: "rotate(8deg)",
-                        boxShadow: "0 8px 24px rgba(10, 26, 74, 0.10)",
+                        boxShadow: "0 8px 24px rgba(184, 167, 255, 0.16)",
                         px: 2,
                         py: 0.8,
                         fontSize: "0.82rem",
@@ -899,25 +900,25 @@ export default function LandingPage() {
                         gap: 1,
                     }}
                 >
-                    <LocalCafeRoundedIcon sx={{ fontSize: 17, color: "#0A1A4A" }} />
-                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#0A1A4A" }}>
+                    <LocalCafeRoundedIcon sx={{ fontSize: 17, color: "#142B45" }} />
+                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#142B45" }}>
                         Coffee & banter this weekend? ☕
                     </Typography>
                 </Box>
 
-                {/* Bubble 3: Pink (#F9A8C0) (-10deg) */}
+                {/* Bubble 3: Coral / Pink (#FFE5EA) (-10deg) */}
                 <Box
                     className="engaze-chat-bubble engaze-float-1"
                     sx={{
                         position: "absolute",
                         bottom: { lg: 125 },
                         left: { lg: "11%", xl: "12%" },
-                        backgroundColor: "#F9A8C0",
-                        color: "#0A1A4A",
-                        border: "1px solid rgba(10, 26, 74, 0.10)",
+                        backgroundColor: "#FFE5EA",
+                        color: "#142B45",
+                        border: "1px solid rgba(255, 143, 156, 0.3)",
                         borderRadius: "16px",
                         transform: "rotate(-10deg)",
-                        boxShadow: "0 8px 24px rgba(10, 26, 74, 0.10)",
+                        boxShadow: "0 8px 24px rgba(255, 143, 156, 0.14)",
                         px: 2,
                         py: 0.8,
                         fontSize: "0.82rem",
@@ -927,24 +928,24 @@ export default function LandingPage() {
                         gap: 1,
                     }}
                 >
-                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#0A1A4A" }}>
+                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#142B45" }}>
                         That playlist is a vibe 🎵
                     </Typography>
                 </Box>
 
-                {/* Bubble 4: Yellow (#FFE680) (-8deg) */}
+                {/* Bubble 4: Yellow (#FFF4CC) (-8deg) */}
                 <Box
                     className="engaze-chat-bubble engaze-float-2"
                     sx={{
                         position: "absolute",
                         bottom: { lg: 130 },
                         right: { lg: "11%", xl: "12%" },
-                        backgroundColor: "#FFE680",
-                        color: "#0A1A4A",
-                        border: "1px solid rgba(10, 26, 74, 0.10)",
+                        backgroundColor: "#FFF4CC",
+                        color: "#142B45",
+                        border: "1px solid rgba(255, 216, 77, 0.35)",
                         borderRadius: "16px",
                         transform: "rotate(-8deg)",
-                        boxShadow: "0 8px 24px rgba(10, 26, 74, 0.10)",
+                        boxShadow: "0 8px 24px rgba(255, 216, 77, 0.15)",
                         px: 2,
                         py: 0.8,
                         fontSize: "0.82rem",
@@ -955,7 +956,7 @@ export default function LandingPage() {
                     }}
                 >
                     <FavoriteRoundedIcon sx={{ fontSize: 15, color: "#FF3366" }} />
-                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#0A1A4A" }}>
+                    <Typography component="span" sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#142B45" }}>
                         Mutual match unlocked! 💖
                     </Typography>
                 </Box>
@@ -969,9 +970,9 @@ export default function LandingPage() {
                             alignItems: "center",
                             gap: 0.8,
                             backgroundColor: "#FFFFFF",
-                            color: "#0A6CFF",
-                            border: "1.5px solid rgba(10, 108, 255, 0.22)",
-                            boxShadow: "0 4px 12px rgba(10, 108, 255, 0.08)",
+                            color: "#2589D8",
+                            border: "1.5px solid rgba(37, 137, 216, 0.22)",
+                            boxShadow: "0 4px 12px rgba(37, 137, 216, 0.08)",
                             px: 2,
                             py: 0.5,
                             borderRadius: "9999px",
@@ -982,7 +983,7 @@ export default function LandingPage() {
                             mb: 2.2,
                         }}
                     >
-                        <AutoAwesomeRoundedIcon sx={{ fontSize: 14, color: "#0A6CFF" }} />
+                        <AutoAwesomeRoundedIcon sx={{ fontSize: 14, color: "#2589D8" }} />
                         <span>A Modern Dating Platform</span>
                     </Box>
 
@@ -998,10 +999,10 @@ export default function LandingPage() {
                             mb: 2,
                         }}
                     >
-                        <Box component="span" sx={{ color: "#0A1A4A", display: "block" }}>
+                        <Box component="span" sx={{ color: "#142B45", display: "block" }}>
                             Real Connections.
                         </Box>
-                        <Box component="span" sx={{ color: "#0A6CFF", display: "block" }}>
+                        <Box component="span" sx={{ color: "#2589D8", display: "block" }}>
                             Real Conversations.
                         </Box>
                     </Typography>
@@ -1010,9 +1011,9 @@ export default function LandingPage() {
                     <Typography
                         variant="body1"
                         sx={{
-                            color: "#5B6475",
+                            color: "#62748A",
                             fontSize: { xs: "0.90rem", sm: "0.98rem", md: "1.05rem" },
-                            lineHeight: 1.55,
+                            lineHeight: 1.6,
                             fontWeight: 500,
                             maxWidth: 540,
                             mx: "auto",
@@ -1036,8 +1037,8 @@ export default function LandingPage() {
                             className="engaze-btn-primary"
                             variant="contained"
                             sx={{
-                                background: "#0A6CFF !important",
-                                backgroundColor: "#0A6CFF !important",
+                                background: "#2589D8 !important",
+                                backgroundColor: "#2589D8 !important",
                                 color: "#FFFFFF !important",
                                 px: { xs: 3.2, sm: 3.8 },
                                 py: { xs: 1.15, sm: 1.3 },
@@ -1050,10 +1051,12 @@ export default function LandingPage() {
                                 width: { xs: "100%", sm: "auto" },
                                 maxWidth: { xs: 300, sm: "none" },
                                 borderRadius: "9999px",
-                                boxShadow: "0 8px 24px rgba(10, 108, 255, 0.32)",
+                                boxShadow: "0 8px 24px rgba(37, 137, 216, 0.32)",
+                                transition: "all 0.2s ease",
                                 "&:hover": {
-                                    backgroundColor: "#0857D0 !important",
+                                    backgroundColor: "#1E73B9 !important",
                                     transform: "translateY(-2px)",
+                                    boxShadow: "0 10px 28px rgba(37, 137, 216, 0.40)",
                                 },
                             }}
                         >
@@ -1065,7 +1068,7 @@ export default function LandingPage() {
                                     height: 24,
                                     borderRadius: "50%",
                                     backgroundColor: "#FFFFFF",
-                                    color: "#0A6CFF",
+                                    color: "#2589D8",
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
@@ -1088,8 +1091,8 @@ export default function LandingPage() {
                             variant="outlined"
                             sx={{
                                 backgroundColor: "#FFFFFF",
-                                color: "#0A1A4A",
-                                borderColor: "rgba(10, 26, 74, 0.16)",
+                                color: "#142B45",
+                                borderColor: "rgba(20, 43, 69, 0.16)",
                                 px: { xs: 2.8, sm: 3.4 },
                                 py: { xs: 1.05, sm: 1.2 },
                                 fontSize: { xs: "0.90rem", sm: "0.95rem" },
@@ -1098,10 +1101,11 @@ export default function LandingPage() {
                                 width: { xs: "100%", sm: "auto" },
                                 maxWidth: { xs: 300, sm: "none" },
                                 borderRadius: "9999px",
-                                boxShadow: "0 4px 12px rgba(10, 26, 74, 0.05)",
+                                boxShadow: "0 4px 12px rgba(20, 43, 69, 0.05)",
+                                transition: "all 0.2s ease",
                                 "&:hover": {
                                     backgroundColor: "#F7FAFE",
-                                    borderColor: "#0A1A4A",
+                                    borderColor: "#142B45",
                                     transform: "translateY(-2px)",
                                 },
                             }}
@@ -1128,21 +1132,21 @@ export default function LandingPage() {
                                     width: 26,
                                     height: 26,
                                     borderRadius: "50%",
-                                    backgroundColor: "rgba(10, 108, 255, 0.14)",
+                                    backgroundColor: "rgba(37, 137, 216, 0.14)",
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    color: "#0A6CFF",
+                                    color: "#2589D8",
                                 }}
                             >
                                 <ShieldOutlinedIcon sx={{ fontSize: 15 }} />
                             </Box>
-                            <Typography sx={{ fontWeight: 700, fontSize: { xs: "0.78rem", sm: "0.85rem" }, color: "#0A1A4A" }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: { xs: "0.78rem", sm: "0.85rem" }, color: "#142B45" }}>
                                 100% Verified Profiles
                             </Typography>
                         </Stack>
 
-                        <Box sx={{ width: "1.5px", height: 16, backgroundColor: "rgba(10, 26, 74, 0.16)", display: { xs: "none", sm: "block" } }} />
+                        <Box sx={{ width: "1.5px", height: 16, backgroundColor: "rgba(20, 43, 69, 0.16)", display: { xs: "none", sm: "block" } }} />
 
                         <Stack direction="row" spacing={1} alignItems="center">
                             <Box
@@ -1154,17 +1158,17 @@ export default function LandingPage() {
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    color: "#7C5CFC",
+                                    color: "#B8A7FF",
                                 }}
                             >
                                 <FavoriteRoundedIcon sx={{ fontSize: 13 }} />
                             </Box>
-                            <Typography sx={{ fontWeight: 700, fontSize: { xs: "0.78rem", sm: "0.85rem" }, color: "#0A1A4A" }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: { xs: "0.78rem", sm: "0.85rem" }, color: "#142B45" }}>
                                 Mutual Matches Only
                             </Typography>
                         </Stack>
 
-                        <Box sx={{ width: "1.5px", height: 16, backgroundColor: "rgba(10, 26, 74, 0.16)", display: { xs: "none", sm: "block" } }} />
+                        <Box sx={{ width: "1.5px", height: 16, backgroundColor: "rgba(20, 43, 69, 0.16)", display: { xs: "none", sm: "block" } }} />
 
                         <Stack direction="row" spacing={1} alignItems="center">
                             <Box
@@ -1176,7 +1180,7 @@ export default function LandingPage() {
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    color: "#E63956",
+                                    color: "#FF8F9C",
                                 }}
                             >
                                 <VideocamRoundedIcon sx={{ fontSize: 15 }} />
@@ -1239,8 +1243,8 @@ export default function LandingPage() {
                 sx={{
                     py: { xs: 6, md: 8.5 },
                     px: { xs: 2.5, sm: 4, md: 6 },
-                    backgroundColor: "#FFFDF9",
-                    borderBottom: "3px solid #0D0E15",
+                    backgroundColor: "#FFFCF8",
+                    borderBottom: "1px solid rgba(20, 43, 69, 0.08)",
                 }}
             >
                 <Container maxWidth="xl">
@@ -1250,7 +1254,7 @@ export default function LandingPage() {
                             <Box
                                 sx={{
                                     display: "inline-block",
-                                    backgroundColor: "#FD2E7A",
+                                    backgroundColor: "#2589D8",
                                     color: "#FFFFFF",
                                     px: 2,
                                     py: 0.6,
@@ -1272,11 +1276,11 @@ export default function LandingPage() {
                                     fontWeight: 900,
                                     lineHeight: 1.05,
                                     letterSpacing: "-0.035em",
-                                    color: "#0D0E15",
+                                    color: "#142B45",
                                 }}
                             >
                                 A real connection.{" "}
-                                <Box component="span" sx={{ color: "#FD2E7A", display: "inline" }}>
+                                <Box component="span" sx={{ color: "#2589D8", display: "inline" }}>
                                     Not an endless swipe trap.
                                 </Box>
                             </Typography>
@@ -1597,8 +1601,8 @@ export default function LandingPage() {
                 sx={{
                     py: { xs: 6, md: 8.5 },
                     px: { xs: 2.5, sm: 4, md: 6 },
-                    backgroundColor: "#FCEEF2",
-                    borderBottom: "3px solid #0D0E15",
+                    backgroundColor: "#F0ECFF",
+                    borderBottom: "1px solid rgba(20, 43, 69, 0.08)",
                     textAlign: "center",
                 }}
             >
@@ -1606,8 +1610,8 @@ export default function LandingPage() {
                     <Box
                         sx={{
                             display: "inline-block",
-                            backgroundColor: "#FD2E7A",
-                            color: "#FFFFFF",
+                            backgroundColor: "#B8A7FF",
+                            color: "#142B45",
                             px: 2,
                             py: 0.6,
                             borderRadius: "9999px",
@@ -1629,12 +1633,12 @@ export default function LandingPage() {
                             fontWeight: 900,
                             lineHeight: 1.05,
                             letterSpacing: "-0.035em",
-                            color: "#0D0E15",
+                            color: "#142B45",
                             mb: 3,
                         }}
                     >
                         Your{" "}
-                        <Box component="span" sx={{ color: "#FD2E7A" }}>
+                        <Box component="span" sx={{ color: "#2589D8" }}>
                             authentic vibe
                         </Box>{" "}
                         is the whole point.
@@ -1782,8 +1786,8 @@ export default function LandingPage() {
                 sx={{
                     py: { xs: 6, md: 8.5 },
                     px: { xs: 2.5, sm: 4, md: 6 },
-                    backgroundColor: "#FFFDF9",
-                    borderBottom: "3px solid #0D0E15",
+                    backgroundColor: "#FFFCF8",
+                    borderBottom: "1px solid rgba(20, 43, 69, 0.08)",
                 }}
             >
                 <Container maxWidth="lg">
@@ -1791,8 +1795,8 @@ export default function LandingPage() {
                         <Box
                             sx={{
                                 display: "inline-block",
-                                backgroundColor: "#FFD233",
-                                color: "#0D0E15",
+                                backgroundColor: "#FFD84D",
+                                color: "#142B45",
                                 px: 2,
                                 py: 0.6,
                                 borderRadius: "9999px",
@@ -1801,8 +1805,6 @@ export default function LandingPage() {
                                 letterSpacing: "0.08em",
                                 textTransform: "uppercase",
                                 mb: 2.5,
-                                border: "2px solid #0D0E15",
-                                boxShadow: "2px 2px 0px #0D0E15",
                             }}
                         >
                             THE DIFFERENCE
@@ -1815,11 +1817,11 @@ export default function LandingPage() {
                                 fontWeight: 900,
                                 lineHeight: 1.05,
                                 letterSpacing: "-0.035em",
-                                color: "#0D0E15",
+                                color: "#142B45",
                             }}
                         >
                             Dating platforms evolved.{" "}
-                            <Box component="span" sx={{ color: "#FD2E7A" }}>
+                            <Box component="span" sx={{ color: "#2589D8" }}>
                                 See how we compare.
                             </Box>
                         </Typography>
@@ -2184,8 +2186,8 @@ export default function LandingPage() {
                 sx={{
                     py: { xs: 6, md: 8.5 },
                     px: { xs: 2.5, sm: 4, md: 6 },
-                    backgroundColor: "#FFFDF9",
-                    borderBottom: "3px solid #0D0E15",
+                    backgroundColor: "#FFFCF8",
+                    borderBottom: "1px solid rgba(20, 43, 69, 0.08)",
                 }}
             >
                 <Container maxWidth="lg">
@@ -2203,8 +2205,6 @@ export default function LandingPage() {
                                 letterSpacing: "0.08em",
                                 textTransform: "uppercase",
                                 mb: 2.5,
-                                border: "2px solid #0D0E15",
-                                boxShadow: "2px 2px 0px #0D0E15",
                             }}
                         >
                             TRUST & SAFETY
@@ -2217,11 +2217,11 @@ export default function LandingPage() {
                                 fontWeight: 900,
                                 lineHeight: 1.05,
                                 letterSpacing: "-0.035em",
-                                color: "#0D0E15",
+                                color: "#142B45",
                             }}
                         >
                             Dating should feel exciting.{" "}
-                            <Box component="span" sx={{ color: "#FD2E7A" }}>
+                            <Box component="span" sx={{ color: "#2589D8" }}>
                                 Never unsafe.
                             </Box>
                         </Typography>
@@ -2367,8 +2367,8 @@ export default function LandingPage() {
                 sx={{
                     py: { xs: 6, md: 8.5 },
                     px: { xs: 2.5, sm: 4, md: 6 },
-                    backgroundColor: "#FFFDF9",
-                    borderBottom: "3px solid #0D0E15",
+                    backgroundColor: "#FFFFFF",
+                    borderBottom: "1px solid rgba(20, 43, 69, 0.08)",
                 }}
             >
                 <Container maxWidth="md">
@@ -2376,7 +2376,7 @@ export default function LandingPage() {
                         <Box
                             sx={{
                                 display: "inline-block",
-                                backgroundColor: "#FD2E7A",
+                                backgroundColor: "#2589D8",
                                 color: "#FFFFFF",
                                 px: 2,
                                 py: 0.6,
@@ -2398,11 +2398,11 @@ export default function LandingPage() {
                                 fontWeight: 900,
                                 lineHeight: 1.05,
                                 letterSpacing: "-0.035em",
-                                color: "#0D0E15",
+                                color: "#142B45",
                             }}
                         >
                             Everything you need to know.{" "}
-                            <Box component="span" sx={{ color: "#FD2E7A" }}>
+                            <Box component="span" sx={{ color: "#2589D8" }}>
                                 No surprises.
                             </Box>
                         </Typography>
@@ -2482,11 +2482,10 @@ export default function LandingPage() {
                     <Paper
                         elevation={0}
                         sx={{
-                            backgroundColor: "#FD2E7A",
+                            background: "linear-gradient(135deg, #2589D8 0%, #142B45 100%)",
                             color: "#FFFFFF",
-                            border: "3.5px solid #0D0E15",
-                            borderRadius: { xs: "32px", md: "40px" },
-                            boxShadow: "7px 7px 0px #0D0E15",
+                            borderRadius: { xs: "28px", md: "36px" },
+                            boxShadow: "0 16px 40px rgba(37, 137, 216, 0.25)",
                             p: { xs: 3.5, sm: 5, md: 6 },
                             textAlign: "center",
                             position: "relative",
@@ -2496,7 +2495,8 @@ export default function LandingPage() {
                         <Box
                             sx={{
                                 display: "inline-block",
-                                backgroundColor: "#0D0E15",
+                                backgroundColor: "rgba(255, 255, 255, 0.16)",
+                                backdropFilter: "blur(8px)",
                                 color: "#FFFFFF",
                                 px: 2.2,
                                 py: 0.7,
@@ -2506,6 +2506,7 @@ export default function LandingPage() {
                                 letterSpacing: "0.08em",
                                 textTransform: "uppercase",
                                 mb: 3,
+                                border: "1px solid rgba(255, 255, 255, 0.24)",
                             }}
                         >
                             START TODAY
@@ -2528,12 +2529,13 @@ export default function LandingPage() {
                         <Typography
                             variant="body1"
                             sx={{
-                                fontSize: { xs: "1.1rem", sm: "1.25rem" },
-                                fontWeight: 600,
+                                fontSize: { xs: "1.05rem", sm: "1.2rem" },
+                                fontWeight: 500,
                                 maxWidth: 580,
                                 mx: "auto",
                                 mb: 5,
-                                lineHeight: 1.5,
+                                lineHeight: 1.6,
+                                color: "rgba(255, 255, 255, 0.90)",
                             }}
                         >
                             Join thousands of genuine singles on Engaze. Mutual likes only, instant browser video vibe checks, and zero paywalls.
@@ -2542,19 +2544,26 @@ export default function LandingPage() {
                         <Button
                             component={Link}
                             to="/auth"
-                            className="pop-pill"
                             variant="contained"
                             sx={{
                                 backgroundColor: "#FFFFFF",
-                                color: "#FD2E7A",
+                                color: "#142B45",
                                 px: { xs: 4, sm: 5.5 },
-                                py: { xs: 1.8, sm: 2.2 },
-                                fontSize: { xs: "1.1rem", sm: "1.22rem" },
+                                py: { xs: 1.6, sm: 1.9 },
+                                fontSize: { xs: "1.05rem", sm: "1.15rem" },
+                                fontWeight: 800,
                                 textTransform: "none",
+                                borderRadius: "9999px",
                                 display: "inline-flex",
                                 alignItems: "center",
                                 gap: 1.5,
-                                "&:hover": { backgroundColor: "#FFF8F0" },
+                                boxShadow: "0 8px 24px rgba(0, 0, 0, 0.18)",
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                    backgroundColor: "#F7FAFE",
+                                    transform: "translateY(-2px)",
+                                    boxShadow: "0 12px 28px rgba(0, 0, 0, 0.22)",
+                                },
                             }}
                         >
                             <span>Create Free Account</span>
@@ -2564,8 +2573,8 @@ export default function LandingPage() {
                                     width: 28,
                                     height: 28,
                                     borderRadius: "50%",
-                                    backgroundColor: "#FFD233",
-                                    color: "#0D0E15",
+                                    backgroundColor: "#2589D8",
+                                    color: "#FFFFFF",
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
