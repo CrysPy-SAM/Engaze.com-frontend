@@ -17,7 +17,6 @@ import {
     List,
     ListItem,
     ListItemButton,
-    ListItemText,
 } from "@mui/material";
 import EngazeLogo from "../components/EngazeLogo";
 
@@ -33,6 +32,8 @@ import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
+import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import LocalCafeRoundedIcon from "@mui/icons-material/LocalCafeRounded";
 import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
@@ -849,85 +850,144 @@ export default function LandingPage() {
                 </Paper>
             </Box>
 
-            {/* Mobile Navigation Drawer */}
+            {/* Modern Senior-Developer Mobile Floating Menu Card */}
             <Drawer
                 anchor="top"
                 open={mobileMenuOpen}
                 onClose={() => setMobileMenuOpen(false)}
                 PaperProps={{
                     sx: {
-                        backgroundColor: "#FFFFFF",
-                        borderBottom: "2px solid rgba(20, 43, 69, 0.1)",
-                        p: 3,
+                        top: { xs: 10, sm: 16 },
+                        mx: "auto",
+                        width: { xs: "calc(100% - 24px)", sm: "calc(100% - 36px)" },
+                        maxWidth: 400,
+                        backgroundColor: "rgba(255, 255, 255, 0.96)",
+                        backdropFilter: "blur(20px)",
+                        border: "1.5px solid rgba(20, 43, 69, 0.09)",
+                        borderRadius: "24px",
+                        boxShadow: "0 20px 48px rgba(20, 43, 69, 0.16), 0 4px 12px rgba(255, 216, 200, 0.4)",
+                        p: { xs: 2, sm: 2.5 },
+                        maxHeight: "88vh",
+                        overflowY: "auto",
+                    },
+                }}
+                ModalProps={{
+                    BackdropProps: {
+                        sx: {
+                            backgroundColor: "rgba(10, 26, 74, 0.28)",
+                            backdropFilter: "blur(3px)",
+                        },
                     },
                 }}
             >
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                    <EngazeLogo size={32} fontSize="1.35rem" textColor="#142B45" />
-                    <IconButton onClick={() => setMobileMenuOpen(false)}>
-                        <CloseRoundedIcon sx={{ fontSize: 28, color: "#142B45" }} />
+                {/* Header Row: Logo & Compact Close Button */}
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1.5, borderBottom: "1px solid rgba(20, 43, 69, 0.06)" }}>
+                    <EngazeLogo size={28} fontSize="1.25rem" textColor="#142B45" />
+                    <IconButton
+                        aria-label="Close navigation menu"
+                        onClick={() => setMobileMenuOpen(false)}
+                        sx={{
+                            color: "#142B45",
+                            backgroundColor: "rgba(20, 43, 69, 0.04)",
+                            p: 0.8,
+                            "&:hover": { backgroundColor: "rgba(20, 43, 69, 0.08)" },
+                        }}
+                    >
+                        <CloseRoundedIcon sx={{ fontSize: 20 }} />
                     </IconButton>
                 </Box>
-                <List sx={{ mb: 2 }}>
+
+                {/* Sleek Navigation Items */}
+                <List sx={{ py: 1 }}>
                     {[
-                        { label: "Features", id: "features" },
-                        { label: "Live Video Dating", id: "video-dating" },
-                        { label: "Why Engaze", id: "difference" },
-                        { label: "Safety & Trust", id: "safety" },
-                        { label: "FAQ", id: "faq" },
+                        { label: "Features", id: "features", icon: <AutoAwesomeRoundedIcon sx={{ fontSize: 17, color: "#2589D8" }} /> },
+                        { label: "Live Video Dating", id: "video-dating", icon: <VideocamRoundedIcon sx={{ fontSize: 17, color: "#2589D8" }} /> },
+                        { label: "Why Engaze", id: "difference", icon: <FavoriteRoundedIcon sx={{ fontSize: 16, color: "#FF8F9C" }} /> },
+                        { label: "Safety & Trust", id: "safety", icon: <ShieldOutlinedIcon sx={{ fontSize: 17, color: "#10B981" }} /> },
+                        { label: "FAQ", id: "faq", icon: <HelpOutlineRoundedIcon sx={{ fontSize: 17, color: "#B8A7FF" }} /> },
                     ].map((item) => (
-                        <ListItem key={item.id} disablePadding sx={{ mb: 1 }}>
+                        <ListItem key={item.id} disablePadding sx={{ mb: 0.5 }}>
                             <ListItemButton
                                 onClick={() => scrollToSection(item.id)}
                                 sx={{
-                                    borderRadius: 3,
-                                    border: "1.5px solid rgba(20, 43, 69, 0.08)",
-                                    boxShadow: "0 2px 8px rgba(20, 43, 69, 0.04)",
-                                    fontWeight: 800,
-                                    py: 1.2,
-                                    color: "#142B45",
+                                    borderRadius: "14px",
+                                    py: 0.9,
+                                    px: 1.5,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    transition: "all 0.16s ease",
+                                    "&:hover": {
+                                        backgroundColor: "rgba(37, 137, 216, 0.06)",
+                                        transform: "translateX(3px)",
+                                    },
                                 }}
                             >
-                                <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: 800, color: "#142B45" }} />
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1.4 }}>
+                                    <Box
+                                        sx={{
+                                            width: 30,
+                                            height: 30,
+                                            borderRadius: "10px",
+                                            backgroundColor: "rgba(20, 43, 69, 0.035)",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        {item.icon}
+                                    </Box>
+                                    <Typography sx={{ fontWeight: 700, fontSize: "0.90rem", color: "#142B45" }}>
+                                        {item.label}
+                                    </Typography>
+                                </Box>
+                                <ChevronRightRoundedIcon sx={{ fontSize: 18, color: "#8E9BAE" }} />
                             </ListItemButton>
                         </ListItem>
                     ))}
                 </List>
-                <Stack spacing={1.5}>
+
+                {/* Compact Actions Row */}
+                <Stack direction="row" spacing={1.2} sx={{ pt: 1, borderTop: "1px solid rgba(20, 43, 69, 0.06)" }}>
+                    <Button
+                        component={Link}
+                        to="/auth"
+                        variant="outlined"
+                        onClick={() => setMobileMenuOpen(false)}
+                        sx={{
+                            flex: 1,
+                            py: 1,
+                            borderRadius: "9999px",
+                            borderColor: "rgba(20, 43, 69, 0.16)",
+                            color: "#142B45",
+                            fontWeight: 700,
+                            fontSize: "0.85rem",
+                            textTransform: "none",
+                            "&:hover": { borderColor: "#142B45", backgroundColor: "#F7FAFE" },
+                        }}
+                    >
+                        Sign In
+                    </Button>
                     <Button
                         component={Link}
                         to="/auth"
                         variant="contained"
                         className="engaze-btn-primary"
+                        onClick={() => setMobileMenuOpen(false)}
                         sx={{
+                            flex: 1.3,
+                            py: 1,
+                            borderRadius: "9999px",
                             backgroundColor: "#2589D8",
                             color: "#FFFFFF",
-                            py: 1.4,
-                            fontSize: "1rem",
+                            fontWeight: 800,
+                            fontSize: "0.85rem",
                             textTransform: "none",
-                            borderRadius: "9999px",
+                            boxShadow: "0 4px 14px rgba(37, 137, 216, 0.28)",
                             "&:hover": { backgroundColor: "#1E73B9" },
                         }}
                     >
-                        Create Free Account
-                    </Button>
-                    <Button
-                        component={Link}
-                        to="/auth"
-                        variant="outlined"
-                        className="engaze-btn-secondary"
-                        sx={{
-                            backgroundColor: "#FFFFFF",
-                            color: "#142B45",
-                            borderColor: "rgba(20, 43, 69, 0.16)",
-                            py: 1.2,
-                            fontSize: "1rem",
-                            textTransform: "none",
-                            borderRadius: "9999px",
-                            "&:hover": { borderColor: "#142B45", backgroundColor: "#F7FAFE" },
-                        }}
-                    >
-                        Sign In
+                        Get Started →
                     </Button>
                 </Stack>
             </Drawer>
