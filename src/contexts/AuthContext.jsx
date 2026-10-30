@@ -187,7 +187,11 @@ export const AuthProvider = ({ children }) => {
                     localStorage.setItem("token", newToken);
                     setToken(newToken);
                     setUserData(response.data.user);
-                    router("/home");
+                    if (response.data.requiresUsernameSetup || response.data.user?.usernameSetupCompleted === false) {
+                        router("/setup-username");
+                    } else {
+                        router("/home");
+                    }
                 }
                 return response.data;
             } else {
@@ -243,6 +247,82 @@ export const AuthProvider = ({ children }) => {
         } catch (err) {
             console.error("Update profile error:", err);
             throw new Error(err.response?.data?.message || "Failed to update profile");
+        }
+    }, []);
+
+    // 5a. CHECK USERNAME AVAILABILITY
+    const checkUsernameAvailability = useCallback(async (rawUsername) => {
+        try {
+            const response = await api.get(`/users/check-username?username=${encodeURIComponent(rawUsername)}`);
+            return response.data;
+        } catch (err) {
+            return {
+                success: false,
+                available: false,
+                message: err.response?.data?.message || "Failed to check username availability",
+            };
+        }
+    }, []);
+
+    // 5b. SETUP INITIAL USERNAME
+    const setupUsername = useCallback(async (newUsername) => {
+        try {
+            const response = await api.post("/users/setup-username", { username: newUsername });
+            if (response.data && response.data.user) {
+                setUserData(response.data.user);
+                if (response.data.token) {
+                    localStorage.setItem("token", response.data.token);
+                    setToken(response.data.token);
+                }
+            }
+            return response.data;
+        } catch (err) {
+            console.error("Setup username error:", err);
+            const msg = err.response?.data?.message || err.message || "Failed to set up username";
+            const suggestions = err.response?.data?.suggestions || [];
+            const errorObj = new Error(msg);
+            errorObj.suggestions = suggestions;
+            errorObj.status = err.response?.status;
+            throw errorObj;
+        }
+    }, []);
+
+    // 5c. GET USERNAME CHANGE ELIGIBILITY
+    const getUsernameEligibility = useCallback(async () => {
+        try {
+            const response = await api.get("/users/username-eligibility");
+            return response.data;
+        } catch (err) {
+            console.error("Get username eligibility error:", err);
+            throw new Error(err.response?.data?.message || "Failed to retrieve username change eligibility");
+        }
+    }, []);
+
+    // 5d. UPDATE EXISTING USERNAME (14-DAY COOLDOWN ENFORCED)
+    const updateUsername = useCallback(async (newUsername) => {
+        try {
+            const response = await api.put("/users/username", { username: newUsername });
+            if (response.data && response.data.user) {
+                setUserData(response.data.user);
+                if (response.data.token) {
+                    localStorage.setItem("token", response.data.token);
+                    setToken(response.data.token);
+                }
+            }
+            return response.data;
+        } catch (err) {
+            console.error("Update username error:", err);
+            const msg = err.response?.data?.message || err.message || "Failed to update username";
+            const suggestions = err.response?.data?.suggestions || [];
+            const nextEligibleAt = err.response?.data?.nextEligibleAt;
+            const remainingDays = err.response?.data?.remainingDays;
+            const errorObj = new Error(msg);
+            errorObj.suggestions = suggestions;
+            errorObj.nextEligibleAt = nextEligibleAt;
+            errorObj.remainingDays = remainingDays;
+            errorObj.status = err.response?.status;
+            errorObj.code = err.response?.data?.code;
+            throw errorObj;
         }
     }, []);
 
@@ -849,6 +929,10 @@ export const AuthProvider = ({ children }) => {
         deleteProfilePhoto,
         getPrivacySettings,
         updatePrivacySettings,
+        checkUsernameAvailability,
+        setupUsername,
+        getUsernameEligibility,
+        updateUsername,
     }), [
         userData,
         token,
@@ -899,6 +983,10 @@ export const AuthProvider = ({ children }) => {
         deleteProfilePhoto,
         getPrivacySettings,
         updatePrivacySettings,
+        checkUsernameAvailability,
+        setupUsername,
+        getUsernameEligibility,
+        updateUsername,
     ]);
 
     return (
