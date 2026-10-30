@@ -18,6 +18,7 @@ const DiscoveryPage = lazy(() => import('./pages/discovery'));
 const MatchesPage = lazy(() => import('./pages/matches'));
 const SearchPage = lazy(() => import('./pages/search'));
 const ChatPage = lazy(() => import('./pages/chat'));
+const CallsPage = lazy(() => import('./pages/calls'));
 const RandomVideoPage = lazy(() => import('./pages/randomVideo'));
 const PrivacyPolicy = lazy(() => import('./pages/privacy'));
 const TermsOfService = lazy(() => import('./pages/terms'));
@@ -233,6 +234,7 @@ function App() {
                     <Route path='/matches' element={<MatchesPage />} />
                     <Route path='/chat' element={<ChatPage />} />
                     <Route path='/chat/:conversationId' element={<ChatPage />} />
+                    <Route path='/calls' element={<CallsPage />} />
                     <Route path='/random-video' element={<RandomVideoPage />} />
                     <Route path='/random-call' element={<RandomVideoPage />} />
                     <Route path='/profile' element={<ProfilePage />} />

@@ -111,7 +111,14 @@ class RingtoneEngine {
 const ringtone = new RingtoneEngine();
 
 export const DirectCallProvider = ({ children }) => {
-    const { token, getIceServers, setUnreadChatCount, getUnreadChatCount } = useContext(AuthContext);
+    const {
+        token,
+        getIceServers,
+        setUnreadChatCount,
+        getUnreadChatCount,
+        setUnseenMissedCallCount,
+        getMissedCallCount,
+    } = useContext(AuthContext);
 
     // Call state: 'idle' | 'outgoing_ringing' | 'incoming_ringing' | 'connecting' | 'connected' | 'declined' | 'busy' | 'no_answer' | 'ended'
     const [callState, setCallState] = useState("idle");
@@ -326,7 +333,7 @@ export const DirectCallProvider = ({ children }) => {
     // -------------------------------------------------------------
     // 1. INITIATE DIRECT CALL (Caller Action)
     // -------------------------------------------------------------
-    const initiateDirectCall = useCallback(async (targetUser, conversationId = null) => {
+    const initiateDirectCall = useCallback(async (targetUser, conversationId = null, callType = "video") => {
         if (!targetUser || (!targetUser._id && !targetUser.id)) {
             console.error("[DirectCall] Target user required to initiate call");
             return;
@@ -351,7 +358,7 @@ export const DirectCallProvider = ({ children }) => {
             const response = await new Promise((resolve) => {
                 socketRef.current.emit(
                     "call:initiate",
-                    { targetUserId, conversationId },
+                    { targetUserId, conversationId, callType },
                     resolve
                 );
             });
@@ -594,12 +601,28 @@ export const DirectCallProvider = ({ children }) => {
             if (getUnreadChatCount) {
                 getUnreadChatCount().catch(() => {});
             }
+            if (getMissedCallCount) {
+                getMissedCallCount().catch(() => {});
+            }
         });
 
         // 0. REAL-TIME UNREAD CHAT COUNT UPDATE
         socket.on("chat:unread-count", (data) => {
             if (data && typeof data.unreadCount === "number" && setUnreadChatCount) {
                 setUnreadChatCount(data.unreadCount);
+            }
+        });
+
+        // 0b. REAL-TIME MISSED CALL COUNT UPDATE
+        socket.on("call:missed-count", (data) => {
+            if (data && typeof data.count === "number" && setUnseenMissedCallCount) {
+                setUnseenMissedCallCount(data.count);
+            }
+        });
+
+        socket.on("call:missed", () => {
+            if (setUnseenMissedCallCount) {
+                setUnseenMissedCallCount((prev) => prev + 1);
             }
         });
 
@@ -800,6 +823,8 @@ export const DirectCallProvider = ({ children }) => {
         endDirectCall,
         getUnreadChatCount,
         setUnreadChatCount,
+        getMissedCallCount,
+        setUnseenMissedCallCount,
     ]);
 
     const value = useMemo(

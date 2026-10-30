@@ -35,6 +35,7 @@ export const AuthProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
     const [unreadChatCount, setUnreadChatCount] = useState(0);
+    const [unseenMissedCallCount, setUnseenMissedCallCount] = useState(0);
     const [likesYouCount, setLikesYouCount] = useState(0);
     const router = useNavigate();
 
@@ -56,6 +57,15 @@ export const AuthProvider = ({ children }) => {
                     .then((res) => {
                         if (res.data && typeof res.data.unreadCount === "number") {
                             setUnreadChatCount(res.data.unreadCount);
+                        }
+                    })
+                    .catch(() => {});
+
+                // Hydrate unseen missed call count authoritative badge on login/mount
+                api.get("/calls/missed-count")
+                    .then((res) => {
+                        if (res.data && typeof res.data.count === "number") {
+                            setUnseenMissedCallCount(res.data.count);
                         }
                     })
                     .catch(() => {});
@@ -671,12 +681,55 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    // 10h. GET AUTHORITATIVE UNSEEN MISSED CALL COUNT
+    const getMissedCallCount = useCallback(async () => {
+        try {
+            const response = await api.get("/calls/missed-count");
+            if (response.data && typeof response.data.count === "number") {
+                setUnseenMissedCallCount(response.data.count);
+                return response.data.count;
+            }
+            return 0;
+        } catch (e) {
+            console.debug("Get missed call count error:", e);
+            return 0;
+        }
+    }, []);
+
+    // 10i. GET CALL HISTORY
+    const getCallHistory = useCallback(async (page = 1, limit = 20, type = "all", status = "all") => {
+        try {
+            const response = await api.get("/calls/history", {
+                params: { page, limit, type, status },
+            });
+            if (response.data && typeof response.data.unseenMissedCount === "number") {
+                setUnseenMissedCallCount(response.data.unseenMissedCount);
+            }
+            return response.data;
+        } catch (e) {
+            console.error("Get call history error:", e);
+            throw new Error(e.response?.data?.message || "Failed to load call history");
+        }
+    }, []);
+
+    // 10j. MARK MISSED CALLS AS SEEN
+    const markMissedCallsAsSeen = useCallback(async () => {
+        try {
+            const response = await api.post("/calls/mark-seen");
+            setUnseenMissedCallCount(0);
+            return response.data;
+        } catch (e) {
+            console.error("Mark missed calls as seen error:", e);
+        }
+    }, []);
+
     // Automatic re-sync on window focus / network recovery
     useEffect(() => {
         if (!userData) return;
         const onSync = () => {
             getUnreadChatCount().catch(() => {});
             getUnreadNotificationCount().catch(() => {});
+            getMissedCallCount().catch(() => {});
         };
         window.addEventListener("focus", onSync);
         window.addEventListener("online", onSync);
@@ -684,7 +737,7 @@ export const AuthProvider = ({ children }) => {
             window.removeEventListener("focus", onSync);
             window.removeEventListener("online", onSync);
         };
-    }, [userData, getUnreadChatCount, getUnreadNotificationCount]);
+    }, [userData, getUnreadChatCount, getUnreadNotificationCount, getMissedCallCount]);
 
     // 11. GET CONVERSATIONS LIST
     const getConversations = useCallback(async () => {
@@ -932,6 +985,11 @@ export const AuthProvider = ({ children }) => {
         unreadChatCount,
         setUnreadChatCount,
         getUnreadChatCount,
+        unseenMissedCallCount,
+        setUnseenMissedCallCount,
+        getMissedCallCount,
+        getCallHistory,
+        markMissedCallsAsSeen,
         likesYouCount,
         handleRegister,
         handleLogin,
@@ -988,6 +1046,10 @@ export const AuthProvider = ({ children }) => {
         unreadNotificationCount,
         unreadChatCount,
         getUnreadChatCount,
+        unseenMissedCallCount,
+        getMissedCallCount,
+        getCallHistory,
+        markMissedCallsAsSeen,
         likesYouCount,
         handleRegister,
         handleLogin,

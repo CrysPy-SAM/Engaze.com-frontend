@@ -48,6 +48,7 @@ import DoneIcon from "@mui/icons-material/Done";
 import WifiOffIcon from "@mui/icons-material/WifiOff";
 import SearchIcon from "@mui/icons-material/Search";
 import ForumIcon from "@mui/icons-material/Forum";
+import PhoneRoundedIcon from "@mui/icons-material/PhoneRounded";
 import SparklesIcon from "@mui/icons-material/AutoAwesome";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AddIcon from "@mui/icons-material/Add";
@@ -138,6 +139,7 @@ function ChatPage() {
         markConversationRead,
         sendMessageRest,
         setUnreadChatCount,
+        unseenMissedCallCount = 0,
         blockUser,
         reportUser,
         unmatchUser,
@@ -888,19 +890,44 @@ function ChatPage() {
                                     Private chats with your matches
                                 </Typography>
                             </Box>
-                            <Box
-                                sx={{
-                                    px: 1.2,
-                                    py: 0.4,
-                                    borderRadius: "12px",
-                                    bgcolor: "rgba(37, 137, 216, 0.1)",
-                                    border: "1px solid rgba(37, 137, 216, 0.25)",
-                                }}
-                            >
-                                <Typography variant="caption" sx={{ fontWeight: 700, color: BRAND_COLORS.brandBlue }}>
-                                    {conversations.length} Active
-                                </Typography>
-                            </Box>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <Button
+                                    size="small"
+                                    startIcon={<PhoneRoundedIcon sx={{ fontSize: 15 }} />}
+                                    onClick={() => navigate("/calls")}
+                                    sx={{
+                                        borderRadius: "12px",
+                                        bgcolor: unseenMissedCallCount > 0 ? "rgba(253, 58, 115, 0.15)" : "rgba(255, 255, 255, 0.06)",
+                                        color: unseenMissedCallCount > 0 ? BRAND_COLORS.coralPink : BRAND_COLORS.textSecondary,
+                                        border: `1px solid ${unseenMissedCallCount > 0 ? "rgba(253, 58, 115, 0.3)" : BRAND_COLORS.surfaceDarkBorder}`,
+                                        fontSize: "0.74rem",
+                                        fontWeight: 700,
+                                        textTransform: "none",
+                                        px: 1.2,
+                                        py: 0.3,
+                                        minWidth: "auto",
+                                        "&:hover": {
+                                            bgcolor: unseenMissedCallCount > 0 ? "rgba(253, 58, 115, 0.25)" : "rgba(255, 255, 255, 0.12)",
+                                            color: "#FFF",
+                                        },
+                                    }}
+                                >
+                                    Calls {unseenMissedCallCount > 0 && `(${unseenMissedCallCount})`}
+                                </Button>
+                                <Box
+                                    sx={{
+                                        px: 1.2,
+                                        py: 0.4,
+                                        borderRadius: "12px",
+                                        bgcolor: "rgba(37, 137, 216, 0.1)",
+                                        border: "1px solid rgba(37, 137, 216, 0.25)",
+                                    }}
+                                >
+                                    <Typography variant="caption" sx={{ fontWeight: 700, color: BRAND_COLORS.brandBlue }}>
+                                        {conversations.length} Active
+                                    </Typography>
+                                </Box>
+                            </Stack>
                         </Stack>
 
                         {/* Search Input */}

@@ -39,6 +39,7 @@ import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import PhoneRoundedIcon from "@mui/icons-material/PhoneRounded";
 import SecurityRoundedIcon from "@mui/icons-material/SecurityRounded";
 import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 
@@ -52,6 +53,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
         handleLogout,
         unreadNotificationCount = 0,
         unreadChatCount = 0,
+        unseenMissedCallCount = 0,
         likesYouCount = 0,
         getNotifications,
         getUnreadNotificationCount,
@@ -121,6 +123,8 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
             }
         } else if (notif.type === "match_request") {
             navigate("/matches?tab=requests");
+        } else if (notif.type === "missed_call") {
+            navigate("/calls");
         } else if (notif.type === "like") {
             navigate("/matches?tab=likes");
         } else {
@@ -167,6 +171,12 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
             icon: <ChatBubbleRoundedIcon fontSize="small" />,
             badge: unreadChatCount > 0 ? (unreadChatCount > 99 ? "99+" : String(unreadChatCount)) : null,
         },
+        {
+            label: "Calls",
+            path: "/calls",
+            icon: <PhoneRoundedIcon fontSize="small" />,
+            badge: unseenMissedCallCount > 0 ? (unseenMissedCallCount > 99 ? "99+" : String(unseenMissedCallCount)) : null,
+        },
         { label: "Video", path: "/random-video", icon: <VideocamRoundedIcon fontSize="small" /> },
         { label: "Profile", path: "/home", icon: <PersonRoundedIcon fontSize="small" /> },
     ];
@@ -177,6 +187,9 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
         }
         if (path === "/chat") {
             return currentPath.startsWith("/chat");
+        }
+        if (path === "/calls") {
+            return currentPath.startsWith("/calls");
         }
         if (path === "/random-video") {
             return currentPath === "/random-video" || currentPath === "/random-call";
@@ -699,6 +712,8 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                                         ? `💌 ${notif.sender?.name} sent you a match request!`
                                                                         : notif.type === "match_accepted"
                                                                         ? `✨ ${notif.sender?.name} accepted your match request!`
+                                                                        : notif.type === "missed_call"
+                                                                        ? `📞 Missed call from ${notif.sender?.name}`
                                                                         : `${notif.sender?.name} liked your profile`}
                                                                 </Typography>
                                                             }
