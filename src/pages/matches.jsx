@@ -8,6 +8,7 @@ import { BRAND_COLORS } from "../theme";
 import "../App.css";
 import {
     Avatar,
+    Badge,
     Box,
     Button,
     Chip,
@@ -61,6 +62,9 @@ function MatchesPage() {
         blockUser,
         reportUser,
         unmatchUser,
+        unreadLikesCount = 0,
+        unreadRequestsCount = 0,
+        markNotificationsReadByType,
     } = useContext(AuthContext);
 
     const { initiateDirectCall, getSocket } = useDirectCall();
@@ -184,15 +188,27 @@ function MatchesPage() {
 
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+        if (activeTab !== "requests") {
+            fetchRequests();
+        }
+        if (activeTab !== "likes") {
+            fetchLikes();
+        }
+    }, [fetchData]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (activeTab === "requests") {
             fetchRequests();
+            if (markNotificationsReadByType) {
+                markNotificationsReadByType("match_request");
+            }
         } else if (activeTab === "likes") {
             fetchLikes();
+            if (markNotificationsReadByType) {
+                markNotificationsReadByType("like");
+            }
         }
-    }, [activeTab, fetchRequests, fetchLikes]);
+    }, [activeTab, fetchRequests, fetchLikes, markNotificationsReadByType]);
 
     const handleAcceptRequest = async (requestId) => {
         setRequestActionLoading((prev) => ({ ...prev, [requestId]: "accepting" }));
@@ -314,14 +330,100 @@ function MatchesPage() {
             }
         };
 
+        const handleNewLike = (data) => {
+            if (!data?.profile) return;
+            const profile = data.profile;
+            setLikesYouProfiles((prev) => {
+                if (prev.some((p) => p._id?.toString() === profile._id?.toString())) {
+                    return prev;
+                }
+                return [profile, ...prev];
+            });
+            if (activeTab === "likes" && markNotificationsReadByType) {
+                markNotificationsReadByType("like");
+            }
+        };
+
+        const handleLikeMatched = ({ matchedUserId, match }) => {
+            if (matchedUserId) {
+                setLikesYouProfiles((prev) =>
+                    prev.filter((p) => p._id?.toString() !== matchedUserId.toString())
+                );
+            }
+            if (match) {
+                setMatches((prev) => {
+                    if (prev.some((m) => m._id?.toString() === match._id?.toString())) {
+                        return prev;
+                    }
+                    return [match, ...prev];
+                });
+            }
+        };
+
+        const handleNewMatchRequest = ({ request }) => {
+            if (!request) return;
+            setIncomingRequests((prev) => {
+                if (prev.some((r) => r._id?.toString() === request._id?.toString())) {
+                    return prev;
+                }
+                return [request, ...prev];
+            });
+            if (activeTab === "requests" && markNotificationsReadByType) {
+                markNotificationsReadByType("match_request");
+            }
+        };
+
+        const handleMatchRequestAccepted = ({ requestId }) => {
+            if (!requestId) return;
+            setIncomingRequests((prev) =>
+                prev.filter((r) => r._id?.toString() !== requestId.toString())
+            );
+            fetchData();
+        };
+
+        const handleMatchRequestDeclined = ({ requestId }) => {
+            if (!requestId) return;
+            setIncomingRequests((prev) =>
+                prev.filter((r) => r._id?.toString() !== requestId.toString())
+            );
+        };
+
+        const handleNewMatch = ({ match }) => {
+            if (!match) return;
+            setMatches((prev) => {
+                if (prev.some((m) => m._id?.toString() === match._id?.toString())) {
+                    return prev;
+                }
+                return [match, ...prev];
+            });
+            const partnerId = match.matchedUser?._id?.toString();
+            if (partnerId) {
+                setLikesYouProfiles((prev) =>
+                    prev.filter((p) => p._id?.toString() !== partnerId)
+                );
+            }
+        };
+
         socket.on("chat:new-message", handleNewMessage);
         socket.on("chat:read", handleChatRead);
+        socket.on("like:new", handleNewLike);
+        socket.on("like:matched", handleLikeMatched);
+        socket.on("match_request:new", handleNewMatchRequest);
+        socket.on("match_request:accepted", handleMatchRequestAccepted);
+        socket.on("match_request:declined", handleMatchRequestDeclined);
+        socket.on("match:new", handleNewMatch);
 
         return () => {
             socket.off("chat:new-message", handleNewMessage);
             socket.off("chat:read", handleChatRead);
+            socket.off("like:new", handleNewLike);
+            socket.off("like:matched", handleLikeMatched);
+            socket.off("match_request:new", handleNewMatchRequest);
+            socket.off("match_request:accepted", handleMatchRequestAccepted);
+            socket.off("match_request:declined", handleMatchRequestDeclined);
+            socket.off("match:new", handleNewMatch);
         };
-    }, [getSocket, userData, getConversations]);
+    }, [getSocket, userData, getConversations, activeTab, markNotificationsReadByType, fetchData]);
 
     // Filter conversations & matches based on search query
     const filteredConversations = conversations.filter((conv) => {
@@ -469,54 +571,72 @@ function MatchesPage() {
                     >
                         Matches ({matches.length})
                     </Button>
-                    <Button
-                        fullWidth
-                        onClick={() => handleTabChange("requests")}
-                        startIcon={<NotificationsRoundedIcon fontSize="small" />}
-                        sx={{
-                            py: 1.2,
-                            borderRadius: "9999px",
-                            fontWeight: activeTab === "requests" ? 900 : 700,
-                            fontSize: "0.85rem",
-                            textTransform: "none",
-                            bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlue : "#121C2D",
-                            border: activeTab === "requests" ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
-                            color: activeTab === "requests" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "requests" ? "0 4px 16px rgba(37, 137, 216, 0.4)" : "0 2px 6px rgba(0, 0, 0, 0.2)",
-                            transition: "all 0.18s ease",
-                            "&:hover": {
-                                bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlueHover : "#18253A",
-                                color: "#FFFFFF",
-                                transform: "translateY(-1px)",
-                            },
-                        }}
+                    <Badge
+                        badgeContent={unreadRequestsCount}
+                        color="error"
+                        max={99}
+                        invisible={unreadRequestsCount === 0}
+                        sx={{ width: "100%", "& .MuiBadge-badge": { right: 18, top: 10 } }}
                     >
-                        Requests ({incomingRequests.length})
-                    </Button>
-                    <Button
-                        fullWidth
-                        onClick={() => handleTabChange("likes")}
-                        startIcon={<WhatshotRoundedIcon fontSize="small" />}
-                        sx={{
-                            py: 1.2,
-                            borderRadius: "9999px",
-                            fontWeight: activeTab === "likes" ? 900 : 700,
-                            fontSize: "0.85rem",
-                            textTransform: "none",
-                            bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlue : "#121C2D",
-                            border: activeTab === "likes" ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
-                            color: activeTab === "likes" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "likes" ? "0 4px 16px rgba(37, 137, 216, 0.4)" : "0 2px 6px rgba(0, 0, 0, 0.2)",
-                            transition: "all 0.18s ease",
-                            "&:hover": {
-                                bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlueHover : "#18253A",
-                                color: "#FFFFFF",
-                                transform: "translateY(-1px)",
-                            },
-                        }}
+                        <Button
+                            fullWidth
+                            aria-label={`Requests (${incomingRequests.length})`}
+                            onClick={() => handleTabChange("requests")}
+                            startIcon={<NotificationsRoundedIcon fontSize="small" />}
+                            sx={{
+                                py: 1.2,
+                                borderRadius: "9999px",
+                                fontWeight: activeTab === "requests" ? 900 : 700,
+                                fontSize: "0.85rem",
+                                textTransform: "none",
+                                bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlue : "#121C2D",
+                                border: activeTab === "requests" ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
+                                color: activeTab === "requests" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
+                                boxShadow: activeTab === "requests" ? "0 4px 16px rgba(37, 137, 216, 0.4)" : "0 2px 6px rgba(0, 0, 0, 0.2)",
+                                transition: "all 0.18s ease",
+                                "&:hover": {
+                                    bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlueHover : "#18253A",
+                                    color: "#FFFFFF",
+                                    transform: "translateY(-1px)",
+                                },
+                            }}
+                        >
+                            Requests ({incomingRequests.length})
+                        </Button>
+                    </Badge>
+                    <Badge
+                        badgeContent={unreadLikesCount}
+                        color="error"
+                        max={99}
+                        invisible={unreadLikesCount === 0}
+                        sx={{ width: "100%", "& .MuiBadge-badge": { right: 18, top: 10 } }}
                     >
-                        Likes You ({likesYouProfiles.length})
-                    </Button>
+                        <Button
+                            fullWidth
+                            aria-label={`Likes You (${likesYouProfiles.length})`}
+                            onClick={() => handleTabChange("likes")}
+                            startIcon={<WhatshotRoundedIcon fontSize="small" />}
+                            sx={{
+                                py: 1.2,
+                                borderRadius: "9999px",
+                                fontWeight: activeTab === "likes" ? 900 : 700,
+                                fontSize: "0.85rem",
+                                textTransform: "none",
+                                bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlue : "#121C2D",
+                                border: activeTab === "likes" ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
+                                color: activeTab === "likes" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
+                                boxShadow: activeTab === "likes" ? "0 4px 16px rgba(37, 137, 216, 0.4)" : "0 2px 6px rgba(0, 0, 0, 0.2)",
+                                transition: "all 0.18s ease",
+                                "&:hover": {
+                                    bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlueHover : "#18253A",
+                                    color: "#FFFFFF",
+                                    transform: "translateY(-1px)",
+                                },
+                            }}
+                        >
+                            Likes You ({likesYouProfiles.length})
+                        </Button>
+                    </Badge>
                 </Stack>
 
                 {activeTab === "matches" && (
