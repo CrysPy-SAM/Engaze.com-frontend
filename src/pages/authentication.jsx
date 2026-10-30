@@ -202,15 +202,20 @@ export default function Authentication() {
         handleLogin,
         handleGoogleLogin,
         isAuthenticated,
+        userData,
         loading: authLoading,
     } = React.useContext(AuthContext);
 
-    // If user is already authenticated, redirect to /home immediately
+    // If user is already authenticated, redirect to appropriate destination
     React.useEffect(() => {
         if (!authLoading && isAuthenticated) {
-            navigate("/home", { replace: true });
+            if (userData?.usernameSetupCompleted === false) {
+                navigate("/setup-username", { replace: true });
+            } else {
+                navigate("/home", { replace: true });
+            }
         }
-    }, [authLoading, isAuthenticated, navigate]);
+    }, [authLoading, isAuthenticated, userData, navigate]);
 
     const handleAuth = async () => {
         setError("");
