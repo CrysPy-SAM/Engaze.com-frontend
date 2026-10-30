@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [notifications, setNotifications] = useState([]);
     const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+    const [unreadChatCount, setUnreadChatCount] = useState(0);
     const [likesYouCount, setLikesYouCount] = useState(0);
     const router = useNavigate();
 
@@ -50,6 +51,14 @@ export const AuthProvider = ({ children }) => {
             if (response.data && response.data.profile) {
                 setUserData(response.data.profile);
                 setToken(savedToken);
+                // Hydrate unread chat count authoritative badge on login/mount
+                api.get("/conversations/unread-count")
+                    .then((res) => {
+                        if (res.data && typeof res.data.unreadCount === "number") {
+                            setUnreadChatCount(res.data.unreadCount);
+                        }
+                    })
+                    .catch(() => {});
             }
         } catch (err) {
             // Only clear token if server explicitly rejected auth with 401 or 403
@@ -647,10 +656,44 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    // 10g. GET AUTHORITATIVE UNREAD CHAT COUNT
+    const getUnreadChatCount = useCallback(async () => {
+        try {
+            const response = await api.get("/conversations/unread-count");
+            if (response.data && typeof response.data.unreadCount === "number") {
+                setUnreadChatCount(response.data.unreadCount);
+                return response.data.unreadCount;
+            }
+            return 0;
+        } catch (e) {
+            console.debug("Get unread chat count error:", e);
+            return 0;
+        }
+    }, []);
+
+    // Automatic re-sync on window focus / network recovery
+    useEffect(() => {
+        if (!userData) return;
+        const onSync = () => {
+            getUnreadChatCount().catch(() => {});
+            getUnreadNotificationCount().catch(() => {});
+        };
+        window.addEventListener("focus", onSync);
+        window.addEventListener("online", onSync);
+        return () => {
+            window.removeEventListener("focus", onSync);
+            window.removeEventListener("online", onSync);
+        };
+    }, [userData, getUnreadChatCount, getUnreadNotificationCount]);
+
     // 11. GET CONVERSATIONS LIST
     const getConversations = useCallback(async () => {
         try {
             const response = await api.get("/conversations");
+            if (response.data && Array.isArray(response.data.conversations)) {
+                const total = response.data.conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+                setUnreadChatCount(total);
+            }
             return response.data;
         } catch (err) {
             console.error("Get conversations error:", err);
@@ -698,11 +741,12 @@ export const AuthProvider = ({ children }) => {
     const markConversationRead = useCallback(async (conversationId) => {
         try {
             const response = await api.put(`/conversations/${conversationId}/read`);
+            getUnreadChatCount().catch(() => {});
             return response.data;
         } catch (err) {
             console.error("Mark read error:", err);
         }
-    }, []);
+    }, [getUnreadChatCount]);
 
     // 15. SEND MESSAGE (REST FALLBACK)
     const sendMessageRest = useCallback(async (conversationId, content, clientTempId) => {
@@ -885,6 +929,9 @@ export const AuthProvider = ({ children }) => {
         notifications,
         setNotifications,
         unreadNotificationCount,
+        unreadChatCount,
+        setUnreadChatCount,
+        getUnreadChatCount,
         likesYouCount,
         handleRegister,
         handleLogin,
@@ -939,6 +986,8 @@ export const AuthProvider = ({ children }) => {
         loading,
         notifications,
         unreadNotificationCount,
+        unreadChatCount,
+        getUnreadChatCount,
         likesYouCount,
         handleRegister,
         handleLogin,
