@@ -590,6 +590,19 @@ export const DirectCallProvider = ({ children }) => {
 
         const bindSocketEvents = (socket) => {
 
+        socket.on("connect", () => {
+            if (getUnreadChatCount) {
+                getUnreadChatCount().catch(() => {});
+            }
+        });
+
+        // 0. REAL-TIME UNREAD CHAT COUNT UPDATE
+        socket.on("chat:unread-count", (data) => {
+            if (data && typeof data.unreadCount === "number" && setUnreadChatCount) {
+                setUnreadChatCount(data.unreadCount);
+            }
+        });
+
         socket.on("connect_error", (err) => {
             console.warn("DirectCall socket connection error:", err.message);
             const freshToken = localStorage.getItem("token");
