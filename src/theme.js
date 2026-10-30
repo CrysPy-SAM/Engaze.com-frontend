@@ -221,9 +221,9 @@ const theme = createTheme({
         MuiMenu: {
             styleOverrides: {
                 paper: {
-                    backgroundColor: "#121C2D",
-                    backgroundImage: "none",
-                    color: "#F8FAFC",
+                    backgroundColor: "#121C2D !important",
+                    backgroundImage: "none !important",
+                    color: "#F8FAFC !important",
                     border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                     borderRadius: 20,
                     boxShadow: "0 16px 48px rgba(0, 0, 0, 0.5)",
@@ -233,9 +233,9 @@ const theme = createTheme({
         MuiPopover: {
             styleOverrides: {
                 paper: {
-                    backgroundColor: "#121C2D",
-                    backgroundImage: "none",
-                    color: "#F8FAFC",
+                    backgroundColor: "#121C2D !important",
+                    backgroundImage: "none !important",
+                    color: "#F8FAFC !important",
                     border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                     borderRadius: 20,
                     boxShadow: "0 16px 48px rgba(0, 0, 0, 0.5)",
