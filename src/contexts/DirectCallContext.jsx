@@ -817,6 +817,7 @@ export const DirectCallProvider = ({ children }) => {
             endDirectCall,
             toggleAudio,
             toggleVideo,
+            getSocket: () => socketRef.current,
         }),
         [
             callState,
