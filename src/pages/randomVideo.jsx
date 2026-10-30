@@ -1110,8 +1110,8 @@ function RandomVideoPage() {
         >
             {/* Unified Brand Navigation (hide during active call on mobile for immersive cinema space) */}
             <Navbar
-                hideBottomNav={callState === "connected"}
-                hideTopNav={isMobile && callState === "connected"}
+                hideBottomNav={callState !== "idle"}
+                hideTopNav={isMobile && callState !== "idle"}
             />
 
             {/* Main Video Arena */}
@@ -1123,7 +1123,7 @@ function RandomVideoPage() {
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    p: callState === "connected" ? { xs: 0, md: 3 } : { xs: 2, md: 4 },
+                    p: callState !== "idle" ? { xs: 0, md: 3 } : { xs: 2, md: 4 },
                     width: "100%",
                 }}
             >
@@ -1918,31 +1918,31 @@ function RandomVideoPage() {
                             <Tooltip title="Skip to Next Match">
                                 <Button
                                     variant="contained"
-                                    startIcon={<SkipNextIcon sx={{ fontSize: { xs: 18, sm: 22 } }} />}
+                                    startIcon={<SkipNextIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
                                     onClick={handleNextMatch}
                                     sx={{
                                         background: BRAND_COLORS.brandBlue,
-                                        backgroundColor: BRAND_COLORS.brandBlue,
-                                        color: "#FFFFFF",
+                                        backgroundColor: `${BRAND_COLORS.brandBlue} !important`,
+                                        color: "#FFFFFF !important",
                                         borderRadius: "9999px",
-                                        px: { xs: 1.5, sm: 2.8 },
+                                        px: { xs: 1.4, sm: 2.2 },
                                         fontWeight: 800,
                                         height: { xs: 38, sm: 46 },
-                                        fontSize: { xs: "0.80rem", sm: "0.92rem" },
+                                        fontSize: { xs: "0.80rem", sm: "0.90rem" },
                                         boxShadow: "0 4px 14px rgba(37, 137, 216, 0.35)",
                                         whiteSpace: "nowrap",
                                         flexShrink: 0,
-                                        minWidth: "auto",
+                                        minWidth: "max-content",
                                         textTransform: "none",
                                         "&:hover": {
-                                            backgroundColor: BRAND_COLORS.brandBlueHover,
+                                            backgroundColor: `${BRAND_COLORS.brandBlueHover} !important`,
                                         },
                                     }}
                                 >
-                                    <Box component="span" sx={{ display: { xs: "none", sm: "inline" }, whiteSpace: "nowrap" }}>
+                                    <Box component="span" sx={{ display: { xs: "none", md: "inline" }, whiteSpace: "nowrap" }}>
                                         Next Match
                                     </Box>
-                                    <Box component="span" sx={{ display: { xs: "inline", sm: "none" }, whiteSpace: "nowrap" }}>
+                                    <Box component="span" sx={{ display: { xs: "inline", md: "none" }, whiteSpace: "nowrap" }}>
                                         Next
                                     </Box>
                                 </Button>
