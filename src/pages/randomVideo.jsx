@@ -25,6 +25,8 @@ import {
     Stack,
     Tooltip,
     Typography,
+    useMediaQuery,
+    useTheme,
 } from "@mui/material";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import VideocamOffIcon from "@mui/icons-material/VideocamOff";
@@ -58,6 +60,8 @@ const DEFAULT_ICE_CONFIG = {
 
 function RandomVideoPage() {
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const {
         userData,
         token,
@@ -1104,8 +1108,11 @@ function RandomVideoPage() {
                 overflowX: "hidden",
             }}
         >
-            {/* Unified Brand Navigation (hide bottom nav during active call for maximum cinema space) */}
-            <Navbar hideBottomNav={callState === "connected"} />
+            {/* Unified Brand Navigation (hide during active call on mobile for immersive cinema space) */}
+            <Navbar
+                hideBottomNav={callState === "connected"}
+                hideTopNav={isMobile && callState === "connected"}
+            />
 
             {/* Main Video Arena */}
             <Box
@@ -1116,7 +1123,8 @@ function RandomVideoPage() {
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    p: { xs: 2, md: 4 },
+                    p: callState === "connected" ? { xs: 0, md: 3 } : { xs: 2, md: 4 },
+                    width: "100%",
                 }}
             >
                 {/* 1. IDLE STATE: Local Video Preview & Start Button */}
@@ -1649,14 +1657,14 @@ function RandomVideoPage() {
                     <Box
                         sx={{
                             width: "100%",
-                            maxWidth: 1100,
-                            height: { xs: "calc(100dvh - 120px)", md: "calc(100vh - 140px)" },
+                            maxWidth: { xs: "100%", md: 1100 },
+                            height: { xs: "100dvh", md: "calc(100vh - 140px)" },
                             position: "relative",
-                            borderRadius: "28px",
+                            borderRadius: { xs: 0, md: "28px" },
                             overflow: "hidden",
                             backgroundColor: "#000",
-                            boxShadow: "0 20px 60px rgba(0, 0, 0, 0.8)",
-                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                            boxShadow: { xs: "none", md: "0 20px 60px rgba(0, 0, 0, 0.8)" },
+                            border: { xs: "none", md: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` },
                         }}
                     >
                         {/* Remote Video (Main) */}
@@ -1725,28 +1733,31 @@ function RandomVideoPage() {
                             <Box
                                 sx={{
                                     position: "absolute",
-                                    top: { xs: 12, sm: 18 },
-                                    left: { xs: 12, sm: 18 },
-                                    backgroundColor: "rgba(11, 13, 23, 0.75)",
-                                    backdropFilter: "blur(12px)",
+                                    top: { xs: "max(14px, env(safe-area-inset-top))", sm: 18 },
+                                    left: { xs: 14, sm: 18 },
+                                    backgroundColor: "rgba(11, 13, 23, 0.78)",
+                                    backdropFilter: "blur(14px)",
+                                    WebkitBackdropFilter: "blur(14px)",
                                     borderRadius: "16px",
-                                    px: { xs: 1.2, sm: 2 },
-                                    py: 0.8,
+                                    px: { xs: 1.4, sm: 2 },
+                                    py: { xs: 0.6, sm: 0.8 },
                                     display: "flex",
                                     alignItems: "center",
                                     gap: 1.2,
-                                    maxWidth: { xs: 170, sm: 260 },
-                                    border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                    maxWidth: { xs: 200, sm: 280 },
+                                    border: `1px solid rgba(255, 255, 255, 0.12)`,
+                                    boxShadow: "0 4px 18px rgba(0,0,0,0.45)",
+                                    zIndex: 10,
                                 }}
                             >
-                                <Avatar src={partner.photos?.[0]} sx={{ width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 }, border: `2px solid ${BRAND_COLORS.coralPink}` }}>
+                                <Avatar src={partner.photos?.[0]} sx={{ width: { xs: 34, sm: 40 }, height: { xs: 34, sm: 40 }, border: `2px solid ${BRAND_COLORS.coralPink}` }}>
                                     {partner.name?.charAt(0) || "P"}
                                 </Avatar>
                                 <Box sx={{ minWidth: 0, flex: 1 }}>
                                     <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800, color: "#FFFFFF", lineHeight: 1.2, fontSize: { xs: "0.82rem", sm: "0.9rem" } }}>
                                         {partner.name}{partner.age ? `, ${partner.age}` : ""}
                                     </Typography>
-                                    <Typography variant="caption" noWrap sx={{ color: BRAND_COLORS.textSecondary, display: "block", textTransform: "capitalize" }}>
+                                    <Typography variant="caption" noWrap sx={{ color: BRAND_COLORS.textSecondary, display: "block", textTransform: "capitalize", fontSize: "0.72rem" }}>
                                         {partner.gender || "Engaze Member"}
                                     </Typography>
                                 </Box>
@@ -1757,16 +1768,16 @@ function RandomVideoPage() {
                         <Box
                             sx={{
                                 position: "absolute",
-                                top: { xs: 12, sm: 18 },
-                                right: { xs: 12, sm: 18 },
-                                width: { xs: 95, sm: 150, md: 220 },
-                                height: { xs: 130, sm: 110, md: 160 },
+                                top: { xs: "max(14px, env(safe-area-inset-top))", sm: 18 },
+                                right: { xs: 14, sm: 18 },
+                                width: { xs: 90, sm: 135, md: 190 },
+                                height: { xs: 125, sm: 175, md: 145 },
                                 borderRadius: "18px",
                                 overflow: "hidden",
-                                border: `2px solid rgba(255, 255, 255, 0.3)`,
+                                border: `2px solid rgba(255, 255, 255, 0.35)`,
                                 backgroundColor: BRAND_COLORS.surfaceDark,
                                 boxShadow: "0 8px 30px rgba(0,0,0,0.7)",
-                                zIndex: 5,
+                                zIndex: 10,
                             }}
                         >
                             <video
@@ -1807,23 +1818,25 @@ function RandomVideoPage() {
                         <Box
                             sx={{
                                 position: "absolute",
-                                bottom: { xs: 16, sm: 24 },
+                                bottom: { xs: "max(18px, env(safe-area-inset-bottom))", sm: 24 },
                                 left: "50%",
                                 transform: "translateX(-50%)",
                                 backgroundColor: "rgba(11, 13, 23, 0.88)",
-                                backdropFilter: "blur(18px)",
+                                backdropFilter: "blur(20px)",
+                                WebkitBackdropFilter: "blur(20px)",
                                 borderRadius: "9999px",
-                                px: { xs: 1.2, sm: 3 },
-                                py: { xs: 0.8, sm: 1.2 },
+                                px: { xs: 1, sm: 2.5 },
+                                py: { xs: 0.8, sm: 1.1 },
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                gap: { xs: 0.8, sm: 2 },
-                                border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                boxShadow: "0 12px 40px rgba(0,0,0,0.65)",
-                                zIndex: 10,
-                                maxWidth: "calc(100% - 16px)",
+                                gap: { xs: 0.6, sm: 1.5 },
+                                border: `1px solid rgba(255, 255, 255, 0.12)`,
+                                boxShadow: "0 12px 40px rgba(0,0,0,0.7)",
+                                zIndex: 20,
+                                maxWidth: "calc(100% - 20px)",
                                 boxSizing: "border-box",
+                                width: "auto",
                             }}
                         >
                             {/* Toggle Audio */}
@@ -1837,9 +1850,10 @@ function RandomVideoPage() {
                                         width: { xs: 38, sm: 46 },
                                         height: { xs: 38, sm: 46 },
                                         p: { xs: 0.8, sm: 1.2 },
+                                        flexShrink: 0,
                                     }}
                                 >
-                                    {audioEnabled ? <MicIcon sx={{ fontSize: { xs: 20, sm: 24 } }} /> : <MicOffIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />}
+                                    {audioEnabled ? <MicIcon sx={{ fontSize: { xs: 19, sm: 24 } }} /> : <MicOffIcon sx={{ fontSize: { xs: 19, sm: 24 } }} />}
                                 </IconButton>
                             </Tooltip>
 
@@ -1854,9 +1868,10 @@ function RandomVideoPage() {
                                         width: { xs: 38, sm: 46 },
                                         height: { xs: 38, sm: 46 },
                                         p: { xs: 0.8, sm: 1.2 },
+                                        flexShrink: 0,
                                     }}
                                 >
-                                    {videoEnabled ? <VideocamIcon sx={{ fontSize: { xs: 20, sm: 24 } }} /> : <VideocamOffIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />}
+                                    {videoEnabled ? <VideocamIcon sx={{ fontSize: { xs: 19, sm: 24 } }} /> : <VideocamOffIcon sx={{ fontSize: { xs: 19, sm: 24 } }} />}
                                 </IconButton>
                             </Tooltip>
 
@@ -1871,9 +1886,10 @@ function RandomVideoPage() {
                                         width: { xs: 38, sm: 46 },
                                         height: { xs: 38, sm: 46 },
                                         p: { xs: 0.8, sm: 1.2 },
+                                        flexShrink: 0,
                                     }}
                                 >
-                                    <VolumeUpIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
+                                    <VolumeUpIcon sx={{ fontSize: { xs: 19, sm: 24 } }} />
                                 </IconButton>
                             </Tooltip>
 
@@ -1891,9 +1907,10 @@ function RandomVideoPage() {
                                         width: { xs: 38, sm: 46 },
                                         height: { xs: 38, sm: 46 },
                                         p: { xs: 0.8, sm: 1.2 },
+                                        flexShrink: 0,
                                     }}
                                 >
-                                    <SecurityIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
+                                    <SecurityIcon sx={{ fontSize: { xs: 19, sm: 24 } }} />
                                 </IconButton>
                             </Tooltip>
 
@@ -1901,25 +1918,31 @@ function RandomVideoPage() {
                             <Tooltip title="Skip to Next Match">
                                 <Button
                                     variant="contained"
-                                    startIcon={<SkipNextIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />}
+                                    startIcon={<SkipNextIcon sx={{ fontSize: { xs: 18, sm: 22 } }} />}
                                     onClick={handleNextMatch}
                                     sx={{
-                                        background: BRAND_COLORS.primaryGradient,
+                                        background: BRAND_COLORS.brandBlue,
+                                        backgroundColor: BRAND_COLORS.brandBlue,
                                         color: "#FFFFFF",
                                         borderRadius: "9999px",
-                                        px: { xs: 1.5, sm: 3 },
+                                        px: { xs: 1.5, sm: 2.8 },
                                         fontWeight: 800,
                                         height: { xs: 38, sm: 46 },
                                         fontSize: { xs: "0.80rem", sm: "0.92rem" },
-                                        boxShadow: "0 4px 15px rgba(253, 58, 115, 0.4)",
+                                        boxShadow: "0 4px 14px rgba(37, 137, 216, 0.35)",
                                         whiteSpace: "nowrap",
+                                        flexShrink: 0,
                                         minWidth: "auto",
+                                        textTransform: "none",
+                                        "&:hover": {
+                                            backgroundColor: BRAND_COLORS.brandBlueHover,
+                                        },
                                     }}
                                 >
-                                    <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                                    <Box component="span" sx={{ display: { xs: "none", sm: "inline" }, whiteSpace: "nowrap" }}>
                                         Next Match
                                     </Box>
-                                    <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+                                    <Box component="span" sx={{ display: { xs: "inline", sm: "none" }, whiteSpace: "nowrap" }}>
                                         Next
                                     </Box>
                                 </Button>
@@ -1936,9 +1959,10 @@ function RandomVideoPage() {
                                         width: { xs: 38, sm: 46 },
                                         height: { xs: 38, sm: 46 },
                                         p: { xs: 0.8, sm: 1.2 },
+                                        flexShrink: 0,
                                     }}
                                 >
-                                    <CallEndIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
+                                    <CallEndIcon sx={{ fontSize: { xs: 19, sm: 24 } }} />
                                 </IconButton>
                             </Tooltip>
                         </Box>
