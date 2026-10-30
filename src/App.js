@@ -11,6 +11,7 @@ const DirectVideoCallModal = lazy(() => import('./components/DirectVideoCallModa
 
 // Route Code-Splitting for Optimal Initial Bundle Size & TTI
 const Authentication = lazy(() => import('./pages/authentication'));
+const SetupUsernamePage = lazy(() => import('./pages/setupUsername'));
 const HomeComponent = lazy(() => import('./pages/home'));
 const ProfilePage = lazy(() => import('./pages/profile'));
 const DiscoveryPage = lazy(() => import('./pages/discovery'));
@@ -166,6 +167,10 @@ export function PageTitleManager() {
       updateMetaTag('robots', 'noindex, follow');
       updateMetaTag('description', 'Sign in or join Engaze to meet compatible singles through mutual matching, chat, and live video dates.');
       updateCanonical('https://www.engaze.date/auth');
+    } else if (path === '/setup-username') {
+      document.title = 'Choose Username — Engaze';
+      updateMetaTag('robots', 'noindex, nofollow');
+      updateCanonical(null);
     } else if (path === '/discovery') {
       document.title = 'Discovery — Engaze';
       updateMetaTag('robots', 'noindex, nofollow');
@@ -221,6 +226,7 @@ function App() {
                     <Route path='/terms' element={<TermsOfService />} />
                     <Route path='/safety' element={<SafetyCenter />} />
                     <Route path='/auth' element={<Authentication />} />
+                    <Route path='/setup-username' element={<SetupUsernamePage />} />
                     <Route path='/home' element={<HomeComponent />} />
                     <Route path='/discovery' element={<DiscoveryPage />} />
                     <Route path='/search' element={<SearchPage />} />
