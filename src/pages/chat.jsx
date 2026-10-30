@@ -1764,7 +1764,7 @@ function ChatPage() {
                                                                 </IconButton>
                                                             </Paper>
                                                         ) : (
-                                                            <Box sx={{ position: "relative" }}>
+                                                            <>
                                                                 <Paper
                                                                     elevation={0}
                                                                     onDoubleClick={() => toggleHeartReaction(msg._id)}
@@ -1803,7 +1803,7 @@ function ChatPage() {
                                                                 >
                                                                     <KeyboardArrowDownIcon fontSize="small" />
                                                                 </IconButton>
-                                                            </Box>
+                                                            </>
                                                         )}
 
                                                         {/* Heart Reaction pill if reacted */}
