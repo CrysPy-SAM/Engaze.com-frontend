@@ -121,24 +121,33 @@ describe("Phase 2 Calls UI & Navigation Tests", () => {
         );
     };
 
-    test("1. Navbar renders Calls nav item and displays badge when missed calls exist", () => {
+    test("1. Navbar removes Calls nav item and displays call notification badge on Chat", () => {
         renderWithProviders(<Navbar />, { unseenMissedCallCount: 3 });
 
-        const callsNavElements = screen.getAllByText("Calls");
-        expect(callsNavElements.length).toBeGreaterThan(0);
+        // Calls item is no longer in navbar navigation
+        const callsNav = screen.queryByRole("button", { name: /^calls$/i });
+        expect(callsNav).toBeNull();
 
+        // Chat navbar item displays notification badge with missed call count
         const badgeElements = screen.getAllByText("3");
         expect(badgeElements.length).toBeGreaterThan(0);
     });
 
-    test("2. Navbar formats missed call badge as '99+' when count exceeds 99", () => {
-        renderWithProviders(<Navbar />, { unseenMissedCallCount: 150 });
+    test("2. Chat navbar item displays incoming video call notification when callState is incoming_ringing", () => {
+        renderWithProviders(<Navbar />, { unreadChatCount: 0 }, { callState: "incoming_ringing" });
 
-        const badgeElements = screen.getAllByText("99+");
+        // Chat badge displays incoming call alert "1"
+        const badgeElements = screen.getAllByText("1");
         expect(badgeElements.length).toBeGreaterThan(0);
+
+        const statusBadges = screen.getAllByRole("status");
+        const incomingCallBadge = statusBadges.find((el) =>
+            el.getAttribute("aria-label")?.includes("incoming call")
+        );
+        expect(incomingCallBadge).toBeTruthy();
     });
 
-    test("3. CallsPage fetches and renders call history records", async () => {
+    test("3. CallsPage renders call history, has All Calls, Missed, and Video filters, and Audio tab is absent", async () => {
         renderWithProviders(<CallsPage />);
 
         const bobElement = await screen.findByText("Bob Receiver");
@@ -149,6 +158,12 @@ describe("Phase 2 Calls UI & Navigation Tests", () => {
 
         expect(screen.getByText("Missed Call")).toBeInTheDocument();
         expect(screen.getByText(/Completed • 2m 5s/)).toBeInTheDocument();
+
+        // Filters: All Calls, Missed, Video exist; Audio tab is completely removed
+        expect(screen.getByRole("tab", { name: /all calls/i })).toBeInTheDocument();
+        expect(screen.getByRole("tab", { name: /missed/i })).toBeInTheDocument();
+        expect(screen.getByRole("tab", { name: /^video$/i })).toBeInTheDocument();
+        expect(screen.queryByRole("tab", { name: /^audio$/i })).toBeNull();
     });
 
     test("4. CallsPage automatically marks missed calls as seen on mount", async () => {

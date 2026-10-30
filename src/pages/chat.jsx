@@ -50,7 +50,6 @@ import DoneIcon from "@mui/icons-material/Done";
 import WifiOffIcon from "@mui/icons-material/WifiOff";
 import SearchIcon from "@mui/icons-material/Search";
 import ForumIcon from "@mui/icons-material/Forum";
-import PhoneRoundedIcon from "@mui/icons-material/PhoneRounded";
 import SparklesIcon from "@mui/icons-material/AutoAwesome";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AddIcon from "@mui/icons-material/Add";
@@ -1119,7 +1118,7 @@ function ChatPage() {
                             <Stack direction="row" spacing={1} alignItems="center">
                                 <Button
                                     size="small"
-                                    startIcon={<PhoneRoundedIcon sx={{ fontSize: 15 }} />}
+                                    startIcon={<VideocamIcon sx={{ fontSize: 16 }} />}
                                     onClick={() => navigate("/calls")}
                                     sx={{
                                         borderRadius: "12px",

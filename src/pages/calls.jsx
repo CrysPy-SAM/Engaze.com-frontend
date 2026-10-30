@@ -15,7 +15,6 @@ import {
     Tooltip,
     Pagination,
 } from "@mui/material";
-import PhoneRoundedIcon from "@mui/icons-material/PhoneRounded";
 import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
 import CallMadeRoundedIcon from "@mui/icons-material/CallMadeRounded";
 import CallReceivedRoundedIcon from "@mui/icons-material/CallReceivedRounded";
@@ -53,7 +52,7 @@ export default function CallsPage() {
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [activeTab, setActiveTab] = useState("all"); // "all", "missed", "video", "audio"
+    const [activeTab, setActiveTab] = useState("all"); // "all", "missed", "video"
 
     const fetchHistory = useCallback(async (targetPage = 1, filterTab = activeTab) => {
         setLoading(true);
@@ -65,8 +64,6 @@ export default function CallsPage() {
                 statusParam = "missed";
             } else if (filterTab === "video") {
                 typeParam = "video";
-            } else if (filterTab === "audio") {
-                typeParam = "audio";
             }
 
             const res = await getCallHistory(targetPage, 20, typeParam, statusParam);
@@ -112,8 +109,7 @@ export default function CallsPage() {
 
     const handleCallBack = (call) => {
         if (!call.partner) return;
-        const callType = call.callType === "audio" ? "audio" : "video";
-        initiateDirectCall(call.partner, null, callType);
+        initiateDirectCall(call.partner, null, "video");
     };
 
     const formatDuration = (secs) => {
@@ -178,7 +174,7 @@ export default function CallsPage() {
                             )}
                         </Stack>
                         <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mt: 0.5 }}>
-                            One-to-one voice and video calls with your connections
+                            One-to-one video calls with your connections
                         </Typography>
                     </Box>
 
@@ -297,17 +293,6 @@ export default function CallsPage() {
                                 "&.Mui-selected": { color: "#FFFFFF" },
                             }}
                         />
-                        <Tab
-                            value="audio"
-                            label="Audio"
-                            sx={{
-                                color: BRAND_COLORS.textSecondary,
-                                fontWeight: 700,
-                                textTransform: "none",
-                                fontSize: "0.85rem",
-                                "&.Mui-selected": { color: "#FFFFFF" },
-                            }}
-                        />
                     </Tabs>
                 </Paper>
 
@@ -344,7 +329,7 @@ export default function CallsPage() {
                             {activeTab === "missed" ? (
                                 <CallMissedRoundedIcon sx={{ fontSize: 32, color: BRAND_COLORS.coralPink }} />
                             ) : (
-                                <PhoneRoundedIcon sx={{ fontSize: 32 }} />
+                                <VideocamRoundedIcon sx={{ fontSize: 32 }} />
                             )}
                         </Box>
                         <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
@@ -353,7 +338,7 @@ export default function CallsPage() {
                         <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, maxWidth: 360, mx: "auto" }}>
                             {activeTab === "missed"
                                 ? "You're all caught up! You have no missed calls."
-                                : "Start a 1-on-1 audio or video call from any match in your Chat or Matches section."}
+                                : "Start a 1-on-1 video call from any match in your Chat or Matches section."}
                         </Typography>
                     </Paper>
                 ) : (
@@ -471,7 +456,7 @@ export default function CallsPage() {
 
                                     {/* Right: Call Type & Call Back Action */}
                                     <Stack direction="row" spacing={1.2} alignItems="center">
-                                        <Tooltip title={call.callType === "audio" ? "Audio Call" : "Video Call"}>
+                                        <Tooltip title="Video Call">
                                             <Box
                                                 sx={{
                                                     display: { xs: "none", sm: "flex" },
@@ -484,11 +469,7 @@ export default function CallsPage() {
                                                     color: BRAND_COLORS.textSecondary,
                                                 }}
                                             >
-                                                {call.callType === "audio" ? (
-                                                    <PhoneRoundedIcon sx={{ fontSize: 18 }} />
-                                                ) : (
-                                                    <VideocamRoundedIcon sx={{ fontSize: 18 }} />
-                                                )}
+                                                <VideocamRoundedIcon sx={{ fontSize: 18 }} />
                                             </Box>
                                         </Tooltip>
 
@@ -496,13 +477,7 @@ export default function CallsPage() {
                                             <Button
                                                 variant="contained"
                                                 size="small"
-                                                startIcon={
-                                                    call.callType === "audio" ? (
-                                                        <PhoneRoundedIcon sx={{ fontSize: 16 }} />
-                                                    ) : (
-                                                        <VideocamRoundedIcon sx={{ fontSize: 16 }} />
-                                                    )
-                                                }
+                                                startIcon={<VideocamRoundedIcon sx={{ fontSize: 16 }} />}
                                                 onClick={() => handleCallBack(call)}
                                                 sx={{
                                                     bgcolor: isMissed ? BRAND_COLORS.coralPink : BRAND_COLORS.brandBlue,

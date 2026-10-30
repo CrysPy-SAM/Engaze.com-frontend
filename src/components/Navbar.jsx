@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
+import { DirectCallContext } from "../contexts/DirectCallContext";
 import { BRAND_COLORS } from "../theme";
 import EngazeLogo from "./EngazeLogo";
 import {
@@ -39,7 +40,6 @@ import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import PhoneRoundedIcon from "@mui/icons-material/PhoneRounded";
 import SecurityRoundedIcon from "@mui/icons-material/SecurityRounded";
 import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 
@@ -62,6 +62,9 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
         markNotificationRead,
         markAllNotificationsRead,
     } = useContext(AuthContext);
+
+    const directCall = useContext(DirectCallContext);
+    const isIncomingCall = directCall?.callState === "incoming_ringing";
 
     const [profileAnchorEl, setProfileAnchorEl] = useState(null);
     const isMenuOpen = Boolean(profileAnchorEl);
@@ -160,6 +163,37 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
 
     const currentPath = location.pathname;
 
+    // Calculate Chat badge and incoming call indicator
+    let chatBadge = null;
+    let chatAriaLabel = null;
+    let chatCallIcon = null;
+    let isChatBadgePulsing = false;
+
+    if (isIncomingCall) {
+        // Active incoming video call
+        isChatBadgePulsing = true;
+        chatCallIcon = <VideocamRoundedIcon sx={{ fontSize: 13, mr: 0.3 }} />;
+        if (unreadChatCount > 0) {
+            chatBadge = unreadChatCount > 99 ? "99+" : String(unreadChatCount);
+            chatAriaLabel = `Chat, ${chatBadge} unread, 1 incoming call`;
+        } else {
+            chatBadge = "1";
+            chatAriaLabel = "Chat, 1 incoming call";
+        }
+    } else if (unreadChatCount > 0) {
+        chatBadge = unreadChatCount > 99 ? "99+" : String(unreadChatCount);
+        if (unseenMissedCallCount > 0) {
+            chatCallIcon = <VideocamRoundedIcon sx={{ fontSize: 11, mr: 0.2 }} />;
+            chatAriaLabel = `Chat, ${chatBadge} unread, ${unseenMissedCallCount} missed call`;
+        } else {
+            chatAriaLabel = `Chat, ${chatBadge} unread`;
+        }
+    } else if (unseenMissedCallCount > 0) {
+        chatBadge = unseenMissedCallCount > 99 ? "99+" : String(unseenMissedCallCount);
+        chatCallIcon = <VideocamRoundedIcon sx={{ fontSize: 11, mr: 0.2 }} />;
+        chatAriaLabel = `Chat, ${chatBadge} missed call`;
+    }
+
     const navItems = [
         { label: "Discover", path: "/discovery", icon: <WhatshotRoundedIcon fontSize="small" /> },
         { label: "Search", path: "/search", icon: <SearchRoundedIcon fontSize="small" /> },
@@ -168,18 +202,16 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
             path: "/matches",
             icon: <FavoriteRoundedIcon fontSize="small" />,
             badge: likesYouCount > 0 ? (likesYouCount > 99 ? "99+" : String(likesYouCount)) : null,
+            ariaLabel: likesYouCount > 0 ? `Matches, ${likesYouCount} new likes` : undefined,
         },
         {
             label: "Chat",
             path: "/chat",
             icon: <ChatBubbleRoundedIcon fontSize="small" />,
-            badge: unreadChatCount > 0 ? (unreadChatCount > 99 ? "99+" : String(unreadChatCount)) : null,
-        },
-        {
-            label: "Calls",
-            path: "/calls",
-            icon: <PhoneRoundedIcon fontSize="small" />,
-            badge: unseenMissedCallCount > 0 ? (unseenMissedCallCount > 99 ? "99+" : String(unseenMissedCallCount)) : null,
+            badge: chatBadge,
+            ariaLabel: chatAriaLabel,
+            callIcon: chatCallIcon,
+            isPulsing: isChatBadgePulsing,
         },
         { label: "Video", path: "/random-video", icon: <VideocamRoundedIcon fontSize="small" /> },
         { label: "Profile", path: "/home", icon: <PersonRoundedIcon fontSize="small" /> },
@@ -191,9 +223,6 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
         }
         if (path === "/chat") {
             return currentPath.startsWith("/chat");
-        }
-        if (path === "/calls") {
-            return currentPath.startsWith("/calls");
         }
         if (path === "/random-video") {
             return currentPath === "/random-video" || currentPath === "/random-call";
@@ -276,7 +305,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                 <Box
                                                     component="span"
                                                     role="status"
-                                                    aria-label={`${item.label}, ${item.badge} unread`}
+                                                    aria-label={item.ariaLabel || `${item.label}, ${item.badge} unread`}
                                                     sx={{
                                                         ml: 1,
                                                         px: 0.8,
@@ -287,8 +316,17 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                         bgcolor: active ? "#FFFFFF" : BRAND_COLORS.coralPink,
                                                         color: active ? BRAND_COLORS.coralPink : "#FFFFFF",
                                                         letterSpacing: "0.5px",
+                                                        display: "inline-flex",
+                                                        alignItems: "center",
+                                                        animation: item.isPulsing ? "pulseCall 1.2s infinite ease-in-out" : "none",
+                                                        "@keyframes pulseCall": {
+                                                            "0%": { transform: "scale(1)", boxShadow: "0 0 0 0 rgba(253, 58, 115, 0.7)" },
+                                                            "50%": { transform: "scale(1.1)", boxShadow: "0 0 0 8px rgba(253, 58, 115, 0)" },
+                                                            "100%": { transform: "scale(1)", boxShadow: "0 0 0 0 rgba(253, 58, 115, 0)" },
+                                                        },
                                                     }}
                                                 >
+                                                    {item.callIcon}
                                                     {item.badge}
                                                 </Box>
                                             )}
@@ -810,7 +848,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                     {item.badge && (
                                         <Box
                                             role="status"
-                                            aria-label={`${item.label}, ${item.badge} unread`}
+                                            aria-label={item.ariaLabel || `${item.label}, ${item.badge} unread`}
                                             sx={{
                                                 position: "absolute",
                                                 top: -4,
@@ -827,8 +865,15 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                 justifyContent: "center",
                                                 px: 0.4,
                                                 boxShadow: "0 2px 6px rgba(253, 58, 115, 0.6)",
+                                                animation: item.isPulsing ? "pulseCall 1.2s infinite ease-in-out" : "none",
+                                                "@keyframes pulseCall": {
+                                                    "0%": { transform: "scale(1)", boxShadow: "0 0 0 0 rgba(253, 58, 115, 0.7)" },
+                                                    "50%": { transform: "scale(1.15)", boxShadow: "0 0 0 6px rgba(253, 58, 115, 0)" },
+                                                    "100%": { transform: "scale(1)", boxShadow: "0 0 0 0 rgba(253, 58, 115, 0)" },
+                                                },
                                             }}
                                         >
+                                            {item.callIcon}
                                             {item.badge}
                                         </Box>
                                     )}
