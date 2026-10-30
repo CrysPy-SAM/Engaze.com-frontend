@@ -57,12 +57,13 @@ function MatchesPage() {
         acceptMatchRequest,
         declineMatchRequest,
         getConversations,
+        markConversationRead,
         blockUser,
         reportUser,
         unmatchUser,
     } = useContext(AuthContext);
 
-    const { initiateDirectCall } = useDirectCall();
+    const { initiateDirectCall, getSocket } = useDirectCall();
 
     // Active tab: 'matches', 'requests', or 'likes'
     const queryTab = new URLSearchParams(location.search).get("tab");
@@ -267,6 +268,61 @@ function MatchesPage() {
         return `${diffDays}d`;
     };
 
+    // Real-time synchronization for new messages and read receipts in Matches conversations feed
+    useEffect(() => {
+        const socket = getSocket ? getSocket() : null;
+        if (!socket) return;
+
+        const handleNewMessage = (newMsg) => {
+            if (!newMsg || !newMsg.conversation) return;
+            const convId = (newMsg.conversation._id || newMsg.conversation).toString();
+            const senderId = (newMsg.sender?._id || newMsg.sender).toString();
+            const currentUserId = userData?._id?.toString();
+            const isMe = senderId === currentUserId;
+
+            setConversations((prev) => {
+                const idx = prev.findIndex((c) => c._id?.toString() === convId);
+                if (idx === -1) {
+                    // Refresh conversation list if brand new conversation
+                    getConversations().then((res) => {
+                        if (res?.conversations) setConversations(res.conversations);
+                    }).catch(() => {});
+                    return prev;
+                }
+                const updated = [...prev];
+                const currentConv = updated[idx];
+                const newUnread = isMe ? currentConv.unreadCount : (currentConv.unreadCount || 0) + 1;
+                updated[idx] = {
+                    ...currentConv,
+                    lastMessage: newMsg,
+                    lastMessageAt: newMsg.createdAt || new Date(),
+                    unreadCount: newUnread,
+                };
+                // Re-sort with latest message on top
+                updated.sort((a, b) => new Date(b.lastMessageAt || 0) - new Date(a.lastMessageAt || 0));
+                return updated;
+            });
+        };
+
+        const handleChatRead = ({ conversationId, readerId }) => {
+            if (readerId?.toString() === userData?._id?.toString()) {
+                setConversations((prev) =>
+                    prev.map((c) =>
+                        c._id?.toString() === conversationId?.toString() ? { ...c, unreadCount: 0 } : c
+                    )
+                );
+            }
+        };
+
+        socket.on("chat:new-message", handleNewMessage);
+        socket.on("chat:read", handleChatRead);
+
+        return () => {
+            socket.off("chat:new-message", handleNewMessage);
+            socket.off("chat:read", handleChatRead);
+        };
+    }, [getSocket, userData, getConversations]);
+
     // Filter conversations & matches based on search query
     const filteredConversations = conversations.filter((conv) => {
         const other = conv.otherParticipant;
@@ -280,6 +336,14 @@ function MatchesPage() {
     });
 
     const openChatByConversation = (conv) => {
+        if (conv.unreadCount > 0) {
+            setConversations((prev) =>
+                prev.map((c) => (c._id === conv._id ? { ...c, unreadCount: 0 } : c))
+            );
+            if (markConversationRead) {
+                markConversationRead(conv._id).catch(() => {});
+            }
+        }
         navigate(`/chat?conversationId=${conv._id}`);
     };
 
