@@ -58,6 +58,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
         getNotifications,
         getUnreadNotificationCount,
         getUnreadChatCount,
+        getMissedCallCount,
         markNotificationRead,
         markAllNotificationsRead,
     } = useContext(AuthContext);
@@ -78,8 +79,11 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
             if (getUnreadChatCount) {
                 getUnreadChatCount();
             }
+            if (getMissedCallCount) {
+                getMissedCallCount();
+            }
         }
-    }, [userData, getUnreadNotificationCount, getUnreadChatCount]);
+    }, [userData, getUnreadNotificationCount, getUnreadChatCount, getMissedCallCount]);
 
     const handleProfileMenuOpen = (event) => {
         setProfileAnchorEl(event.currentTarget);

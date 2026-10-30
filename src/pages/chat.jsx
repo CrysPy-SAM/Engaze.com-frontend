@@ -559,6 +559,10 @@ function ChatPage() {
             const data = await getConversations();
             const convList = data?.conversations || [];
             setConversations(convList);
+            if (setUnreadChatCount) {
+                const totalUnread = convList.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+                setUnreadChatCount(totalUnread);
+            }
 
             // Check if URL has ?conversationId=... or :conversationId
             const queryParams = new URLSearchParams(location.search);
@@ -612,7 +616,7 @@ function ChatPage() {
         } finally {
             setLoadingConversations(false);
         }
-    }, [getConversations, getOrCreateConversationByMatch, location.search, paramConvId, isMobile]);
+    }, [getConversations, getOrCreateConversationByMatch, location.search, paramConvId, isMobile, setUnreadChatCount]);
 
     useEffect(() => {
         loadConversationsRef.current = loadConversations;
@@ -654,7 +658,7 @@ function ChatPage() {
                 if (!isCancelled && !isStaleConversationResponse(activeConvRef.current?._id, convId)) {
                     // Synchronously zero-out unread badge locally for instant feedback
                     setConversations((prev) => {
-                        const updated = prev.map((c) => (c._id === convId ? { ...c, unreadCount: 0 } : c));
+                        const updated = prev.map((c) => (c._id?.toString() === convId?.toString() ? { ...c, unreadCount: 0 } : c));
                         if (setUnreadChatCount) {
                             const newTotal = updated.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
                             setUnreadChatCount(newTotal);
@@ -1021,7 +1025,7 @@ function ChatPage() {
                 setMessages([]);
                 setConversations((prev) =>
                     prev.map((c) =>
-                        c._id === convId ? { ...c, lastMessage: null, unreadCount: 0 } : c
+                        c._id?.toString() === convId?.toString() ? { ...c, lastMessage: null, unreadCount: 0 } : c
                     )
                 );
 

@@ -175,7 +175,8 @@ export default function SetupUsernamePage() {
                 alignItems: "center",
                 justifyContent: "center",
                 p: { xs: 2, sm: 3 },
-                background: "linear-gradient(135deg, #FFF8F2 0%, #FFE5E8 50%, #FFD8C8 100%)",
+                bgcolor: "#FFFDFB",
+                background: "radial-gradient(ellipse 90% 85% at 50% 20%, #FFFDFB 0%, #FFF5EE 35%, #FFE9E2 70%, #FFD8C8 100%)",
                 position: "relative",
                 overflow: "hidden",
             }}
@@ -191,12 +192,13 @@ export default function SetupUsernamePage() {
                     sx={{
                         maxWidth: 480,
                         width: "100%",
-                        borderRadius: "24px",
+                        borderRadius: { xs: "22px", sm: "28px" },
                         p: { xs: 3, sm: 4.5 },
-                        background: "rgba(255, 255, 255, 0.94)",
-                        backdropFilter: "blur(20px)",
-                        border: "1px solid rgba(255, 180, 160, 0.35)",
-                        boxShadow: "0 20px 60px rgba(253, 58, 115, 0.12)",
+                        bgcolor: "#FFFFFF !important",
+                        background: "#FFFFFF !important",
+                        backdropFilter: "none !important",
+                        border: "1px solid rgba(255, 193, 181, 0.45)",
+                        boxShadow: "0 20px 60px rgba(255, 160, 140, 0.18), 0 2px 8px rgba(0, 0, 0, 0.04)",
                         textAlign: "center",
                     }}
                 >
@@ -209,8 +211,8 @@ export default function SetupUsernamePage() {
                             px: 2,
                             py: 0.8,
                             borderRadius: "9999px",
-                            bgcolor: "rgba(253, 58, 115, 0.08)",
-                            border: "1px solid rgba(253, 58, 115, 0.18)",
+                            bgcolor: "rgba(255, 233, 226, 0.65)",
+                            border: "1px solid rgba(255, 193, 181, 0.50)",
                             mb: 2.5,
                         }}
                     >
@@ -221,7 +223,7 @@ export default function SetupUsernamePage() {
                         >
                             {displayName.charAt(0).toUpperCase()}
                         </Avatar>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#1F2937" }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#142B45" }}>
                             Hi, {displayName}
                         </Typography>
                         <SparklesIcon sx={{ fontSize: 16, color: "#FD3A73" }} />
@@ -231,8 +233,8 @@ export default function SetupUsernamePage() {
                         variant="h5"
                         component="h1"
                         sx={{
-                            fontWeight: 800,
-                            color: "#111827",
+                            fontWeight: 900,
+                            color: "#142B45",
                             letterSpacing: "-0.02em",
                             mb: 1,
                         }}
@@ -243,9 +245,10 @@ export default function SetupUsernamePage() {
                     <Typography
                         variant="body2"
                         sx={{
-                            color: "#6B7280",
+                            color: "#4B5563",
                             lineHeight: 1.6,
                             mb: 3.5,
+                            fontWeight: 500,
                         }}
                     >
                         Pick a unique username for your Engaze profile. You will be able to update it once every 14 days.
@@ -284,11 +287,23 @@ export default function SetupUsernamePage() {
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     borderRadius: "14px",
-                                    bgcolor: "#FFFDFB",
+                                    bgcolor: "#FFFFFF",
                                     fontSize: 16,
                                     fontWeight: 600,
+                                    color: "#142B45",
+                                    "& input": {
+                                        color: "#142B45 !important",
+                                        WebkitTextFillColor: "#142B45 !important",
+                                        caretColor: "#FD3A73",
+                                        fontSize: 16,
+                                        fontWeight: 600,
+                                        "&::placeholder": {
+                                            color: "#9CA3AF !important",
+                                            opacity: 1,
+                                        },
+                                    },
                                     "& fieldset": {
-                                        borderColor: status === "available" ? "#10B981" : "rgba(253, 58, 115, 0.25)",
+                                        borderColor: status === "available" ? "#10B981" : "rgba(255, 193, 181, 0.65)",
                                         borderWidth: status === "available" ? 2 : 1.5,
                                     },
                                     "&:hover fieldset": {
@@ -296,6 +311,7 @@ export default function SetupUsernamePage() {
                                     },
                                     "&.Mui-focused fieldset": {
                                         borderColor: status === "available" ? "#10B981" : "#FD3A73",
+                                        borderWidth: 2,
                                     },
                                 },
                             }}
@@ -326,8 +342,8 @@ export default function SetupUsernamePage() {
 
                         {/* Alternative Username Suggestions */}
                         {suggestions.length > 0 && (
-                            <Box sx={{ mt: 2, p: 2, bgcolor: "rgba(253, 58, 115, 0.04)", borderRadius: "14px", textAlign: "left" }}>
-                                <Typography variant="caption" sx={{ fontWeight: 700, color: "#374151", display: "block", mb: 1 }}>
+                            <Box sx={{ mt: 2, p: 2, bgcolor: "rgba(255, 233, 226, 0.45)", borderRadius: "14px", border: "1px solid rgba(255, 193, 181, 0.45)", textAlign: "left" }}>
+                                <Typography variant="caption" sx={{ fontWeight: 700, color: "#142B45", display: "block", mb: 1 }}>
                                     ✨ Available alternatives:
                                 </Typography>
                                 <Stack direction="row" flexWrap="wrap" gap={1}>

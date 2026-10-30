@@ -89,10 +89,10 @@ export default function CallsPage() {
 
     // Automatically mark unseen missed calls as seen on page visit
     useEffect(() => {
-        if (unseenMissedCallCount > 0 && markMissedCallsAsSeen) {
+        if (markMissedCallsAsSeen) {
             markMissedCallsAsSeen().catch(() => {});
         }
-    }, [unseenMissedCallCount, markMissedCallsAsSeen]);
+    }, [markMissedCallsAsSeen]);
 
     const handleTabChange = (event, newTab) => {
         setActiveTab(newTab);
