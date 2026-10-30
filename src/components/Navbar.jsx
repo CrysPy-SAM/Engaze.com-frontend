@@ -395,11 +395,18 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                                 PaperProps={{
+                                    style: {
+                                        backgroundColor: "#121C2D",
+                                        color: "#F8FAFC",
+                                    },
                                     sx: {
                                         mt: 1.2,
                                         minWidth: 220,
                                         borderRadius: "20px",
-                                        bgcolor: BRAND_COLORS.surfaceDark,
+                                        bgcolor: "#121C2D !important",
+                                        backgroundColor: "#121C2D !important",
+                                        color: "#F8FAFC !important",
+                                        backgroundImage: "none !important",
                                         border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                         boxShadow: "0 16px 40px rgba(0, 0, 0, 0.45)",
                                         p: 1,
@@ -499,14 +506,21 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                                 PaperProps={{
+                                    style: {
+                                        backgroundColor: "#121C2D",
+                                        color: "#F8FAFC",
+                                    },
                                     sx: {
                                         mt: 1.5,
                                         width: { xs: 320, sm: 380 },
                                         maxHeight: 480,
                                         borderRadius: "20px",
-                                        bgcolor: BRAND_COLORS.surfaceDark,
+                                        bgcolor: "#121C2D !important",
+                                        backgroundColor: "#121C2D !important",
+                                        color: "#F8FAFC !important",
+                                        backgroundImage: "none !important",
                                         border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                        boxShadow: "0 16px 44px rgba(0, 0, 0, 0.5)",
+                                        boxShadow: "0 16px 44px rgba(0, 0, 0, 0.7)",
                                         overflow: "hidden",
                                         display: "flex",
                                         flexDirection: "column",
@@ -515,130 +529,143 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                             >
                                 <Box
                                     sx={{
-                                        p: 2,
-                                        pb: 1.5,
+                                        width: "100%",
+                                        height: "100%",
+                                        bgcolor: "#121C2D",
+                                        color: "#F8FAFC",
                                         display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "space-between",
-                                        borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                        flexDirection: "column",
+                                        overflow: "hidden",
                                     }}
                                 >
-                                    <Stack direction="row" spacing={1} alignItems="center">
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#F8FAFC" }}>
-                                            Notifications
-                                        </Typography>
-                                        {unreadNotificationCount > 0 && (
-                                            <Chip
-                                                label={`${unreadNotificationCount} new`}
-                                                size="small"
-                                                sx={{
-                                                    height: 20,
-                                                    fontSize: "0.68rem",
-                                                    fontWeight: 800,
-                                                    bgcolor: "rgba(253, 58, 115, 0.2)",
-                                                    color: BRAND_COLORS.coralPink,
-                                                }}
-                                            />
-                                        )}
-                                    </Stack>
-                                    {unreadNotificationCount > 0 && (
-                                        <Button
-                                            size="small"
-                                            onClick={handleMarkAllRead}
-                                            sx={{
-                                                fontSize: "0.72rem",
-                                                fontWeight: 700,
-                                                color: BRAND_COLORS.coralPink,
-                                                textTransform: "none",
-                                                p: 0,
-                                                minWidth: "auto",
-                                                "&:hover": { bgcolor: "transparent", textDecoration: "underline" },
-                                            }}
-                                        >
-                                            Mark all read
-                                        </Button>
-                                    )}
-                                </Box>
-
-                                <Box sx={{ overflowY: "auto", flexGrow: 1, py: 0.5 }}>
-                                    {loadingNotifs ? (
-                                        <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
-                                            <CircularProgress size={24} sx={{ color: BRAND_COLORS.coralPink }} />
-                                        </Box>
-                                    ) : notifList.length === 0 ? (
-                                        <Box sx={{ p: 4, textAlign: "center" }}>
-                                            <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, fontWeight: 500 }}>
-                                                You're all caught up! ✨
+                                    <Box
+                                        sx={{
+                                            p: 2,
+                                            pb: 1.5,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                            borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                            bgcolor: "#121C2D",
+                                        }}
+                                    >
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#F8FAFC" }}>
+                                                Notifications
                                             </Typography>
-                                            <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, display: "block", mt: 0.5 }}>
-                                                When someone likes you or you get a match, it'll show up here.
-                                            </Typography>
-                                        </Box>
-                                    ) : (
-                                        <List disablePadding>
-                                            {notifList.map((notif) => (
-                                                <ListItemButton
-                                                    key={notif._id}
-                                                    onClick={() => handleNotificationClick(notif)}
+                                            {unreadNotificationCount > 0 && (
+                                                <Chip
+                                                    label={`${unreadNotificationCount} new`}
+                                                    size="small"
                                                     sx={{
-                                                        px: 2,
-                                                        py: 1.4,
-                                                        borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                                        bgcolor: notif.read ? "transparent" : "rgba(37, 137, 216, 0.12)",
-                                                        transition: "background-color 0.2s ease",
-                                                        "&:hover": {
-                                                            bgcolor: notif.read ? "rgba(255, 255, 255, 0.04)" : "rgba(37, 137, 216, 0.18)",
-                                                        },
+                                                        height: 20,
+                                                        fontSize: "0.68rem",
+                                                        fontWeight: 800,
+                                                        bgcolor: "rgba(253, 58, 115, 0.2)",
+                                                        color: BRAND_COLORS.coralPink,
                                                     }}
-                                                >
-                                                    <ListItemAvatar sx={{ minWidth: 46 }}>
-                                                        <Avatar
-                                                            src={notif.sender?.photos?.[0]}
-                                                            alt={notif.sender?.name}
-                                                            sx={{
-                                                                width: 38,
-                                                                height: 38,
-                                                                bgcolor: "rgba(255, 255, 255, 0.1)",
-                                                                border: notif.type === "match" ? `2px solid ${BRAND_COLORS.coralPink}` : "none",
-                                                            }}
-                                                        >
-                                                            {notif.sender?.name?.charAt(0) || "U"}
-                                                        </Avatar>
-                                                    </ListItemAvatar>
-                                                    <ListItemText
-                                                        primary={
-                                                            <Typography variant="body2" sx={{ fontWeight: notif.read ? 600 : 800, color: "#F8FAFC", lineHeight: 1.3 }}>
-                                                                {notif.type === "match"
-                                                                    ? `🎉 You and ${notif.sender?.name} matched!`
-                                                                    : notif.type === "match_request"
-                                                                    ? `💌 ${notif.sender?.name} sent you a match request!`
-                                                                    : notif.type === "match_accepted"
-                                                                    ? `✨ ${notif.sender?.name} accepted your match request!`
-                                                                    : `${notif.sender?.name} liked your profile`}
-                                                            </Typography>
-                                                        }
-                                                        secondary={
-                                                            <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "0.72rem", mt: 0.3, display: "block" }}>
-                                                                {formatTimeAgo(notif.createdAt)}
-                                                            </Typography>
-                                                        }
-                                                    />
-                                                    {!notif.read && (
-                                                        <Box
-                                                            sx={{
-                                                                width: 8,
-                                                                height: 8,
-                                                                borderRadius: "50%",
-                                                                bgcolor: BRAND_COLORS.coralPink,
-                                                                ml: 1,
-                                                                flexShrink: 0,
-                                                            }}
+                                                />
+                                            )}
+                                        </Stack>
+                                        {unreadNotificationCount > 0 && (
+                                            <Button
+                                                size="small"
+                                                onClick={handleMarkAllRead}
+                                                sx={{
+                                                    fontSize: "0.72rem",
+                                                    fontWeight: 700,
+                                                    color: BRAND_COLORS.coralPink,
+                                                    textTransform: "none",
+                                                    p: 0,
+                                                    minWidth: "auto",
+                                                    "&:hover": { bgcolor: "transparent", textDecoration: "underline" },
+                                                }}
+                                            >
+                                                Mark all read
+                                            </Button>
+                                        )}
+                                    </Box>
+
+                                    <Box sx={{ overflowY: "auto", flexGrow: 1, py: 0.5, bgcolor: "#121C2D" }}>
+                                        {loadingNotifs ? (
+                                            <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
+                                                <CircularProgress size={24} sx={{ color: BRAND_COLORS.coralPink }} />
+                                            </Box>
+                                        ) : notifList.length === 0 ? (
+                                            <Box sx={{ p: 4, textAlign: "center" }}>
+                                                <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, fontWeight: 500 }}>
+                                                    You're all caught up! ✨
+                                                </Typography>
+                                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textMuted, display: "block", mt: 0.5 }}>
+                                                    When someone likes you or you get a match, it'll show up here.
+                                                </Typography>
+                                            </Box>
+                                        ) : (
+                                            <List disablePadding sx={{ bgcolor: "#121C2D" }}>
+                                                {notifList.map((notif) => (
+                                                    <ListItemButton
+                                                        key={notif._id}
+                                                        onClick={() => handleNotificationClick(notif)}
+                                                        sx={{
+                                                            px: 2,
+                                                            py: 1.4,
+                                                            borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                                            bgcolor: notif.read ? "transparent" : "rgba(37, 137, 216, 0.12)",
+                                                            transition: "background-color 0.2s ease",
+                                                            "&:hover": {
+                                                                bgcolor: notif.read ? "rgba(255, 255, 255, 0.04)" : "rgba(37, 137, 216, 0.18)",
+                                                            },
+                                                        }}
+                                                    >
+                                                        <ListItemAvatar sx={{ minWidth: 46 }}>
+                                                            <Avatar
+                                                                src={notif.sender?.photos?.[0]}
+                                                                alt={notif.sender?.name}
+                                                                sx={{
+                                                                    width: 38,
+                                                                    height: 38,
+                                                                    bgcolor: "rgba(255, 255, 255, 0.1)",
+                                                                    border: notif.type === "match" ? `2px solid ${BRAND_COLORS.coralPink}` : "none",
+                                                                }}
+                                                            >
+                                                                {notif.sender?.name?.charAt(0) || "U"}
+                                                            </Avatar>
+                                                        </ListItemAvatar>
+                                                        <ListItemText
+                                                            primary={
+                                                                <Typography variant="body2" sx={{ fontWeight: notif.read ? 600 : 800, color: "#F8FAFC", lineHeight: 1.3 }}>
+                                                                    {notif.type === "match"
+                                                                        ? `🎉 You and ${notif.sender?.name} matched!`
+                                                                        : notif.type === "match_request"
+                                                                        ? `💌 ${notif.sender?.name} sent you a match request!`
+                                                                        : notif.type === "match_accepted"
+                                                                        ? `✨ ${notif.sender?.name} accepted your match request!`
+                                                                        : `${notif.sender?.name} liked your profile`}
+                                                                </Typography>
+                                                            }
+                                                            secondary={
+                                                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "0.72rem", mt: 0.3, display: "block" }}>
+                                                                    {formatTimeAgo(notif.createdAt)}
+                                                                </Typography>
+                                                            }
                                                         />
-                                                    )}
-                                                </ListItemButton>
-                                            ))}
-                                        </List>
-                                    )}
+                                                        {!notif.read && (
+                                                            <Box
+                                                                sx={{
+                                                                    width: 8,
+                                                                    height: 8,
+                                                                    borderRadius: "50%",
+                                                                    bgcolor: BRAND_COLORS.coralPink,
+                                                                    ml: 1,
+                                                                    flexShrink: 0,
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </ListItemButton>
+                                                ))}
+                                            </List>
+                                        )}
+                                    </Box>
                                 </Box>
                             </Popover>
                         </Stack>
