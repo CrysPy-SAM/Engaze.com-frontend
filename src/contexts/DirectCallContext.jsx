@@ -116,8 +116,17 @@ export const DirectCallProvider = ({ children }) => {
         getIceServers,
         setUnreadChatCount,
         getUnreadChatCount,
+        activeChatConversationId,
         setUnseenMissedCallCount,
         getMissedCallCount,
+        setUnreadNotificationCount,
+        getUnreadNotificationCount,
+        setLikesYouCount,
+        getLikesYou,
+        setUnreadLikesCount,
+        setUnreadRequestsCount,
+        setIncomingRequestsCount,
+        getIncomingMatchRequests,
     } = useContext(AuthContext);
 
     // Call state: 'idle' | 'outgoing_ringing' | 'incoming_ringing' | 'connecting' | 'connected' | 'declined' | 'busy' | 'no_answer' | 'ended'
@@ -140,6 +149,10 @@ export const DirectCallProvider = ({ children }) => {
     const callSessionRef = useRef(null);
     const timerRef = useRef(null);
     const autoCloseTimeoutRef = useRef(null);
+    const activeChatConvIdRef = useRef(null);
+    useEffect(() => {
+        activeChatConvIdRef.current = activeChatConversationId;
+    }, [activeChatConversationId]);
 
     callSessionRef.current = callSession;
 
@@ -604,12 +617,26 @@ export const DirectCallProvider = ({ children }) => {
             if (getMissedCallCount) {
                 getMissedCallCount().catch(() => {});
             }
+            if (getUnreadNotificationCount) {
+                getUnreadNotificationCount().catch(() => {});
+            }
+            if (getLikesYou) {
+                getLikesYou(1, 1).catch(() => {});
+            }
+            if (getIncomingMatchRequests) {
+                getIncomingMatchRequests().catch(() => {});
+            }
         });
 
         // 0. REAL-TIME UNREAD CHAT COUNT UPDATE
         socket.on("chat:unread-count", (data) => {
             if (data && typeof data.unreadCount === "number" && setUnreadChatCount) {
-                setUnreadChatCount(data.unreadCount);
+                const activeId = activeChatConvIdRef.current;
+                if (activeId && data.conversationsUnread && typeof data.conversationsUnread[activeId] === "number") {
+                    setUnreadChatCount(Math.max(0, data.unreadCount - data.conversationsUnread[activeId]));
+                } else {
+                    setUnreadChatCount(data.unreadCount);
+                }
             }
         });
 
@@ -625,6 +652,67 @@ export const DirectCallProvider = ({ children }) => {
                 setUnseenMissedCallCount(data.count);
             } else if (getMissedCallCount) {
                 getMissedCallCount().catch(() => {});
+            }
+        });
+
+        // 0c. REAL-TIME NOTIFICATION COUNTS UPDATE (Navbar bell, Likes You, Requests)
+        socket.on("notification:counts", (data) => {
+            if (data && typeof data.unreadCount === "number" && setUnreadNotificationCount) {
+                setUnreadNotificationCount(data.unreadCount);
+            }
+            if (data && typeof data.unreadLikesCount === "number" && setUnreadLikesCount) {
+                setUnreadLikesCount(data.unreadLikesCount);
+            }
+            if (data && typeof data.unreadRequestsCount === "number" && setUnreadRequestsCount) {
+                setUnreadRequestsCount(data.unreadRequestsCount);
+            }
+        });
+
+        // 0d. REAL-TIME IN-APP NOTIFICATION ARRIVAL
+        socket.on("notification:new", (data) => {
+            if (setUnreadNotificationCount) {
+                setUnreadNotificationCount((prev) => prev + 1);
+            }
+            if (data?.notification?.type === "like") {
+                if (setUnreadLikesCount) setUnreadLikesCount((prev) => prev + 1);
+                if (setLikesYouCount) setLikesYouCount((prev) => prev + 1);
+            } else if (data?.notification?.type === "match_request") {
+                if (setUnreadRequestsCount) setUnreadRequestsCount((prev) => prev + 1);
+                if (setIncomingRequestsCount) setIncomingRequestsCount((prev) => prev + 1);
+            }
+        });
+
+        // 0e. REAL-TIME LIKE ARRIVAL
+        socket.on("like:new", () => {
+            if (setLikesYouCount) {
+                setLikesYouCount((prev) => prev + 1);
+            }
+        });
+
+        // 0f. REAL-TIME MATCH REQUEST ARRIVAL
+        socket.on("match_request:new", () => {
+            if (setIncomingRequestsCount) {
+                setIncomingRequestsCount((prev) => prev + 1);
+            }
+        });
+
+        // 0g. REAL-TIME MATCH REQUEST ACCEPTED OR DECLINED
+        socket.on("match_request:accepted", () => {
+            if (setIncomingRequestsCount) {
+                setIncomingRequestsCount((prev) => Math.max(0, prev - 1));
+            }
+        });
+
+        socket.on("match_request:declined", () => {
+            if (setIncomingRequestsCount) {
+                setIncomingRequestsCount((prev) => Math.max(0, prev - 1));
+            }
+        });
+
+        // 0h. REAL-TIME LIKE MATCHED (removed from pending likes)
+        socket.on("like:matched", () => {
+            if (setLikesYouCount) {
+                setLikesYouCount((prev) => Math.max(0, prev - 1));
             }
         });
 
