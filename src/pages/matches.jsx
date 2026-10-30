@@ -746,10 +746,13 @@ function MatchesPage() {
 
                                                 {unread && (
                                                     <Box
+                                                        role="status"
+                                                        aria-label={`${conv.unreadCount} unread messages`}
                                                         sx={{
-                                                            width: 20,
+                                                            minWidth: 20,
                                                             height: 20,
-                                                            borderRadius: "50%",
+                                                            px: 0.5,
+                                                            borderRadius: "9999px",
                                                             bgcolor: BRAND_COLORS.coralPink,
                                                             color: "#FFFFFF",
                                                             fontSize: "0.72rem",
@@ -760,7 +763,7 @@ function MatchesPage() {
                                                             boxShadow: "0 2px 8px rgba(253, 58, 115, 0.6)",
                                                         }}
                                                     >
-                                                        {conv.unreadCount}
+                                                        {conv.unreadCount > 99 ? "99+" : conv.unreadCount}
                                                     </Box>
                                                 )}
                                             </Stack>
