@@ -394,6 +394,26 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                 onClose={handleProfileMenuClose}
                                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                                slotProps={{
+                                    paper: {
+                                        style: {
+                                            backgroundColor: "#121C2D",
+                                            color: "#F8FAFC",
+                                        },
+                                        sx: {
+                                            mt: 1.2,
+                                            minWidth: 220,
+                                            borderRadius: "20px",
+                                            bgcolor: "#121C2D !important",
+                                            backgroundColor: "#121C2D !important",
+                                            color: "#F8FAFC !important",
+                                            backgroundImage: "none !important",
+                                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                            boxShadow: "0 16px 40px rgba(0, 0, 0, 0.45)",
+                                            p: 1,
+                                        },
+                                    },
+                                }}
                                 PaperProps={{
                                     style: {
                                         backgroundColor: "#121C2D",
@@ -505,6 +525,30 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                 onClose={handleNotificationMenuClose}
                                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                                slotProps={{
+                                    paper: {
+                                        style: {
+                                            backgroundColor: "#121C2D",
+                                            color: "#F8FAFC",
+                                        },
+                                        sx: {
+                                            mt: 1.5,
+                                            width: { xs: "calc(100vw - 32px)", sm: 380 },
+                                            maxWidth: 380,
+                                            maxHeight: 480,
+                                            borderRadius: "20px",
+                                            bgcolor: "#121C2D !important",
+                                            backgroundColor: "#121C2D !important",
+                                            color: "#F8FAFC !important",
+                                            backgroundImage: "none !important",
+                                            border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                                            boxShadow: "0 16px 44px rgba(0, 0, 0, 0.7)",
+                                            overflow: "hidden",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                        },
+                                    },
+                                }}
                                 PaperProps={{
                                     style: {
                                         backgroundColor: "#121C2D",
@@ -512,7 +556,8 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                     },
                                     sx: {
                                         mt: 1.5,
-                                        width: { xs: 320, sm: 380 },
+                                        width: { xs: "calc(100vw - 32px)", sm: 380 },
+                                        maxWidth: 380,
                                         maxHeight: 480,
                                         borderRadius: "20px",
                                         bgcolor: "#121C2D !important",
