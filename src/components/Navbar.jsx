@@ -790,6 +790,8 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                     })}
                                     {item.badge && (
                                         <Box
+                                            role="status"
+                                            aria-label={`${item.label}, ${item.badge} unread`}
                                             sx={{
                                                 position: "absolute",
                                                 top: -4,
