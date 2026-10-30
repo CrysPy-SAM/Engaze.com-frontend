@@ -159,9 +159,14 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
             label: "Matches",
             path: "/matches",
             icon: <FavoriteRoundedIcon fontSize="small" />,
-            badge: likesYouCount > 0 ? String(likesYouCount) : null,
+            badge: likesYouCount > 0 ? (likesYouCount > 99 ? "99+" : String(likesYouCount)) : null,
         },
-        { label: "Chat", path: "/chat", icon: <ChatBubbleRoundedIcon fontSize="small" /> },
+        {
+            label: "Chat",
+            path: "/chat",
+            icon: <ChatBubbleRoundedIcon fontSize="small" />,
+            badge: unreadChatCount > 0 ? (unreadChatCount > 99 ? "99+" : String(unreadChatCount)) : null,
+        },
         { label: "Video", path: "/random-video", icon: <VideocamRoundedIcon fontSize="small" /> },
         { label: "Profile", path: "/home", icon: <PersonRoundedIcon fontSize="small" /> },
     ];
@@ -253,6 +258,8 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                             {item.badge && (
                                                 <Box
                                                     component="span"
+                                                    role="status"
+                                                    aria-label={`${item.label}, ${item.badge} unread`}
                                                     sx={{
                                                         ml: 1,
                                                         px: 0.8,
@@ -260,8 +267,8 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                                                         fontSize: "0.62rem",
                                                         fontWeight: 800,
                                                         borderRadius: "9999px",
-                                                        bgcolor: active ? "#FFFFFF" : BRAND_COLORS.brandBlue,
-                                                        color: active ? BRAND_COLORS.brandBlue : "#FFFFFF",
+                                                        bgcolor: active ? "#FFFFFF" : BRAND_COLORS.coralPink,
+                                                        color: active ? BRAND_COLORS.coralPink : "#FFFFFF",
                                                         letterSpacing: "0.5px",
                                                     }}
                                                 >
