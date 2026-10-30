@@ -1,6 +1,6 @@
 import axios from "axios";
 import httpStatus from "http-status";
-import React, { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import server from "../environment";
 
@@ -35,8 +35,16 @@ export const AuthProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
     const [unreadChatCount, setUnreadChatCount] = useState(0);
+    const [activeChatConversationId, setActiveChatConversationId] = useState(null);
+    const activeChatConvIdRef = useRef(null);
+    useEffect(() => {
+        activeChatConvIdRef.current = activeChatConversationId;
+    }, [activeChatConversationId]);
     const [unseenMissedCallCount, setUnseenMissedCallCount] = useState(0);
     const [likesYouCount, setLikesYouCount] = useState(0);
+    const [unreadLikesCount, setUnreadLikesCount] = useState(0);
+    const [unreadRequestsCount, setUnreadRequestsCount] = useState(0);
+    const [incomingRequestsCount, setIncomingRequestsCount] = useState(0);
     const router = useNavigate();
 
     // Check token and fetch user profile on initial mount
@@ -56,7 +64,12 @@ export const AuthProvider = ({ children }) => {
                 api.get("/conversations/unread-count")
                     .then((res) => {
                         if (res.data && typeof res.data.unreadCount === "number") {
-                            setUnreadChatCount(res.data.unreadCount);
+                            const activeId = activeChatConvIdRef.current;
+                            if (activeId && res.data.conversationsUnread && typeof res.data.conversationsUnread[activeId] === "number") {
+                                setUnreadChatCount(Math.max(0, res.data.unreadCount - res.data.conversationsUnread[activeId]));
+                            } else {
+                                setUnreadChatCount(res.data.unreadCount);
+                            }
                         }
                     })
                     .catch(() => {});
@@ -66,6 +79,41 @@ export const AuthProvider = ({ children }) => {
                     .then((res) => {
                         if (res.data && typeof res.data.count === "number") {
                             setUnseenMissedCallCount(res.data.count);
+                        }
+                    })
+                    .catch(() => {});
+
+                // Hydrate unread notifications, unread likes, and unread requests counts
+                api.get("/notifications/unread-count")
+                    .then((res) => {
+                        if (res.data) {
+                            if (typeof res.data.unreadCount === "number") {
+                                setUnreadNotificationCount(res.data.unreadCount);
+                            }
+                            if (typeof res.data.unreadLikesCount === "number") {
+                                setUnreadLikesCount(res.data.unreadLikesCount);
+                            }
+                            if (typeof res.data.unreadRequestsCount === "number") {
+                                setUnreadRequestsCount(res.data.unreadRequestsCount);
+                            }
+                        }
+                    })
+                    .catch(() => {});
+
+                // Hydrate pending likes count
+                api.get("/matches/likes-you?page=1&limit=1")
+                    .then((res) => {
+                        if (res.data?.pagination && typeof res.data.pagination.total === "number") {
+                            setLikesYouCount(res.data.pagination.total);
+                        }
+                    })
+                    .catch(() => {});
+
+                // Hydrate pending incoming requests count
+                api.get("/matches/requests/incoming")
+                    .then((res) => {
+                        if (res.data && typeof res.data.count === "number") {
+                            setIncomingRequestsCount(res.data.count);
                         }
                     })
                     .catch(() => {});
@@ -554,6 +602,9 @@ export const AuthProvider = ({ children }) => {
     const getIncomingMatchRequests = useCallback(async () => {
         try {
             const response = await api.get("/matches/requests/incoming");
+            if (response.data && typeof response.data.count === "number") {
+                setIncomingRequestsCount(response.data.count);
+            }
             return response.data;
         } catch (e) {
             console.error("Get incoming requests error:", e);
@@ -630,8 +681,16 @@ export const AuthProvider = ({ children }) => {
     const getUnreadNotificationCount = useCallback(async () => {
         try {
             const response = await api.get("/notifications/unread-count");
-            if (response.data && typeof response.data.unreadCount === "number") {
-                setUnreadNotificationCount(response.data.unreadCount);
+            if (response.data) {
+                if (typeof response.data.unreadCount === "number") {
+                    setUnreadNotificationCount(response.data.unreadCount);
+                }
+                if (typeof response.data.unreadLikesCount === "number") {
+                    setUnreadLikesCount(response.data.unreadLikesCount);
+                }
+                if (typeof response.data.unreadRequestsCount === "number") {
+                    setUnreadRequestsCount(response.data.unreadRequestsCount);
+                }
             }
             return response.data?.unreadCount || 0;
         } catch (e) {
@@ -660,9 +719,40 @@ export const AuthProvider = ({ children }) => {
             const response = await api.patch("/notifications/read-all");
             setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
             setUnreadNotificationCount(0);
+            setUnreadLikesCount(0);
+            setUnreadRequestsCount(0);
             return response.data;
         } catch (e) {
             console.error("Mark all notifications read error:", e);
+        }
+    }, []);
+
+    // 10f-2. MARK NOTIFICATIONS READ BY TYPE
+    const markNotificationsReadByType = useCallback(async (type) => {
+        try {
+            const response = await api.patch(`/notifications/read-type/${type}`);
+            if (response.data) {
+                if (typeof response.data.unreadCount === "number") {
+                    setUnreadNotificationCount(response.data.unreadCount);
+                }
+                if (typeof response.data.unreadLikesCount === "number") {
+                    setUnreadLikesCount(response.data.unreadLikesCount);
+                }
+                if (typeof response.data.unreadRequestsCount === "number") {
+                    setUnreadRequestsCount(response.data.unreadRequestsCount);
+                }
+            }
+            if (type === "like") {
+                setUnreadLikesCount(0);
+            } else if (type === "match_request") {
+                setUnreadRequestsCount(0);
+            }
+            setNotifications((prev) =>
+                prev.map((n) => (n.type === type ? { ...n, read: true } : n))
+            );
+            return response.data;
+        } catch (e) {
+            console.error(`Mark notifications read for type ${type} error:`, e);
         }
     }, []);
 
@@ -671,6 +761,12 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await api.get("/conversations/unread-count");
             if (response.data && typeof response.data.unreadCount === "number") {
+                const activeId = activeChatConvIdRef.current;
+                if (activeId && response.data.conversationsUnread && typeof response.data.conversationsUnread[activeId] === "number") {
+                    const adjusted = Math.max(0, response.data.unreadCount - response.data.conversationsUnread[activeId]);
+                    setUnreadChatCount(adjusted);
+                    return adjusted;
+                }
                 setUnreadChatCount(response.data.unreadCount);
                 return response.data.unreadCount;
             }
@@ -730,6 +826,8 @@ export const AuthProvider = ({ children }) => {
             getUnreadChatCount().catch(() => {});
             getUnreadNotificationCount().catch(() => {});
             getMissedCallCount().catch(() => {});
+            getLikesYou(1, 1).catch(() => {});
+            getIncomingMatchRequests().catch(() => {});
         };
         window.addEventListener("focus", onSync);
         window.addEventListener("online", onSync);
@@ -737,14 +835,18 @@ export const AuthProvider = ({ children }) => {
             window.removeEventListener("focus", onSync);
             window.removeEventListener("online", onSync);
         };
-    }, [userData, getUnreadChatCount, getUnreadNotificationCount, getMissedCallCount]);
+    }, [userData, getUnreadChatCount, getUnreadNotificationCount, getMissedCallCount, getLikesYou, getIncomingMatchRequests]);
 
     // 11. GET CONVERSATIONS LIST
     const getConversations = useCallback(async () => {
         try {
             const response = await api.get("/conversations");
             if (response.data && Array.isArray(response.data.conversations)) {
-                const total = response.data.conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+                const activeId = activeChatConvIdRef.current;
+                const total = response.data.conversations.reduce((sum, c) => {
+                    if (activeId && c._id?.toString() === activeId) return sum;
+                    return sum + (c.unreadCount || 0);
+                }, 0);
                 setUnreadChatCount(total);
             }
             return response.data;
@@ -1033,12 +1135,21 @@ export const AuthProvider = ({ children }) => {
         unreadChatCount,
         setUnreadChatCount,
         getUnreadChatCount,
+        activeChatConversationId,
+        setActiveChatConversationId,
         unseenMissedCallCount,
         setUnseenMissedCallCount,
         getMissedCallCount,
         getCallHistory,
         markMissedCallsAsSeen,
         likesYouCount,
+        setLikesYouCount,
+        unreadLikesCount,
+        setUnreadLikesCount,
+        unreadRequestsCount,
+        setUnreadRequestsCount,
+        incomingRequestsCount,
+        setIncomingRequestsCount,
         handleRegister,
         handleLogin,
         handleGoogleLogin,
@@ -1064,6 +1175,7 @@ export const AuthProvider = ({ children }) => {
         getUnreadNotificationCount,
         markNotificationRead,
         markAllNotificationsRead,
+        markNotificationsReadByType,
         getConversations,
         getOrCreateConversationByMatch,
         getConversationMessages,
@@ -1098,11 +1210,19 @@ export const AuthProvider = ({ children }) => {
         unreadNotificationCount,
         unreadChatCount,
         getUnreadChatCount,
+        activeChatConversationId,
         unseenMissedCallCount,
         getMissedCallCount,
         getCallHistory,
         markMissedCallsAsSeen,
         likesYouCount,
+        setLikesYouCount,
+        unreadLikesCount,
+        setUnreadLikesCount,
+        unreadRequestsCount,
+        setUnreadRequestsCount,
+        incomingRequestsCount,
+        setIncomingRequestsCount,
         handleRegister,
         handleLogin,
         handleGoogleLogin,
@@ -1128,6 +1248,7 @@ export const AuthProvider = ({ children }) => {
         getUnreadNotificationCount,
         markNotificationRead,
         markAllNotificationsRead,
+        markNotificationsReadByType,
         getConversations,
         getOrCreateConversationByMatch,
         getConversationMessages,
