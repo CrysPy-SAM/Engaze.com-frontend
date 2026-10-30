@@ -31,6 +31,7 @@ import {
     FormControlLabel,
     TextField,
     Typography,
+    InputAdornment,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
@@ -46,6 +47,10 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import CloseIcon from "@mui/icons-material/Close";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import SecurityIcon from "@mui/icons-material/Security";
+import AlternateEmailRoundedIcon from "@mui/icons-material/AlternateEmailRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
+import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
 import {
     validatePhotoFile,
     formatFileSize,
@@ -79,12 +84,30 @@ function ProfilePage() {
         deleteProfilePhoto,
         getPrivacySettings,
         updatePrivacySettings,
+        checkUsernameAvailability,
+        getUsernameEligibility,
+        updateUsername,
         userData,
     } = useContext(AuthContext);
 
     // Profile form state
     const [name, setName] = useState(userData?.name || "");
     const [username, setUsername] = useState(userData?.username || "");
+
+    // Username Management State (14-Day Cooldown Policy)
+    const [isEditingUsername, setIsEditingUsername] = useState(false);
+    const [newUsernameInput, setNewUsernameInput] = useState("");
+    const [usernameStatus, setUsernameStatus] = useState("idle"); // idle | checking | available | unavailable | invalid
+    const [usernameStatusMsg, setUsernameStatusMsg] = useState("");
+    const [usernameSuggestions, setUsernameSuggestions] = useState([]);
+    const [isSavingUsername, setIsSavingUsername] = useState(false);
+    const [eligibilityData, setEligibilityData] = useState({
+        canChange: true,
+        nextEligibleAt: null,
+        cooldownDaysRemaining: 0,
+        cooldownHoursRemaining: 0,
+    });
+    const usernameDebounceRef = useRef(null);
     const [dob, setDob] = useState(() => {
         if (!userData?.dob) return "";
         const d = new Date(userData.dob);
@@ -153,6 +176,116 @@ function ProfilePage() {
             setActiveTab(2);
         }
     }, []);
+
+    const loadEligibility = React.useCallback(async () => {
+        if (!getUsernameEligibility) return;
+        try {
+            const data = await getUsernameEligibility();
+            if (data) {
+                setEligibilityData({
+                    canChange: Boolean(data.canChange),
+                    nextEligibleAt: data.nextEligibleAt ? new Date(data.nextEligibleAt) : null,
+                    cooldownDaysRemaining: data.cooldownDaysRemaining || 0,
+                    cooldownHoursRemaining: data.cooldownHoursRemaining || 0,
+                });
+            }
+        } catch (err) {
+            console.warn("Failed to load username eligibility:", err);
+        }
+    }, [getUsernameEligibility]);
+
+    useEffect(() => {
+        loadEligibility();
+    }, [loadEligibility]);
+
+    const handleUsernameInputChange = (e) => {
+        const val = e.target.value.toLowerCase().replace(/\s/g, "");
+        setNewUsernameInput(val);
+
+        if (usernameDebounceRef.current) {
+            clearTimeout(usernameDebounceRef.current);
+        }
+
+        if (!val.trim()) {
+            setUsernameStatus("idle");
+            setUsernameStatusMsg("");
+            setUsernameSuggestions([]);
+            return;
+        }
+
+        if (val.trim() === username.toLowerCase()) {
+            setUsernameStatus("idle");
+            setUsernameStatusMsg("This is your current username.");
+            setUsernameSuggestions([]);
+            return;
+        }
+
+        usernameDebounceRef.current = setTimeout(async () => {
+            if (val.length < 3) {
+                setUsernameStatus("invalid");
+                setUsernameStatusMsg("Username must be at least 3 characters.");
+                setUsernameSuggestions([]);
+                return;
+            }
+            if (val.length > 20) {
+                setUsernameStatus("invalid");
+                setUsernameStatusMsg("Username cannot exceed 20 characters.");
+                setUsernameSuggestions([]);
+                return;
+            }
+            if (!/^[a-zA-Z0-9_.-]+$/.test(val)) {
+                setUsernameStatus("invalid");
+                setUsernameStatusMsg("Only letters, numbers, underscores, dots, and hyphens allowed.");
+                setUsernameSuggestions([]);
+                return;
+            }
+
+            setUsernameStatus("checking");
+            setUsernameStatusMsg("Checking availability...");
+            try {
+                const res = await checkUsernameAvailability(val);
+                if (res.available) {
+                    setUsernameStatus("available");
+                    setUsernameStatusMsg(res.isCurrent ? "This is your current username." : "Username is available!");
+                    setUsernameSuggestions([]);
+                } else {
+                    setUsernameStatus("unavailable");
+                    setUsernameStatusMsg(res.message || "Username is already taken.");
+                    setUsernameSuggestions(res.suggestions || []);
+                }
+            } catch (_) {
+                setUsernameStatus("idle");
+            }
+        }, 320);
+    };
+
+    const handleSaveUsername = async () => {
+        setIsSavingUsername(true);
+        try {
+            const res = await updateUsername(newUsernameInput);
+            setUsername(res.username || newUsernameInput);
+            setIsEditingUsername(false);
+            setAlertSeverity("success");
+            setAlertMessage("Username updated successfully! 14-day change cooldown active.");
+            setOpenSnackbar(true);
+            await loadEligibility();
+        } catch (err) {
+            console.error("Save username error:", err);
+            setAlertSeverity("error");
+            setAlertMessage(err.message || "Failed to update username.");
+            setOpenSnackbar(true);
+            if (err.suggestions && err.suggestions.length > 0) {
+                setUsernameSuggestions(err.suggestions);
+                setUsernameStatus("unavailable");
+            }
+            if (err.code === "USERNAME_COOLDOWN_ACTIVE") {
+                await loadEligibility();
+                setIsEditingUsername(false);
+            }
+        } finally {
+            setIsSavingUsername(false);
+        }
+    };
 
     const handleSavePrivacy = async () => {
         setSavingPrivacy(true);
@@ -732,19 +865,244 @@ function ProfilePage() {
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <TextField
-                                            label="Username"
-                                            fullWidth
-                                            disabled
-                                            value={username}
-                                            helperText="Unique username (cannot be changed)"
+                                        <Box
                                             sx={{
-                                                "& .MuiOutlinedInput-root": {
-                                                    borderRadius: "14px",
-                                                    bgcolor: "rgba(255, 255, 255, 0.02)",
-                                                },
+                                                p: 2,
+                                                borderRadius: "14px",
+                                                bgcolor: "#142034",
+                                                border: "1px solid rgba(255, 255, 255, 0.08)",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: 1.2,
                                             }}
-                                        />
+                                        >
+                                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                <Typography variant="caption" sx={{ fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                                                    Username
+                                                </Typography>
+                                                {eligibilityData.canChange ? (
+                                                    <Chip
+                                                        size="small"
+                                                        label="Eligible to Change"
+                                                        sx={{
+                                                            bgcolor: "rgba(16, 185, 129, 0.15)",
+                                                            color: "#10B981",
+                                                            fontWeight: 700,
+                                                            fontSize: "0.68rem",
+                                                            height: 20,
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <Chip
+                                                        size="small"
+                                                        icon={<AccessTimeRoundedIcon sx={{ fontSize: "13px !important", color: "#F59E0B !important" }} />}
+                                                        label="14-Day Cooldown"
+                                                        sx={{
+                                                            bgcolor: "rgba(245, 158, 11, 0.15)",
+                                                            color: "#F59E0B",
+                                                            fontWeight: 700,
+                                                            fontSize: "0.68rem",
+                                                            height: 20,
+                                                        }}
+                                                    />
+                                                )}
+                                            </Box>
+
+                                            {!isEditingUsername ? (
+                                                <>
+                                                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                                                        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#FFFFFF" }}>
+                                                            @{username || "username"}
+                                                        </Typography>
+                                                        <Button
+                                                            size="small"
+                                                            variant="outlined"
+                                                            startIcon={<EditIcon sx={{ fontSize: 14 }} />}
+                                                            disabled={!eligibilityData.canChange}
+                                                            onClick={() => {
+                                                                setNewUsernameInput(username);
+                                                                setUsernameStatus("idle");
+                                                                setUsernameStatusMsg("");
+                                                                setUsernameSuggestions([]);
+                                                                setIsEditingUsername(true);
+                                                            }}
+                                                            sx={{
+                                                                borderRadius: "8px",
+                                                                textTransform: "none",
+                                                                fontWeight: 700,
+                                                                fontSize: "0.75rem",
+                                                                py: 0.4,
+                                                                px: 1.2,
+                                                                color: eligibilityData.canChange ? "#FD3A73" : "#6B7280",
+                                                                borderColor: eligibilityData.canChange ? "rgba(253, 58, 115, 0.4)" : "rgba(255, 255, 255, 0.1)",
+                                                                "&:hover": {
+                                                                    borderColor: "#FD3A73",
+                                                                    bgcolor: "rgba(253, 58, 115, 0.08)",
+                                                                },
+                                                            }}
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                    </Box>
+
+                                                    {!eligibilityData.canChange && eligibilityData.nextEligibleAt && (
+                                                        <Box
+                                                            sx={{
+                                                                p: 1.2,
+                                                                borderRadius: "8px",
+                                                                bgcolor: "rgba(245, 158, 11, 0.08)",
+                                                                border: "1px solid rgba(245, 158, 11, 0.2)",
+                                                            }}
+                                                        >
+                                                            <Typography variant="caption" sx={{ color: "#FBBF24", fontWeight: 600, display: "flex", alignItems: "center", gap: 0.5 }}>
+                                                                <AccessTimeRoundedIcon sx={{ fontSize: 13 }} />
+                                                                Eligible on {new Date(eligibilityData.nextEligibleAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                                                {eligibilityData.cooldownDaysRemaining > 0 && ` (in ${eligibilityData.cooldownDaysRemaining}d ${eligibilityData.cooldownHoursRemaining}h)`}
+                                                            </Typography>
+                                                            <Typography variant="caption" sx={{ color: "#9CA3AF", fontSize: "0.68rem", display: "block", mt: 0.3 }}>
+                                                                Usernames can be changed once every 14 days.
+                                                            </Typography>
+                                                        </Box>
+                                                    )}
+
+                                                    {eligibilityData.canChange && (
+                                                        <Typography variant="caption" sx={{ color: "#9CA3AF", fontSize: "0.72rem" }}>
+                                                            Unique profile handle. Can be changed once every 14 days.
+                                                        </Typography>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+                                                    <TextField
+                                                        fullWidth
+                                                        size="small"
+                                                        autoFocus
+                                                        placeholder="new_username"
+                                                        value={newUsernameInput}
+                                                        onChange={handleUsernameInputChange}
+                                                        error={usernameStatus === "unavailable" || usernameStatus === "invalid"}
+                                                        InputProps={{
+                                                            startAdornment: (
+                                                                <InputAdornment position="start">
+                                                                    <AlternateEmailRoundedIcon sx={{ color: "#FD3A73", fontSize: 16 }} />
+                                                                </InputAdornment>
+                                                            ),
+                                                            endAdornment: (
+                                                                <InputAdornment position="end">
+                                                                    {usernameStatus === "checking" && <CircularProgress size={14} sx={{ color: "#FD3A73" }} />}
+                                                                    {usernameStatus === "available" && <CheckCircleRoundedIcon sx={{ color: "#10B981", fontSize: 16 }} />}
+                                                                    {(usernameStatus === "unavailable" || usernameStatus === "invalid") && (
+                                                                        <CancelRoundedIcon sx={{ color: "#EF4444", fontSize: 16 }} />
+                                                                    )}
+                                                                </InputAdornment>
+                                                            ),
+                                                        }}
+                                                        sx={{
+                                                            "& .MuiOutlinedInput-root": {
+                                                                borderRadius: "10px",
+                                                                bgcolor: "#0E1626",
+                                                                fontSize: "0.88rem",
+                                                                fontWeight: 600,
+                                                                color: "#FFFFFF",
+                                                            },
+                                                        }}
+                                                    />
+
+                                                    {usernameStatusMsg && (
+                                                        <Typography
+                                                            variant="caption"
+                                                            sx={{
+                                                                fontWeight: 600,
+                                                                fontSize: "0.72rem",
+                                                                color:
+                                                                    usernameStatus === "available"
+                                                                        ? "#10B981"
+                                                                        : usernameStatus === "unavailable" || usernameStatus === "invalid"
+                                                                        ? "#F87171"
+                                                                        : "#9CA3AF",
+                                                            }}
+                                                        >
+                                                            {usernameStatusMsg}
+                                                        </Typography>
+                                                    )}
+
+                                                    {usernameSuggestions.length > 0 && (
+                                                        <Box sx={{ p: 1, bgcolor: "rgba(253, 58, 115, 0.06)", borderRadius: "8px" }}>
+                                                            <Typography variant="caption" sx={{ color: "#D1D5DB", fontWeight: 600, display: "block", mb: 0.6 }}>
+                                                                Suggestions:
+                                                            </Typography>
+                                                            <Stack direction="row" flexWrap="wrap" gap={0.6}>
+                                                                {usernameSuggestions.map((sug) => (
+                                                                    <Chip
+                                                                        key={sug}
+                                                                        label={`@${sug}`}
+                                                                        size="small"
+                                                                        clickable
+                                                                        onClick={() => {
+                                                                            setNewUsernameInput(sug);
+                                                                            setUsernameStatus("available");
+                                                                            setUsernameStatusMsg("Username is available!");
+                                                                            setUsernameSuggestions([]);
+                                                                        }}
+                                                                        sx={{
+                                                                            bgcolor: "#0E1626",
+                                                                            color: "#FD3A73",
+                                                                            border: "1px solid rgba(253, 58, 115, 0.3)",
+                                                                            fontWeight: 600,
+                                                                            fontSize: "0.7rem",
+                                                                            height: 22,
+                                                                        }}
+                                                                    />
+                                                                ))}
+                                                            </Stack>
+                                                        </Box>
+                                                    )}
+
+                                                    <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 0.5 }}>
+                                                        <Button
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setIsEditingUsername(false);
+                                                                setUsernameStatus("idle");
+                                                                setUsernameStatusMsg("");
+                                                            }}
+                                                            disabled={isSavingUsername}
+                                                            sx={{
+                                                                borderRadius: "8px",
+                                                                color: "#9CA3AF",
+                                                                textTransform: "none",
+                                                                fontWeight: 600,
+                                                                fontSize: "0.75rem",
+                                                            }}
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                        <Button
+                                                            size="small"
+                                                            variant="contained"
+                                                            disabled={
+                                                                isSavingUsername ||
+                                                                usernameStatus === "checking" ||
+                                                                usernameStatus === "unavailable" ||
+                                                                usernameStatus === "invalid" ||
+                                                                !newUsernameInput.trim() ||
+                                                                newUsernameInput.trim() === username.toLowerCase()
+                                                            }
+                                                            onClick={handleSaveUsername}
+                                                            sx={{
+                                                                borderRadius: "8px",
+                                                                textTransform: "none",
+                                                                fontWeight: 700,
+                                                                fontSize: "0.75rem",
+                                                                background: "linear-gradient(135deg, #FD3A73 0%, #FF7A00 100%)",
+                                                            }}
+                                                        >
+                                                            {isSavingUsername ? <CircularProgress size={14} sx={{ color: "#FFFFFF" }} /> : "Save Changes"}
+                                                        </Button>
+                                                    </Stack>
+                                                </Box>
+                                            )}
+                                        </Box>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <TextField
