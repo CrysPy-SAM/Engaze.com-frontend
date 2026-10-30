@@ -352,9 +352,12 @@ function ChatPage() {
                 });
 
                 // Sort by most recent message
-                return updated.sort(
+                const sorted = updated.sort(
                     (a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt)
                 );
+                const newTotal = sorted.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+                if (setUnreadChatCount) setUnreadChatCount(newTotal);
+                return sorted;
             });
         });
 
@@ -369,6 +372,16 @@ function ChatPage() {
                         return m;
                     })
                 );
+            }
+            if (readerId?.toString() === userData?._id?.toString()) {
+                setConversations((prev) => {
+                    const updated = prev.map((c) =>
+                        c._id?.toString() === conversationId?.toString() ? { ...c, unreadCount: 0 } : c
+                    );
+                    const newTotal = updated.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+                    if (setUnreadChatCount) setUnreadChatCount(newTotal);
+                    return updated;
+                });
             }
         });
 
