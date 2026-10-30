@@ -143,6 +143,7 @@ function ChatPage() {
         markConversationRead,
         sendMessageRest,
         setUnreadChatCount,
+        setActiveChatConversationId,
         deleteMessageForMe,
         deleteMessageForEveryone,
         clearChat,
@@ -203,7 +204,18 @@ function ChatPage() {
     // Keep activeConvRef and messagesRef in sync for callbacks
     useEffect(() => {
         activeConvRef.current = activeConversation;
-    }, [activeConversation]);
+        if (setActiveChatConversationId) {
+            setActiveChatConversationId(activeConversation?._id?.toString() || null);
+        }
+    }, [activeConversation, setActiveChatConversationId]);
+
+    useEffect(() => {
+        return () => {
+            if (setActiveChatConversationId) {
+                setActiveChatConversationId(null);
+            }
+        };
+    }, [setActiveChatConversationId]);
 
     useEffect(() => {
         messagesRef.current = messages;
@@ -344,6 +356,9 @@ function ChatPage() {
                 // If message from the other person, send read event
                 if (!isOutgoingMessage(newMsg, userData?._id)) {
                     socket.emit("chat:read", { conversationId: currentConv._id });
+                    if (markConversationRead) {
+                        markConversationRead(currentConv._id).catch(() => {});
+                    }
                 }
             }
 
@@ -571,19 +586,24 @@ function ChatPage() {
             const data = await getConversations();
             const convList = data?.conversations || [];
             setConversations(convList);
+            const queryParams = new URLSearchParams(location.search);
+            const convIdParam = queryParams.get("conversationId") || paramConvId;
+            const matchId = queryParams.get("matchId");
+
+            let targetActiveId = activeConvRef.current?._id?.toString();
+            if (!targetActiveId && convIdParam) {
+                targetActiveId = convIdParam.toString();
+            } else if (!targetActiveId && convList.length > 0 && !isMobile) {
+                targetActiveId = convList[0]._id?.toString();
+            }
+
             if (setUnreadChatCount) {
-                const activeId = activeConvRef.current?._id?.toString();
                 const totalUnread = convList.reduce((sum, c) => {
-                    if (activeId && c._id?.toString() === activeId) return sum;
+                    if (targetActiveId && c._id?.toString() === targetActiveId) return sum;
                     return sum + (c.unreadCount || 0);
                 }, 0);
                 setUnreadChatCount(totalUnread);
             }
-
-            // Check if URL has ?conversationId=... or :conversationId
-            const queryParams = new URLSearchParams(location.search);
-            const convIdParam = queryParams.get("conversationId") || paramConvId;
-            const matchId = queryParams.get("matchId");
 
             if (convIdParam) {
                 const target = convList.find((c) => c._id.toString() === convIdParam.toString());
