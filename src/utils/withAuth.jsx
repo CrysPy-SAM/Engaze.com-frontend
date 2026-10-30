@@ -6,13 +6,15 @@ import { Box, CircularProgress } from "@mui/material";
 const withAuth = (WrappedComponent) => {
     const AuthComponent = (props) => {
         const navigate = useNavigate();
-        const { isAuthenticated, loading } = useContext(AuthContext);
+        const { isAuthenticated, loading, userData } = useContext(AuthContext);
 
         useEffect(() => {
             if (!loading && !isAuthenticated) {
                 navigate("/auth", { replace: true });
+            } else if (!loading && isAuthenticated && userData?.usernameSetupCompleted === false) {
+                navigate("/setup-username", { replace: true });
             }
-        }, [loading, isAuthenticated, navigate]);
+        }, [loading, isAuthenticated, userData, navigate]);
 
         if (loading) {
             return (
@@ -30,7 +32,7 @@ const withAuth = (WrappedComponent) => {
             );
         }
 
-        if (!isAuthenticated) {
+        if (!isAuthenticated || userData?.usernameSetupCompleted === false) {
             return null;
         }
 
