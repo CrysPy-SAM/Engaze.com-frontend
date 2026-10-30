@@ -55,6 +55,9 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
         unreadChatCount = 0,
         unseenMissedCallCount = 0,
         likesYouCount = 0,
+        unreadLikesCount = 0,
+        unreadRequestsCount = 0,
+        incomingRequestsCount = 0,
         getNotifications,
         getUnreadNotificationCount,
         getUnreadChatCount,
@@ -201,8 +204,14 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
             label: "Matches",
             path: "/matches",
             icon: <FavoriteRoundedIcon fontSize="small" />,
-            badge: likesYouCount > 0 ? (likesYouCount > 99 ? "99+" : String(likesYouCount)) : null,
-            ariaLabel: likesYouCount > 0 ? `Matches, ${likesYouCount} new likes` : undefined,
+            badge: (unreadLikesCount + unreadRequestsCount > 0)
+                ? ((unreadLikesCount + unreadRequestsCount) > 99 ? "99+" : String(unreadLikesCount + unreadRequestsCount))
+                : (likesYouCount + incomingRequestsCount > 0
+                    ? ((likesYouCount + incomingRequestsCount) > 99 ? "99+" : String(likesYouCount + incomingRequestsCount))
+                    : null),
+            ariaLabel: (unreadLikesCount + unreadRequestsCount > 0)
+                ? `Matches, ${unreadLikesCount + unreadRequestsCount} new notifications`
+                : (likesYouCount + incomingRequestsCount > 0 ? `Matches, ${likesYouCount + incomingRequestsCount} updates` : undefined),
         },
         {
             label: "Chat",
