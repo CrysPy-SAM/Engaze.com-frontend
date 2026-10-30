@@ -138,7 +138,6 @@ function ChatPage() {
         markConversationRead,
         sendMessageRest,
         setUnreadChatCount,
-        getUnreadChatCount,
         blockUser,
         reportUser,
         unmatchUser,
@@ -463,7 +462,7 @@ function ChatPage() {
             socket.removeAllListeners();
             socket.disconnect();
         };
-    }, [token, userData?._id, recoverMissedMessages]);
+    }, [token, userData?._id, recoverMissedMessages, setUnreadChatCount]);
 
     // 2. Load conversations and handle query params (e.g. ?matchId=...)
     const loadConversations = useCallback(async () => {

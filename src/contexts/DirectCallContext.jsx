@@ -798,6 +798,8 @@ export const DirectCallProvider = ({ children }) => {
         flushPendingIceCandidates,
         scheduleAutoClose,
         endDirectCall,
+        getUnreadChatCount,
+        setUnreadChatCount,
     ]);
 
     const value = useMemo(
