@@ -51,9 +51,11 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
         userData,
         handleLogout,
         unreadNotificationCount = 0,
+        unreadChatCount = 0,
         likesYouCount = 0,
         getNotifications,
         getUnreadNotificationCount,
+        getUnreadChatCount,
         markNotificationRead,
         markAllNotificationsRead,
     } = useContext(AuthContext);
@@ -67,10 +69,15 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
     const isNotifOpen = Boolean(notifAnchorEl);
 
     useEffect(() => {
-        if (userData && getUnreadNotificationCount) {
-            getUnreadNotificationCount();
+        if (userData) {
+            if (getUnreadNotificationCount) {
+                getUnreadNotificationCount();
+            }
+            if (getUnreadChatCount) {
+                getUnreadChatCount();
+            }
         }
-    }, [userData, getUnreadNotificationCount]);
+    }, [userData, getUnreadNotificationCount, getUnreadChatCount]);
 
     const handleProfileMenuOpen = (event) => {
         setProfileAnchorEl(event.currentTarget);
