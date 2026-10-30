@@ -89,6 +89,15 @@ function DiscoveryPage() {
     const pendingSwipesRef = useRef(new Set());
     const currentIndexRef = useRef(0);
     const profilesRef = useRef(profiles);
+    const swipeTimeoutRef = useRef(null);
+
+    useEffect(() => {
+        return () => {
+            if (swipeTimeoutRef.current) {
+                clearTimeout(swipeTimeoutRef.current);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         currentIndexRef.current = currentIndex;
@@ -347,14 +356,35 @@ function DiscoveryPage() {
         setSwiping(false);
     }, []);
 
-    // Handle Swipe (Like, Pass, or Super Like) with Optimistic UI & Background Processing
-    const handleSwipeAction = useCallback(async (action) => {
-        if (!currentProfile || swiping) return;
+    // Instant Card Advancement — eliminates artificial cooldowns between rapid swipes
+    const advanceCardNow = useCallback(() => {
+        if (swipeTimeoutRef.current) {
+            clearTimeout(swipeTimeoutRef.current);
+            swipeTimeoutRef.current = null;
+        }
+        const nextIdx = currentIndexRef.current + 1;
+        currentIndexRef.current = nextIdx;
+        setCurrentIndex(nextIdx);
+        setSwipeAnimation("");
+        setDragOffset({ x: 0, y: 0 });
+        setSwiping(false);
+    }, []);
 
-        const targetProfile = currentProfile;
+    // Handle Swipe (Like, Pass, or Super Like) with Instant UI Response & Async Background Dispatch
+    const handleSwipeAction = useCallback(async (action) => {
+        const targetProfile = profilesRef.current[currentIndexRef.current] || currentProfile;
+        if (!targetProfile) return;
         const targetId = targetProfile._id;
+
+        // Prevent duplicate actions on the same card without blocking actions on different cards
         if (pendingSwipesRef.current.has(targetId)) return;
         pendingSwipesRef.current.add(targetId);
+
+        // If a prior exit animation timeout is pending, clear it
+        if (swipeTimeoutRef.current) {
+            clearTimeout(swipeTimeoutRef.current);
+            swipeTimeoutRef.current = null;
+        }
 
         setSwiping(true);
         if (action === "like") {
@@ -365,15 +395,10 @@ function DiscoveryPage() {
             setSwipeAnimation("swipe-up-exit");
         }
 
-        // Optimistically advance card immediately after exit animation completes (220ms)
-        setTimeout(() => {
-            const nextIdx = currentIndexRef.current + 1;
-            currentIndexRef.current = nextIdx;
-            setCurrentIndex(nextIdx);
-            setSwipeAnimation("");
-            setDragOffset({ x: 0, y: 0 });
-            setSwiping(false);
-        }, 220);
+        // Fast, punchy 140ms exit animation (in the ideal 100-180ms range)
+        swipeTimeoutRef.current = setTimeout(() => {
+            advanceCardNow();
+        }, 140);
 
         // Execute swipe API request asynchronously in background without blocking UI
         const backendAction = action === "superlike" ? "like" : action;
@@ -396,25 +421,31 @@ function DiscoveryPage() {
                 setToastSeverity("error");
                 setOpenToast(true);
             });
-    }, [currentProfile, swiping, sendSwipe, rollbackFailedSwipe]);
+    }, [currentProfile, sendSwipe, rollbackFailedSwipe, advanceCardNow]);
 
     // Pointer Drag Handlers for True Tinder-Style Swipe Gestures
     const handlePointerDown = useCallback((e) => {
-        if (swiping || loading || !currentProfile) return;
+        if (loading || !currentProfile) return;
         if (e.target.closest("button") || e.target.closest(".photo-nav-zone")) return;
+
+        // If user touches down while prior card is exiting, advance immediately to provide instant continuous swiping
+        if (swiping) {
+            advanceCardNow();
+        }
+
         setIsDragging(true);
         dragStartRef.current = { x: e.clientX, y: e.clientY };
         try {
             e.currentTarget.setPointerCapture(e.pointerId);
         } catch (_) {}
-    }, [swiping, loading, currentProfile]);
+    }, [loading, currentProfile, swiping, advanceCardNow]);
 
     const handlePointerMove = useCallback((e) => {
-        if (!isDragging || swiping) return;
+        if (!isDragging) return;
         const deltaX = e.clientX - dragStartRef.current.x;
         const deltaY = e.clientY - dragStartRef.current.y;
         setDragOffset({ x: deltaX, y: deltaY });
-    }, [isDragging, swiping]);
+    }, [isDragging]);
 
     const handlePointerUp = useCallback((e) => {
         if (!isDragging) return;
@@ -462,7 +493,7 @@ function DiscoveryPage() {
     // Keyboard navigation (Tinder standard: ArrowLeft = Pass, ArrowRight = Like, ArrowUp = Superlike, Space = Photo)
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (matchModalOpen || detailsModalOpen || loading || !currentProfile || swiping) return;
+            if (matchModalOpen || detailsModalOpen || loading || !currentProfile) return;
             if (e.key === "ArrowLeft") {
                 handleSwipeAction("pass");
             } else if (e.key === "ArrowRight") {
@@ -477,7 +508,7 @@ function DiscoveryPage() {
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [matchModalOpen, detailsModalOpen, loading, currentProfile, swiping, handleSwipeAction, handleNextPhoto]);
+    }, [matchModalOpen, detailsModalOpen, loading, currentProfile, handleSwipeAction, handleNextPhoto]);
 
     // Drag calculations
     const dragDistance = Math.hypot(dragOffset.x, dragOffset.y);
@@ -699,33 +730,79 @@ function DiscoveryPage() {
                                         : "transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease",
                                 }}
                             >
-                                {/* DYNAMIC LIKE STAMP (Emerald) */}
-                                {isDragging && dragOffset.x > 25 && (
+                                {/* DYNAMIC LIKE STAMP (Emerald Gradient + Glowing Heart Icon) */}
+                                {((isDragging && dragOffset.x > 15) || swipeAnimation === "swipe-right-exit") && (
                                     <Box
                                         className="swipe-stamp-like"
-                                        sx={{ opacity: Math.min(1, (dragOffset.x - 25) / 60) }}
+                                        sx={{
+                                            opacity: swipeAnimation === "swipe-right-exit" ? 1 : Math.min(1, (dragOffset.x - 15) / 55),
+                                            transform: `rotate(-14deg) scale(${
+                                                swipeAnimation === "swipe-right-exit"
+                                                    ? 1.05
+                                                    : 0.82 + Math.min(0.24, (dragOffset.x - 15) / 220)
+                                            })`,
+                                        }}
                                     >
-                                        LIKE
+                                        <FavoriteRoundedIcon
+                                            sx={{
+                                                fontSize: { xs: 28, sm: 32 },
+                                                color: "#10B981",
+                                                filter: "drop-shadow(0 0 10px rgba(16, 185, 129, 0.85))",
+                                                transform: dragOffset.x >= 95 ? "scale(1.2)" : "scale(1)",
+                                                transition: "transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                                            }}
+                                        />
+                                        <span>LIKE</span>
                                     </Box>
                                 )}
 
-                                {/* DYNAMIC NOPE STAMP (Crimson) */}
-                                {isDragging && dragOffset.x < -25 && (
+                                {/* DYNAMIC NOPE STAMP (Coral / Rose Red Gradient + Clean X Icon) */}
+                                {((isDragging && dragOffset.x < -15) || swipeAnimation === "swipe-left-exit") && (
                                     <Box
                                         className="swipe-stamp-nope"
-                                        sx={{ opacity: Math.min(1, (Math.abs(dragOffset.x) - 25) / 60) }}
+                                        sx={{
+                                            opacity: swipeAnimation === "swipe-left-exit" ? 1 : Math.min(1, (Math.abs(dragOffset.x) - 15) / 55),
+                                            transform: `rotate(14deg) scale(${
+                                                swipeAnimation === "swipe-left-exit"
+                                                    ? 1.05
+                                                    : 0.82 + Math.min(0.24, (Math.abs(dragOffset.x) - 15) / 220)
+                                            })`,
+                                        }}
                                     >
-                                        NOPE
+                                        <CloseRoundedIcon
+                                            sx={{
+                                                fontSize: { xs: 30, sm: 34 },
+                                                color: "#F43F5E",
+                                                filter: "drop-shadow(0 0 10px rgba(244, 63, 94, 0.85))",
+                                                transform: Math.abs(dragOffset.x) >= 95 ? "scale(1.2) rotate(90deg)" : "scale(1) rotate(0deg)",
+                                                transition: "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                                            }}
+                                        />
+                                        <span>NOPE</span>
                                     </Box>
                                 )}
 
-                                {/* DYNAMIC SUPER LIKE STAMP (Cyan) */}
-                                {isDragging && dragOffset.y < -35 && Math.abs(dragOffset.x) < 65 && (
+                                {/* DYNAMIC SUPER LIKE STAMP (Cyan Gradient + Star Icon) */}
+                                {((isDragging && dragOffset.y < -25 && Math.abs(dragOffset.x) < 70) || swipeAnimation === "swipe-up-exit") && (
                                     <Box
                                         className="swipe-stamp-superlike"
-                                        sx={{ opacity: Math.min(1, (Math.abs(dragOffset.y) - 35) / 50) }}
+                                        sx={{
+                                            opacity: swipeAnimation === "swipe-up-exit" ? 1 : Math.min(1, (Math.abs(dragOffset.y) - 25) / 45),
+                                            transform: `translateX(-50%) rotate(-4deg) scale(${
+                                                swipeAnimation === "swipe-up-exit"
+                                                    ? 1.05
+                                                    : 0.85 + Math.min(0.22, (Math.abs(dragOffset.y) - 25) / 180)
+                                            })`,
+                                        }}
                                     >
-                                        SUPER LIKE
+                                        <StarRoundedIcon
+                                            sx={{
+                                                fontSize: { xs: 28, sm: 32 },
+                                                color: "#00D2FF",
+                                                filter: "drop-shadow(0 0 10px rgba(0, 210, 255, 0.85))",
+                                            }}
+                                        />
+                                        <span>SUPER LIKE</span>
                                     </Box>
                                 )}
 
@@ -983,7 +1060,7 @@ function DiscoveryPage() {
                                 <IconButton
                                     aria-label="Pass profile (Arrow Left)"
                                     onClick={() => handleSwipeAction("pass")}
-                                    disabled={swiping}
+                                    disabled={loading || !currentProfile}
                                     className="btn-tactile-action"
                                     sx={{
                                         width: { xs: 66, sm: 74 },
@@ -1010,7 +1087,7 @@ function DiscoveryPage() {
                                 <IconButton
                                     aria-label="Like profile (Arrow Right)"
                                     onClick={() => handleSwipeAction("like")}
-                                    disabled={swiping}
+                                    disabled={loading || !currentProfile}
                                     className="btn-tactile-action"
                                     sx={{
                                         width: { xs: 66, sm: 74 },
@@ -1036,7 +1113,7 @@ function DiscoveryPage() {
                                 <IconButton
                                     aria-label="Super Like profile (Arrow Up)"
                                     onClick={() => handleSwipeAction("superlike")}
-                                    disabled={swiping}
+                                    disabled={loading || !currentProfile}
                                     className="btn-tactile-action"
                                     sx={{
                                         width: { xs: 48, sm: 54 },
