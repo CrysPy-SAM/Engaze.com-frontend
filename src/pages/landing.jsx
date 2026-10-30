@@ -335,13 +335,16 @@ const LiquidPearlDrop = ({ sx = {}, size = 26 }) => (
 );
 
 // ============================================================
-// Modern Mobile Swipeable Feature Carousel with Edge Peek & Final Overview Deck
-// Pure native scroll-snap with smooth touch gestures & pagination tracking (NO autoplay)
+// Modern Mobile Overlapping Fan-Shaped Feature Carousel
+// 3000ms Automatic Rotation, Touch Drag/Swipe, Pause on Interaction,
+// Reduced-Motion Support & Pagination Controls
 // ============================================================
-function MobileFeatureCarousel() {
+function MobileFanFeatureCarousel() {
     const [activeIndex, setActiveIndex] = useState(0);
-    const scrollRef = React.useRef(null);
-    const isScrollingProgrammatically = React.useRef(false);
+    const [isInteracting, setIsInteracting] = useState(false);
+    const touchStartX = React.useRef(0);
+    const touchStartY = React.useRef(0);
+    const resumeTimeoutRef = React.useRef(null);
 
     const featureItems = [
         {
@@ -401,101 +404,219 @@ function MobileFeatureCarousel() {
         },
     ];
 
-    const totalSlides = featureItems.length + 1; // 5 features + 1 overview card = 6
+    const totalCards = featureItems.length;
 
-    const handleScroll = () => {
-        if (!scrollRef.current || isScrollingProgrammatically.current) return;
-        const container = scrollRef.current;
-        const containerCenter = container.scrollLeft + container.offsetWidth / 2;
-        const cards = container.querySelectorAll(".mobile-feature-slide");
-        let closestIndex = 0;
-        let minDistance = Infinity;
+    const nextSlide = React.useCallback(() => {
+        setActiveIndex((prev) => (prev + 1) % totalCards);
+    }, [totalCards]);
 
-        cards.forEach((card, idx) => {
-            const cardCenter = card.offsetLeft + card.offsetWidth / 2;
-            const dist = Math.abs(containerCenter - cardCenter);
-            if (dist < minDistance) {
-                minDistance = dist;
-                closestIndex = idx;
+    const prevSlide = React.useCallback(() => {
+        setActiveIndex((prev) => (prev - 1 + totalCards) % totalCards);
+    }, [totalCards]);
+
+    const goToSlide = React.useCallback((idx) => {
+        setActiveIndex(idx);
+    }, []);
+
+    // 3000ms Automatic Rotation Loop
+    React.useEffect(() => {
+        if (isInteracting) return;
+        const interval = setInterval(() => {
+            nextSlide();
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [isInteracting, nextSlide]);
+
+    // Cleanup timer on unmount
+    React.useEffect(() => {
+        return () => {
+            if (resumeTimeoutRef.current) {
+                clearTimeout(resumeTimeoutRef.current);
             }
-        });
+        };
+    }, []);
 
-        if (closestIndex !== activeIndex) {
-            setActiveIndex(closestIndex);
+    // Touch Swipe Handlers with Pause & Resume
+    const handleTouchStart = (e) => {
+        setIsInteracting(true);
+        if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e) => {
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const diffX = touchStartX.current - endX;
+        const diffY = touchStartY.current - endY;
+
+        // Register horizontal swipe if larger than vertical threshold
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 35) {
+            if (diffX > 0) {
+                nextSlide();
+            } else {
+                prevSlide();
+            }
+        }
+
+        // Resume automatic rotation after 3.5s
+        resumeTimeoutRef.current = setTimeout(() => {
+            setIsInteracting(false);
+        }, 3500);
+    };
+
+    const handleMouseEnter = () => {
+        setIsInteracting(true);
+        if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    };
+
+    const handleMouseLeave = () => {
+        resumeTimeoutRef.current = setTimeout(() => {
+            setIsInteracting(false);
+        }, 2000);
+    };
+
+    const handleDotClick = (idx) => {
+        setIsInteracting(true);
+        if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+        goToSlide(idx);
+        resumeTimeoutRef.current = setTimeout(() => {
+            setIsInteracting(false);
+        }, 3500);
+    };
+
+    const handleCardClick = (diff, cardIdx) => {
+        if (diff !== 0) {
+            setIsInteracting(true);
+            if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+            goToSlide(cardIdx);
+            resumeTimeoutRef.current = setTimeout(() => {
+                setIsInteracting(false);
+            }, 3500);
         }
     };
 
-    const scrollToSlide = (idx) => {
-        if (!scrollRef.current) return;
-        const cards = scrollRef.current.querySelectorAll(".mobile-feature-slide");
-        if (cards[idx]) {
-            isScrollingProgrammatically.current = true;
-            setActiveIndex(idx);
-            cards[idx].scrollIntoView({
-                behavior: "smooth",
-                inline: "center",
-                block: "nearest",
-            });
-            setTimeout(() => {
-                isScrollingProgrammatically.current = false;
-            }, 600);
+    // Calculate circular relative offset (-2, -1, 0, 1, 2)
+    const getDiff = (idx) => {
+        let diff = (idx - activeIndex + totalCards) % totalCards;
+        if (diff > 2) diff -= totalCards;
+        return diff;
+    };
+
+    // Visual styles for fan stack positions
+    const getCardStyle = (diff) => {
+        switch (diff) {
+            case 0:
+                return {
+                    transform: "translate(-50%, -50%) scale(1) rotate(0deg)",
+                    zIndex: 10,
+                    opacity: 1,
+                    boxShadow: "6px 6px 0px #0D0E15",
+                    filter: "none",
+                    cursor: "default",
+                };
+            case 1:
+                return {
+                    transform: "translate(calc(-50% + 32px), calc(-50% + 6px)) scale(0.93) rotate(5deg)",
+                    zIndex: 8,
+                    opacity: 0.9,
+                    boxShadow: "4px 4px 0px #0D0E15",
+                    filter: "brightness(0.98)",
+                    cursor: "pointer",
+                };
+            case -1:
+                return {
+                    transform: "translate(calc(-50% - 32px), calc(-50% + 6px)) scale(0.93) rotate(-5deg)",
+                    zIndex: 8,
+                    opacity: 0.9,
+                    boxShadow: "4px 4px 0px #0D0E15",
+                    filter: "brightness(0.98)",
+                    cursor: "pointer",
+                };
+            case 2:
+                return {
+                    transform: "translate(calc(-50% + 62px), calc(-50% + 14px)) scale(0.86) rotate(10deg)",
+                    zIndex: 5,
+                    opacity: 0.72,
+                    boxShadow: "3px 3px 0px #0D0E15",
+                    filter: "brightness(0.94)",
+                    cursor: "pointer",
+                };
+            case -2:
+                return {
+                    transform: "translate(calc(-50% - 62px), calc(-50% + 14px)) scale(0.86) rotate(-10deg)",
+                    zIndex: 5,
+                    opacity: 0.72,
+                    boxShadow: "3px 3px 0px #0D0E15",
+                    filter: "brightness(0.94)",
+                    cursor: "pointer",
+                };
+            default:
+                return {
+                    transform: "translate(-50%, -50%) scale(0.8) rotate(0deg)",
+                    zIndex: 1,
+                    opacity: 0,
+                    cursor: "default",
+                };
         }
     };
 
     return (
-        <Box sx={{ width: "100%", position: "relative" }}>
-            {/* Horizontal Swipeable Track with CSS Scroll-Snap and Peek */}
+        <Box
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            sx={{
+                width: "100%",
+                maxWidth: 420,
+                mx: "auto",
+                position: "relative",
+                userSelect: "none",
+            }}
+        >
+            {/* The Fan-Shaped Stack Stage */}
             <Box
-                ref={scrollRef}
-                onScroll={handleScroll}
                 sx={{
-                    display: "flex",
-                    overflowX: "auto",
-                    overflowY: "hidden",
-                    scrollSnapType: "x mandatory",
-                    scrollBehavior: "smooth",
-                    WebkitOverflowScrolling: "touch",
-                    gap: { xs: 2, sm: 2.5 },
-                    py: 1.5,
-                    px: {
-                        xs: "calc((100vw - min(82vw, 340px)) / 2)",
-                        sm: "calc((100vw - min(75vw, 380px)) / 2)",
-                    },
-                    scrollbarWidth: "none",
-                    "&::-webkit-scrollbar": { display: "none" },
-                    overscrollBehaviorX: "contain",
+                    position: "relative",
+                    width: "100%",
+                    height: { xs: 345, sm: 355 },
+                    overflow: "visible",
                 }}
             >
-                {/* Slides 1 to 5: The 5 Core Features */}
-                {featureItems.map((item, idx) => (
-                    <Box
-                        key={idx}
-                        className="mobile-feature-slide"
-                        sx={{
-                            flex: {
-                                xs: "0 0 min(82vw, 340px)",
-                                sm: "0 0 min(75vw, 380px)",
-                            },
-                            scrollSnapAlign: "center",
-                            scrollSnapStop: "always",
-                        }}
-                    >
+                {featureItems.map((item, idx) => {
+                    const diff = getDiff(idx);
+                    const style = getCardStyle(diff);
+                    const isActive = diff === 0;
+
+                    return (
                         <Paper
+                            key={idx}
                             elevation={0}
+                            onClick={() => handleCardClick(diff, idx)}
                             className="neo-card"
                             sx={{
+                                position: "absolute",
+                                left: "50%",
+                                top: "50%",
+                                width: { xs: "275px", sm: "305px" },
+                                height: { xs: "315px", sm: "325px" },
                                 backgroundColor: item.bg,
                                 color: item.textColor,
-                                p: { xs: 2.8, sm: 3.2 },
+                                p: { xs: 2.6, sm: 3 },
                                 borderRadius: "24px",
-                                minHeight: { xs: 330, sm: 340 },
-                                height: "100%",
+                                border: "2.5px solid #0D0E15",
                                 display: "flex",
                                 flexDirection: "column",
                                 justifyContent: "space-between",
-                                boxShadow: "4px 4px 0px #0D0E15",
-                                border: "2px solid #0D0E15",
                                 boxSizing: "border-box",
+                                transition: "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease, z-index 0.5s ease, box-shadow 0.5s ease",
+                                "@media (prefers-reduced-motion: reduce)": {
+                                    transition: "opacity 0.2s ease",
+                                    transform: isActive ? "translate(-50%, -50%)" : "translate(-50%, -50%) scale(0.9)",
+                                },
+                                ...style,
                             }}
                         >
                             <Box>
@@ -519,14 +640,14 @@ function MobileFeatureCarousel() {
                                         {item.icon}
                                     </Box>
                                 </Box>
-                                <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.28rem", lineHeight: 1.25, mb: 1.2 }}>
+                                <Typography variant="h4" sx={{ fontWeight: 900, fontSize: "1.25rem", lineHeight: 1.25, mb: 1.2 }}>
                                     {item.title}
                                 </Typography>
                                 <Typography
                                     sx={{
                                         fontWeight: 600,
-                                        fontSize: "0.88rem",
-                                        lineHeight: 1.55,
+                                        fontSize: "0.86rem",
+                                        lineHeight: 1.5,
                                         color: item.textColor === "#FFFFFF" ? "rgba(255,255,255,0.95)" : "#142B45",
                                     }}
                                 >
@@ -548,268 +669,42 @@ function MobileFeatureCarousel() {
                                     {item.badge}
                                 </Box>
                                 <Typography sx={{ fontSize: "0.75rem", fontWeight: 800, opacity: 0.65 }}>
-                                    {idx + 1} / {totalSlides}
+                                    {idx + 1} / {totalCards}
                                 </Typography>
                             </Box>
                         </Paper>
-                    </Box>
-                ))}
-
-                {/* Slide 6: Final Overview Card with Fanned Mini-Cards Deck */}
-                <Box
-                    className="mobile-feature-slide"
-                    sx={{
-                        flex: {
-                            xs: "0 0 min(82vw, 340px)",
-                            sm: "0 0 min(75vw, 380px)",
-                        },
-                        scrollSnapAlign: "center",
-                        scrollSnapStop: "always",
-                    }}
-                >
-                    <Paper
-                        elevation={0}
-                        className="neo-card"
-                        sx={{
-                            backgroundColor: "#FFFDF9",
-                            color: "#0D0E15",
-                            p: { xs: 2.5, sm: 3 },
-                            borderRadius: "24px",
-                            minHeight: { xs: 330, sm: 340 },
-                            height: "100%",
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "space-between",
-                            boxShadow: "4px 4px 0px #0D0E15",
-                            border: "2px solid #0D0E15",
-                            boxSizing: "border-box",
-                        }}
-                    >
-                        <Box>
-                            {/* Top Row: Mini-badge and counter */}
-                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                                <Box
-                                    sx={{
-                                        backgroundColor: "#2589D8",
-                                        color: "#FFFFFF",
-                                        px: 1.2,
-                                        py: 0.35,
-                                        borderRadius: "9999px",
-                                        fontSize: "0.7rem",
-                                        fontWeight: 900,
-                                        letterSpacing: "0.06em",
-                                        textTransform: "uppercase",
-                                        border: "1.5px solid #0D0E15",
-                                    }}
-                                >
-                                    CORE SUITE
-                                </Box>
-                                <Typography sx={{ fontSize: "0.75rem", fontWeight: 800, opacity: 0.65 }}>
-                                    6 / {totalSlides}
-                                </Typography>
-                            </Box>
-
-                            {/* Beautiful Rotated Stack / Fan of all 5 Feature Cards */}
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    height: 72,
-                                    position: "relative",
-                                    my: 1.2,
-                                    userSelect: "none",
-                                }}
-                            >
-                                {/* Card 1: Cyan */}
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        width: 52,
-                                        height: 38,
-                                        backgroundColor: "#24C5F7",
-                                        border: "2px solid #0D0E15",
-                                        borderRadius: "8px",
-                                        boxShadow: "2px 2px 0px #0D0E15",
-                                        transform: "translateX(-50px) rotate(-14deg)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        zIndex: 1,
-                                    }}
-                                >
-                                    <VideocamRoundedIcon sx={{ fontSize: 16, color: "#FD2E7A" }} />
-                                </Box>
-                                {/* Card 2: Yellow */}
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        width: 52,
-                                        height: 38,
-                                        backgroundColor: "#FFD233",
-                                        border: "2px solid #0D0E15",
-                                        borderRadius: "8px",
-                                        boxShadow: "2px 2px 0px #0D0E15",
-                                        transform: "translateX(-25px) rotate(-7deg)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        zIndex: 2,
-                                    }}
-                                >
-                                    <FavoriteRoundedIcon sx={{ fontSize: 16, color: "#FD2E7A" }} />
-                                </Box>
-                                {/* Card 3: Orange */}
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        width: 54,
-                                        height: 40,
-                                        backgroundColor: "#FF7A29",
-                                        border: "2px solid #0D0E15",
-                                        borderRadius: "8px",
-                                        boxShadow: "2px 2px 0px #0D0E15",
-                                        transform: "translateX(0px) rotate(0deg) scale(1.05)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        zIndex: 3,
-                                    }}
-                                >
-                                    <ChatBubbleRoundedIcon sx={{ fontSize: 15, color: "#FFFFFF" }} />
-                                </Box>
-                                {/* Card 4: White */}
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        width: 52,
-                                        height: 38,
-                                        backgroundColor: "#FFFFFF",
-                                        border: "2px solid #0D0E15",
-                                        borderRadius: "8px",
-                                        boxShadow: "2px 2px 0px #0D0E15",
-                                        transform: "translateX(25px) rotate(7deg)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        zIndex: 2,
-                                    }}
-                                >
-                                    <StarRoundedIcon sx={{ fontSize: 16, color: "#FFD233" }} />
-                                </Box>
-                                {/* Card 5: Pink */}
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        width: 52,
-                                        height: 38,
-                                        backgroundColor: "#FD2E7A",
-                                        border: "2px solid #0D0E15",
-                                        borderRadius: "8px",
-                                        boxShadow: "2px 2px 0px #0D0E15",
-                                        transform: "translateX(50px) rotate(14deg)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        zIndex: 1,
-                                    }}
-                                >
-                                    <ShieldOutlinedIcon sx={{ fontSize: 16, color: "#FFFFFF" }} />
-                                </Box>
-                            </Box>
-
-                            {/* Heading */}
-                            <Typography
-                                variant="h4"
-                                sx={{
-                                    fontWeight: 900,
-                                    fontSize: "1.24rem",
-                                    lineHeight: 1.25,
-                                    mb: 0.8,
-                                    color: "#0D0E15",
-                                    textAlign: "center",
-                                }}
-                            >
-                                All core features at a glance!
-                            </Typography>
-                            <Typography
-                                sx={{
-                                    fontWeight: 600,
-                                    fontSize: "0.84rem",
-                                    lineHeight: 1.45,
-                                    color: "#4B4E63",
-                                    textAlign: "center",
-                                    px: 0.5,
-                                }}
-                            >
-                                Everything you need for authentic chemistry — encrypted video dates, mutual matches, live chat, and verified safety.
-                            </Typography>
-                        </Box>
-
-                        {/* CTA Button */}
-                        <Box sx={{ pt: 1.5 }}>
-                            <Button
-                                component={Link}
-                                to="/auth"
-                                variant="contained"
-                                fullWidth
-                                sx={{
-                                    backgroundColor: "#2589D8",
-                                    color: "#FFFFFF",
-                                    fontWeight: 800,
-                                    fontSize: "0.92rem",
-                                    py: 1.1,
-                                    borderRadius: "14px",
-                                    border: "2px solid #0D0E15",
-                                    boxShadow: "3px 3px 0px #0D0E15",
-                                    textTransform: "none",
-                                    transition: "all 0.15s ease",
-                                    "&:hover": {
-                                        backgroundColor: "#1D6FB0",
-                                        transform: "translateY(-1px)",
-                                        boxShadow: "4px 4px 0px #0D0E15",
-                                    },
-                                    "&:active": {
-                                        transform: "translate(2px, 2px)",
-                                        boxShadow: "1px 1px 0px #0D0E15",
-                                    },
-                                }}
-                            >
-                                Start Discovering Free →
-                            </Button>
-                        </Box>
-                    </Paper>
-                </Box>
+                    );
+                })}
             </Box>
 
-            {/* Pagination Dots (6 slides total) */}
+            {/* Pagination Indicators (5 dots) */}
             <Box
                 sx={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: 1,
-                    mt: 2,
+                    gap: 1.2,
+                    mt: 2.5,
                 }}
             >
-                {Array.from({ length: totalSlides }).map((_, dotIdx) => {
+                {featureItems.map((item, dotIdx) => {
                     const isActive = dotIdx === activeIndex;
                     return (
                         <Box
                             key={dotIdx}
-                            onClick={() => scrollToSlide(dotIdx)}
+                            onClick={() => handleDotClick(dotIdx)}
                             role="button"
                             tabIndex={0}
-                            aria-label={`Go to slide ${dotIdx + 1}`}
+                            aria-label={`Go to feature ${dotIdx + 1}: ${item.title}`}
                             sx={{
                                 height: 8,
-                                width: isActive ? 28 : 8,
+                                width: isActive ? 30 : 8,
                                 borderRadius: "9999px",
-                                backgroundColor: isActive ? "#0A6CFF" : "rgba(20, 43, 69, 0.22)",
-                                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                backgroundColor: isActive ? "#2589D8" : "rgba(20, 43, 69, 0.2)",
+                                transition: "all 0.35s cubic-bezier(0.25, 1, 0.5, 1)",
                                 cursor: "pointer",
                                 "&:hover": {
-                                    backgroundColor: isActive ? "#0A6CFF" : "rgba(20, 43, 69, 0.45)",
+                                    backgroundColor: isActive ? "#2589D8" : "rgba(20, 43, 69, 0.4)",
                                 },
                             }}
                         />
@@ -1862,8 +1757,8 @@ export default function LandingPage() {
                 }}
             >
                 <Container maxWidth="xl">
-                    {/* Header Row with Tilted Pill & Editorial Description */}
-                    <Grid container spacing={{ xs: 4, md: 8 }} alignItems="flex-end" sx={{ mb: { xs: 3.5, md: 5 } }}>
+                    {/* Header Row with Tilted Pill & Editorial Description (Desktop >= 900px) */}
+                    <Grid container spacing={{ xs: 4, md: 8 }} alignItems="flex-end" sx={{ mb: { xs: 3.5, md: 5 }, display: { xs: "none", md: "flex" } }}>
                         <Grid item xs={12} md={7}>
                             <Box
                                 sx={{
@@ -1956,21 +1851,118 @@ export default function LandingPage() {
                         </Grid>
                     </Grid>
 
-                    {/* Mobile Modern Swipeable Feature Carousel with Edge Peek & Final Overview Card (< 900px) */}
-                    <Box
-                        sx={{
-                            display: { xs: "block", md: "none" },
-                            width: "100vw",
-                            position: "relative",
-                            left: "50%",
-                            right: "50%",
-                            marginLeft: "-50vw",
-                            marginRight: "-50vw",
-                            my: 1.5,
-                            overflow: "hidden",
-                        }}
-                    >
-                        <MobileFeatureCarousel />
+                    {/* Mobile Features Section with Header, Overlapping Fan Stack Carousel & CTA (< 900px) */}
+                    <Box sx={{ display: { xs: "block", md: "none" }, my: 1 }}>
+                        {/* 1. Mobile Section Header */}
+                        <Box sx={{ textAlign: "center", mb: 3.5 }}>
+                            <Box
+                                sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 0.8,
+                                    backgroundColor: "rgba(37, 137, 216, 0.12)",
+                                    color: "#2589D8",
+                                    border: "1.5px solid rgba(37, 137, 216, 0.3)",
+                                    px: 2,
+                                    py: 0.6,
+                                    borderRadius: "9999px",
+                                    fontSize: "0.78rem",
+                                    fontWeight: 800,
+                                    letterSpacing: "0.06em",
+                                    textTransform: "uppercase",
+                                    mb: 1.8,
+                                }}
+                            >
+                                ✨ CORE FEATURES
+                            </Box>
+                            <Typography
+                                variant="h2"
+                                sx={{
+                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                    fontSize: { xs: "1.75rem", sm: "2.15rem" },
+                                    fontWeight: 900,
+                                    lineHeight: 1.15,
+                                    letterSpacing: "-0.03em",
+                                    color: "#142B45",
+                                    mb: 1.5,
+                                    px: 1,
+                                }}
+                            >
+                                Everything you need for genuine connections
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontSize: { xs: "0.95rem", sm: "1.05rem" },
+                                    color: "#4B4E63",
+                                    lineHeight: 1.55,
+                                    fontWeight: 600,
+                                    maxWidth: 420,
+                                    mx: "auto",
+                                    px: 1.5,
+                                }}
+                            >
+                                A safe, modern and fun way to meet, chat and go on real video dates.
+                            </Typography>
+                        </Box>
+
+                        {/* 2. Overlapping Fan-Shaped Stack with 3000ms Auto-Rotation */}
+                        <MobileFanFeatureCarousel />
+
+                        {/* 3. Heading: All core features at a glance! */}
+                        <Typography
+                            variant="h3"
+                            sx={{
+                                fontWeight: 900,
+                                fontSize: { xs: "1.3rem", sm: "1.45rem" },
+                                lineHeight: 1.25,
+                                letterSpacing: "-0.025em",
+                                color: "#142B45",
+                                textAlign: "center",
+                                mt: 3.5,
+                                mb: 2,
+                            }}
+                        >
+                            All core features at a glance!
+                        </Typography>
+
+                        {/* 4. Prominent blue gradient CTA button: Start Discovering Free → */}
+                        <Box sx={{ maxWidth: 360, mx: "auto", px: 1 }}>
+                            <Button
+                                component={Link}
+                                to="/auth"
+                                variant="contained"
+                                fullWidth
+                                sx={{
+                                    background: "linear-gradient(135deg, #2589D8 0%, #1D6FB0 100%)",
+                                    color: "#FFFFFF",
+                                    fontWeight: 800,
+                                    fontSize: "1rem",
+                                    py: 1.35,
+                                    px: 3,
+                                    borderRadius: "16px",
+                                    border: "2px solid #0D0E15",
+                                    boxShadow: "4px 4px 0px #0D0E15",
+                                    textTransform: "none",
+                                    letterSpacing: "-0.01em",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    gap: 1,
+                                    transition: "all 0.15s ease",
+                                    "&:hover": {
+                                        background: "linear-gradient(135deg, #1E73B9 0%, #175B92 100%)",
+                                        transform: "translateY(-1px)",
+                                        boxShadow: "5px 5px 0px #0D0E15",
+                                    },
+                                    "&:active": {
+                                        transform: "translate(2px, 2px)",
+                                        boxShadow: "2px 2px 0px #0D0E15",
+                                    },
+                                }}
+                            >
+                                Start Discovering Free →
+                            </Button>
+                        </Box>
                     </Box>
 
                     {/* Asymmetric Neo-Pop Feature Cards Grid (Desktop >= 900px) */}
