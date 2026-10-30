@@ -29,17 +29,20 @@
   background: #2589D8;
 }
 
-/* Ensure all MUI Popovers and Menus consistently follow Engaze Midnight Slate theme */
+/* Ensure all MUI Popovers, Menus, Dialogs and Papers consistently follow Engaze Midnight Slate theme */
+.MuiPopover-root .MuiPaper-root,
+.MuiMenu-root .MuiPaper-root,
 .MuiPopover-paper,
 .MuiMenu-paper {
   background-color: #121C2D !important;
   color: #F8FAFC !important;
   background-image: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 body {
-  background-color: #FFFDF9;
-  color: #0D0E15;
+  background-color: #0A111C;
+  color: #F8FAFC;
   overflow-x: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Inter', 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
