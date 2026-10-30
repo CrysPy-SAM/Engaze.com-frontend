@@ -29,6 +29,14 @@
   background: #2589D8;
 }
 
+/* Ensure all MUI Popovers and Menus consistently follow Engaze Midnight Slate theme */
+.MuiPopover-paper,
+.MuiMenu-paper {
+  background-color: #121C2D !important;
+  color: #F8FAFC !important;
+  background-image: none !important;
+}
+
 body {
   background-color: #FFFDF9;
   color: #0D0E15;
