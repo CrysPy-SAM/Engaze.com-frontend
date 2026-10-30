@@ -620,9 +620,11 @@ export const DirectCallProvider = ({ children }) => {
             }
         });
 
-        socket.on("call:missed", () => {
-            if (setUnseenMissedCallCount) {
-                setUnseenMissedCallCount((prev) => prev + 1);
+        socket.on("call:missed", (data) => {
+            if (data && typeof data.count === "number" && setUnseenMissedCallCount) {
+                setUnseenMissedCallCount(data.count);
+            } else if (getMissedCallCount) {
+                getMissedCallCount().catch(() => {});
             }
         });
 

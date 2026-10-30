@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
-import { DirectCallContext } from "../contexts/DirectCallContext";
+import { useDirectCall } from "../contexts/DirectCallContext";
 import { BRAND_COLORS } from "../theme";
 import EngazeLogo from "./EngazeLogo";
 import {
@@ -63,7 +63,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
         markAllNotificationsRead,
     } = useContext(AuthContext);
 
-    const directCall = useContext(DirectCallContext);
+    const directCall = useDirectCall();
     const isIncomingCall = directCall?.callState === "incoming_ringing";
 
     const [profileAnchorEl, setProfileAnchorEl] = useState(null);

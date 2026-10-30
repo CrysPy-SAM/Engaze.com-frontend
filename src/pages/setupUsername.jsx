@@ -21,6 +21,7 @@ import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import SparklesIcon from "@mui/icons-material/AutoAwesome";
 import { AuthContext } from "../contexts/AuthContext";
 import EngazeLogo from "../components/EngazeLogo";
+import { BRAND_COLORS } from "../theme";
 
 // Client-side quick syntax validation matching backend policy
 function validateClientUsername(raw) {
@@ -98,21 +99,30 @@ export default function SetupUsernamePage() {
             const res = await checkUsernameAvailability(clientVal.trimmed);
             if (res.available) {
                 setStatus("available");
-                setStatusMessage("Username is available!");
+                setStatusMessage(res.message || `@${clientVal.trimmed} is available!`);
                 setSuggestions([]);
             } else {
                 setStatus("unavailable");
-                setStatusMessage(res.message || "Username is already taken.");
-                setSuggestions(res.suggestions || []);
+                setStatusMessage(res.message || `@${clientVal.trimmed} is already taken.`);
+                if (res.suggestions && res.suggestions.length > 0) {
+                    setSuggestions(res.suggestions);
+                }
             }
         } catch (err) {
-            setStatus("idle");
-            setStatusMessage("");
+            setStatus("invalid");
+            setStatusMessage(err.message || "Failed to check availability");
         }
     }, [checkUsernameAvailability]);
 
+    // Auto-check candidate when initial candidate is populated
+    useEffect(() => {
+        if (usernameInput && status === "idle") {
+            performAvailabilityCheck(usernameInput);
+        }
+    }, [usernameInput, status, performAvailabilityCheck]);
+
     const handleInputChange = (e) => {
-        const value = e.target.value.toLowerCase().replace(/\s/g, "");
+        const value = e.target.value.toLowerCase().replace(/[^a-zA-Z0-9_.-]/g, "");
         setUsernameInput(value);
         setSubmitError("");
 
@@ -175,18 +185,18 @@ export default function SetupUsernamePage() {
                 alignItems: "center",
                 justifyContent: "center",
                 p: { xs: 2, sm: 3 },
-                bgcolor: "#FFFDFB",
-                background: "radial-gradient(ellipse 90% 85% at 50% 20%, #FFFDFB 0%, #FFF5EE 35%, #FFE9E2 70%, #FFD8C8 100%)",
+                bgcolor: "#0A111C",
+                background: "radial-gradient(ellipse 90% 85% at 50% 20%, #121C2D 0%, #0A111C 65%, #070B13 100%)",
                 position: "relative",
                 overflow: "hidden",
             }}
         >
             {/* Header branding */}
             <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
-                <EngazeLogo sx={{ height: 38 }} />
+                <EngazeLogo size={36} fontSize="1.45rem" />
             </Box>
 
-            <Fade in timeout={500}>
+            <Fade in timeout={400}>
                 <Card
                     elevation={0}
                     sx={{
@@ -194,11 +204,12 @@ export default function SetupUsernamePage() {
                         width: "100%",
                         borderRadius: { xs: "22px", sm: "28px" },
                         p: { xs: 3, sm: 4.5 },
-                        bgcolor: "#FFFFFF !important",
-                        background: "#FFFFFF !important",
+                        bgcolor: "#121C2D !important",
+                        background: "#121C2D !important",
                         backdropFilter: "none !important",
-                        border: "1px solid rgba(255, 193, 181, 0.45)",
-                        boxShadow: "0 20px 60px rgba(255, 160, 140, 0.18), 0 2px 8px rgba(0, 0, 0, 0.04)",
+                        filter: "none !important",
+                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        boxShadow: "0 20px 60px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.3)",
                         textAlign: "center",
                     }}
                 >
@@ -211,22 +222,22 @@ export default function SetupUsernamePage() {
                             px: 2,
                             py: 0.8,
                             borderRadius: "9999px",
-                            bgcolor: "rgba(255, 233, 226, 0.65)",
-                            border: "1px solid rgba(255, 193, 181, 0.50)",
+                            bgcolor: "rgba(37, 137, 216, 0.12)",
+                            border: "1px solid rgba(37, 137, 216, 0.32)",
                             mb: 2.5,
                         }}
                     >
                         <Avatar
                             src={profilePic}
                             alt={displayName}
-                            sx={{ width: 28, height: 28, bgcolor: "#FD3A73", fontSize: 14 }}
+                            sx={{ width: 28, height: 28, bgcolor: BRAND_COLORS.brandBlue, fontSize: 14 }}
                         >
                             {displayName.charAt(0).toUpperCase()}
                         </Avatar>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#142B45" }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#F8FAFC" }}>
                             Hi, {displayName}
                         </Typography>
-                        <SparklesIcon sx={{ fontSize: 16, color: "#FD3A73" }} />
+                        <SparklesIcon sx={{ fontSize: 16, color: "#38BDF8" }} />
                     </Box>
 
                     <Typography
@@ -234,7 +245,7 @@ export default function SetupUsernamePage() {
                         component="h1"
                         sx={{
                             fontWeight: 900,
-                            color: "#142B45",
+                            color: "#F8FAFC",
                             letterSpacing: "-0.02em",
                             mb: 1,
                         }}
@@ -245,7 +256,7 @@ export default function SetupUsernamePage() {
                     <Typography
                         variant="body2"
                         sx={{
-                            color: "#4B5563",
+                            color: "#94A3B8",
                             lineHeight: 1.6,
                             mb: 3.5,
                             fontWeight: 500,
@@ -271,12 +282,12 @@ export default function SetupUsernamePage() {
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
-                                        <AlternateEmailRoundedIcon sx={{ color: "#FD3A73", fontSize: 20 }} />
+                                        <AlternateEmailRoundedIcon sx={{ color: BRAND_COLORS.brandBlue, fontSize: 20 }} />
                                     </InputAdornment>
                                 ),
                                 endAdornment: (
                                     <InputAdornment position="end">
-                                        {status === "checking" && <CircularProgress size={18} sx={{ color: "#FD3A73" }} />}
+                                        {status === "checking" && <CircularProgress size={18} sx={{ color: BRAND_COLORS.brandBlue }} />}
                                         {status === "available" && <CheckCircleRoundedIcon sx={{ color: "#10B981", fontSize: 22 }} />}
                                         {(status === "unavailable" || status === "invalid") && (
                                             <CancelRoundedIcon sx={{ color: "#EF4444", fontSize: 22 }} />
@@ -287,30 +298,30 @@ export default function SetupUsernamePage() {
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     borderRadius: "14px",
-                                    bgcolor: "#FFFFFF",
+                                    bgcolor: "#0A111C",
                                     fontSize: 16,
                                     fontWeight: 600,
-                                    color: "#142B45",
+                                    color: "#F8FAFC",
                                     "& input": {
-                                        color: "#142B45 !important",
-                                        WebkitTextFillColor: "#142B45 !important",
-                                        caretColor: "#FD3A73",
+                                        color: "#F8FAFC !important",
+                                        WebkitTextFillColor: "#F8FAFC !important",
+                                        caretColor: BRAND_COLORS.brandBlue,
                                         fontSize: 16,
                                         fontWeight: 600,
                                         "&::placeholder": {
-                                            color: "#9CA3AF !important",
+                                            color: "#64748B !important",
                                             opacity: 1,
                                         },
                                     },
                                     "& fieldset": {
-                                        borderColor: status === "available" ? "#10B981" : "rgba(255, 193, 181, 0.65)",
+                                        borderColor: status === "available" ? "#10B981" : "rgba(255, 255, 255, 0.16)",
                                         borderWidth: status === "available" ? 2 : 1.5,
                                     },
                                     "&:hover fieldset": {
-                                        borderColor: status === "available" ? "#10B981" : "#FD3A73",
+                                        borderColor: status === "available" ? "#10B981" : BRAND_COLORS.brandBlue,
                                     },
                                     "&.Mui-focused fieldset": {
-                                        borderColor: status === "available" ? "#10B981" : "#FD3A73",
+                                        borderColor: status === "available" ? "#10B981" : BRAND_COLORS.brandBlue,
                                         borderWidth: 2,
                                     },
                                 },
@@ -326,10 +337,10 @@ export default function SetupUsernamePage() {
                                         fontWeight: 600,
                                         color:
                                             status === "available"
-                                                ? "#059669"
+                                                ? "#10B981"
                                                 : status === "unavailable" || status === "invalid"
-                                                ? "#DC2626"
-                                                : "#6B7280",
+                                                ? "#F87171"
+                                                : "#94A3B8",
                                         display: "flex",
                                         alignItems: "center",
                                         gap: 0.5,
@@ -342,8 +353,8 @@ export default function SetupUsernamePage() {
 
                         {/* Alternative Username Suggestions */}
                         {suggestions.length > 0 && (
-                            <Box sx={{ mt: 2, p: 2, bgcolor: "rgba(255, 233, 226, 0.45)", borderRadius: "14px", border: "1px solid rgba(255, 193, 181, 0.45)", textAlign: "left" }}>
-                                <Typography variant="caption" sx={{ fontWeight: 700, color: "#142B45", display: "block", mb: 1 }}>
+                            <Box sx={{ mt: 2, p: 2, bgcolor: "rgba(255, 255, 255, 0.04)", borderRadius: "14px", border: "1px solid rgba(255, 255, 255, 0.08)", textAlign: "left" }}>
+                                <Typography variant="caption" sx={{ fontWeight: 700, color: "#F8FAFC", display: "block", mb: 1 }}>
                                     ✨ Available alternatives:
                                 </Typography>
                                 <Stack direction="row" flexWrap="wrap" gap={1}>
@@ -355,12 +366,12 @@ export default function SetupUsernamePage() {
                                             clickable
                                             size="small"
                                             sx={{
-                                                bgcolor: "#FFFFFF",
-                                                border: "1px solid rgba(253, 58, 115, 0.3)",
-                                                color: "#FD3A73",
+                                                bgcolor: "#18253A",
+                                                border: "1px solid rgba(37, 137, 216, 0.35)",
+                                                color: "#38BDF8",
                                                 fontWeight: 600,
                                                 "&:hover": {
-                                                    bgcolor: "#FD3A73",
+                                                    bgcolor: BRAND_COLORS.brandBlue,
                                                     color: "#FFFFFF",
                                                 },
                                             }}
@@ -383,15 +394,15 @@ export default function SetupUsernamePage() {
                                 fontWeight: 700,
                                 fontSize: 16,
                                 textTransform: "none",
-                                background: "linear-gradient(135deg, #FD3A73 0%, #FF7A00 100%)",
-                                boxShadow: "0 10px 25px rgba(253, 58, 115, 0.35)",
+                                background: BRAND_COLORS.brandBlue,
+                                boxShadow: "0 10px 25px rgba(37, 137, 216, 0.35)",
                                 "&:hover": {
-                                    background: "linear-gradient(135deg, #E02E63 0%, #E66E00 100%)",
-                                    boxShadow: "0 12px 28px rgba(253, 58, 115, 0.45)",
+                                    background: BRAND_COLORS.brandBlueHover,
+                                    boxShadow: "0 12px 28px rgba(37, 137, 216, 0.45)",
                                 },
                                 "&.Mui-disabled": {
-                                    background: "rgba(0, 0, 0, 0.12)",
-                                    color: "rgba(0, 0, 0, 0.26)",
+                                    background: "rgba(255, 255, 255, 0.08)",
+                                    color: "rgba(255, 255, 255, 0.28)",
                                     boxShadow: "none",
                                 },
                             }}
@@ -404,4 +415,3 @@ export default function SetupUsernamePage() {
         </Box>
     );
 }
-

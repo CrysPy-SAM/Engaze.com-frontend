@@ -79,17 +79,22 @@ export default function CallsPage() {
         }
     }, [activeTab, getCallHistory]);
 
-    // On mount or filter change, fetch history
+    // On mount or filter change, mark missed calls seen and fetch history
     useEffect(() => {
-        fetchHistory(1, activeTab);
-    }, [activeTab, fetchHistory]);
-
-    // Automatically mark unseen missed calls as seen on page visit
-    useEffect(() => {
-        if (markMissedCallsAsSeen) {
-            markMissedCallsAsSeen().catch(() => {});
-        }
-    }, [markMissedCallsAsSeen]);
+        let isMounted = true;
+        const initCalls = async () => {
+            if (markMissedCallsAsSeen) {
+                await markMissedCallsAsSeen().catch(() => {});
+            }
+            if (isMounted) {
+                fetchHistory(1, activeTab);
+            }
+        };
+        initCalls();
+        return () => {
+            isMounted = false;
+        };
+    }, [activeTab, fetchHistory, markMissedCallsAsSeen]);
 
     const handleTabChange = (event, newTab) => {
         setActiveTab(newTab);

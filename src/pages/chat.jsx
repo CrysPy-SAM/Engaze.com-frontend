@@ -470,6 +470,19 @@ function ChatPage() {
             );
         });
 
+        // Real-time authoritative unread count sync
+        socket.on("chat:unread-count", (data) => {
+            if (data && typeof data.unreadCount === "number" && setUnreadChatCount) {
+                const activeId = activeConvRef.current?._id?.toString();
+                if (activeId && data.conversationsUnread && typeof data.conversationsUnread[activeId] === "number") {
+                    const adjusted = Math.max(0, data.unreadCount - data.conversationsUnread[activeId]);
+                    setUnreadChatCount(adjusted);
+                } else {
+                    setUnreadChatCount(data.unreadCount);
+                }
+            }
+        });
+
         // Real-time partner typing indicator
         socket.on("chat:typing", ({ conversationId, userId, isTyping }) => {
             if (activeConvRef.current?._id?.toString() === conversationId?.toString() && normalizeEntityId(userId) !== normalizeEntityId(userData?._id)) {
@@ -559,7 +572,11 @@ function ChatPage() {
             const convList = data?.conversations || [];
             setConversations(convList);
             if (setUnreadChatCount) {
-                const totalUnread = convList.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+                const activeId = activeConvRef.current?._id?.toString();
+                const totalUnread = convList.reduce((sum, c) => {
+                    if (activeId && c._id?.toString() === activeId) return sum;
+                    return sum + (c.unreadCount || 0);
+                }, 0);
                 setUnreadChatCount(totalUnread);
             }
 
