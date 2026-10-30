@@ -111,7 +111,7 @@ class RingtoneEngine {
 const ringtone = new RingtoneEngine();
 
 export const DirectCallProvider = ({ children }) => {
-    const { token, getIceServers } = useContext(AuthContext);
+    const { token, getIceServers, setUnreadChatCount, getUnreadChatCount } = useContext(AuthContext);
 
     // Call state: 'idle' | 'outgoing_ringing' | 'incoming_ringing' | 'connecting' | 'connected' | 'declined' | 'busy' | 'no_answer' | 'ended'
     const [callState, setCallState] = useState("idle");
