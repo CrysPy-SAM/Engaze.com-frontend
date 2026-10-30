@@ -815,6 +815,54 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    // 15b. DELETE MESSAGE FOR ME
+    const deleteMessageForMe = useCallback(async (conversationId, messageId) => {
+        try {
+            const response = await api.delete(`/conversations/${conversationId}/messages/${messageId}/me`);
+            getUnreadChatCount().catch(() => {});
+            return response.data;
+        } catch (err) {
+            console.error("Delete message for me error:", err);
+            throw new Error(err.response?.data?.message || "Failed to delete message");
+        }
+    }, [getUnreadChatCount]);
+
+    // 15c. DELETE MESSAGE FOR EVERYONE
+    const deleteMessageForEveryone = useCallback(async (conversationId, messageId) => {
+        try {
+            const response = await api.delete(`/conversations/${conversationId}/messages/${messageId}/everyone`);
+            getUnreadChatCount().catch(() => {});
+            return response.data;
+        } catch (err) {
+            console.error("Delete message for everyone error:", err);
+            throw new Error(err.response?.data?.message || "Failed to delete message for everyone");
+        }
+    }, [getUnreadChatCount]);
+
+    // 15d. CLEAR CHAT
+    const clearChat = useCallback(async (conversationId) => {
+        try {
+            const response = await api.post(`/conversations/${conversationId}/clear`);
+            getUnreadChatCount().catch(() => {});
+            return response.data;
+        } catch (err) {
+            console.error("Clear chat error:", err);
+            throw new Error(err.response?.data?.message || "Failed to clear chat");
+        }
+    }, [getUnreadChatCount]);
+
+    // 15e. DELETE CHAT
+    const deleteChat = useCallback(async (conversationId) => {
+        try {
+            const response = await api.post(`/conversations/${conversationId}/delete`);
+            getUnreadChatCount().catch(() => {});
+            return response.data;
+        } catch (err) {
+            console.error("Delete chat error:", err);
+            throw new Error(err.response?.data?.message || "Failed to delete conversation");
+        }
+    }, [getUnreadChatCount]);
+
     // 16. BLOCK USER
     const blockUser = useCallback(async (userId, reason) => {
         try {
@@ -1021,6 +1069,10 @@ export const AuthProvider = ({ children }) => {
         getConversationMessages,
         markConversationRead,
         sendMessageRest,
+        deleteMessageForMe,
+        deleteMessageForEveryone,
+        clearChat,
+        deleteChat,
         blockUser,
         unblockUser,
         getBlockedUsers,
@@ -1081,6 +1133,10 @@ export const AuthProvider = ({ children }) => {
         getConversationMessages,
         markConversationRead,
         sendMessageRest,
+        deleteMessageForMe,
+        deleteMessageForEveryone,
+        clearChat,
+        deleteChat,
         blockUser,
         unblockUser,
         getBlockedUsers,

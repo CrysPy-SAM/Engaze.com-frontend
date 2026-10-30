@@ -19,6 +19,8 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
+    DialogActions,
+    DialogContentText,
     Divider,
     IconButton,
     InputAdornment,
@@ -58,6 +60,9 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import SchoolIcon from "@mui/icons-material/School";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import BlockIcon from "@mui/icons-material/Block";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
@@ -139,6 +144,10 @@ function ChatPage() {
         markConversationRead,
         sendMessageRest,
         setUnreadChatCount,
+        deleteMessageForMe,
+        deleteMessageForEveryone,
+        clearChat,
+        deleteChat,
         unseenMissedCallCount = 0,
         blockUser,
         reportUser,
@@ -162,6 +171,15 @@ function ChatPage() {
 
     // Interactive Extras
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+    const [msgMenuAnchor, setMsgMenuAnchor] = useState(null);
+    const [targetMsg, setTargetMsg] = useState(null);
+    const [confirmDialog, setConfirmDialog] = useState({
+        open: false,
+        title: "",
+        description: "",
+        actionType: null,
+        payload: null,
+    });
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [showVideoModal, setShowVideoModal] = useState(false);
     const [showMediaModal, setShowMediaModal] = useState(false);
@@ -253,7 +271,7 @@ function ChatPage() {
     useEffect(() => {
         if (!token) return;
 
-        const socket = io(server, {
+        const socket = typeof io === "function" ? io(server, {
             auth: { token: localStorage.getItem("token") || token },
             transports: ["polling", "websocket"],
             reconnection: true,
@@ -261,7 +279,9 @@ function ChatPage() {
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
             timeout: 15000,
-        });
+        }) : null;
+
+        if (!socket || typeof socket.on !== "function") return;
 
         socketRef.current = socket;
 
@@ -384,6 +404,71 @@ function ChatPage() {
                     return updated;
                 });
             }
+        });
+
+        // Real-time message deletion sync
+        socket.on("chat:message-deleted", ({ conversationId, messageId, deleteType }) => {
+            if (activeConvRef.current?._id?.toString() === conversationId?.toString()) {
+                if (deleteType === "everyone") {
+                    setMessages((prev) =>
+                        prev.map((m) =>
+                            m._id?.toString() === messageId?.toString()
+                                ? { ...m, isDeletedForEveryone: true, content: "This message was deleted" }
+                                : m
+                        )
+                    );
+                } else if (deleteType === "me") {
+                    setMessages((prev) =>
+                        prev.filter((m) => m._id?.toString() !== messageId?.toString())
+                    );
+                }
+            }
+
+            setConversations((prev) =>
+                prev.map((c) => {
+                    if (c._id?.toString() === conversationId?.toString() && c.lastMessage?._id?.toString() === messageId?.toString()) {
+                        if (deleteType === "everyone") {
+                            return {
+                                ...c,
+                                lastMessage: {
+                                    ...c.lastMessage,
+                                    content: "This message was deleted",
+                                    isDeletedForEveryone: true,
+                                },
+                            };
+                        } else if (deleteType === "me") {
+                            return { ...c, lastMessage: null };
+                        }
+                    }
+                    return c;
+                })
+            );
+        });
+
+        // Real-time chat clear sync
+        socket.on("chat:cleared", ({ conversationId }) => {
+            if (activeConvRef.current?._id?.toString() === conversationId?.toString()) {
+                setMessages([]);
+            }
+            setConversations((prev) =>
+                prev.map((c) =>
+                    c._id?.toString() === conversationId?.toString()
+                        ? { ...c, lastMessage: null, unreadCount: 0 }
+                        : c
+                )
+            );
+        });
+
+        // Real-time chat delete sync
+        socket.on("chat:deleted", ({ conversationId }) => {
+            if (activeConvRef.current?._id?.toString() === conversationId?.toString()) {
+                setActiveConversation(null);
+                setMessages([]);
+                setMobileShowChat(false);
+            }
+            setConversations((prev) =>
+                prev.filter((c) => c._id?.toString() !== conversationId?.toString())
+            );
         });
 
         // Real-time partner typing indicator
@@ -567,10 +652,16 @@ function ChatPage() {
                     setTimeout(scrollToBottom, 100);
                 }
                 if (!isCancelled && !isStaleConversationResponse(activeConvRef.current?._id, convId)) {
+                    // Synchronously zero-out unread badge locally for instant feedback
+                    setConversations((prev) => {
+                        const updated = prev.map((c) => (c._id === convId ? { ...c, unreadCount: 0 } : c));
+                        if (setUnreadChatCount) {
+                            const newTotal = updated.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+                            setUnreadChatCount(newTotal);
+                        }
+                        return updated;
+                    });
                     await markConversationRead(convId);
-                    setConversations((prev) =>
-                        prev.map((c) => (c._id === convId ? { ...c, unreadCount: 0 } : c))
-                    );
                 }
             } catch (err) {
                 if (!isCancelled && !isStaleConversationResponse(activeConvRef.current?._id, convId)) {
@@ -588,7 +679,7 @@ function ChatPage() {
         return () => {
             isCancelled = true;
         };
-    }, [activeConversation?._id, getConversationMessages, markConversationRead]);
+    }, [activeConversation?._id, getConversationMessages, markConversationRead, setUnreadChatCount]);
 
     const ACK_TIMEOUT_MS = 5000;
     const MAX_AUTO_RETRIES = 1;
@@ -823,6 +914,137 @@ function ChatPage() {
 
     const handleCloseMenu = () => {
         setMenuAnchorEl(null);
+    };
+
+    const handleOpenMsgMenu = (event, msg) => {
+        event.stopPropagation();
+        setMsgMenuAnchor(event.currentTarget);
+        setTargetMsg(msg);
+    };
+
+    const handleCloseMsgMenu = () => {
+        setMsgMenuAnchor(null);
+        setTargetMsg(null);
+    };
+
+    const promptDeleteForMe = (msg) => {
+        const item = msg || targetMsg;
+        handleCloseMsgMenu();
+        if (!item) return;
+        setConfirmDialog({
+            open: true,
+            title: "Delete message for me?",
+            description: "This message will be deleted from your view. Other chat participants will still be able to see it.",
+            actionType: "deleteForMe",
+            payload: { msg: item },
+        });
+    };
+
+    const promptDeleteForEveryone = (msg) => {
+        const item = msg || targetMsg;
+        handleCloseMsgMenu();
+        if (!item) return;
+        setConfirmDialog({
+            open: true,
+            title: "Delete message for everyone?",
+            description: "This message will be deleted for everyone in this chat and replaced with a deleted message notice.",
+            actionType: "deleteForEveryone",
+            payload: { msg: item },
+        });
+    };
+
+    const promptClearChat = () => {
+        handleCloseMenu();
+        setConfirmDialog({
+            open: true,
+            title: "Clear this chat?",
+            description: "All messages in this chat will be cleared from your view. The other participant's history will remain intact.",
+            actionType: "clearChat",
+        });
+    };
+
+    const promptDeleteChat = () => {
+        handleCloseMenu();
+        setConfirmDialog({
+            open: true,
+            title: "Delete this chat?",
+            description: "This chat will be removed from your conversation list. If either of you sends a new message, the chat will reappear.",
+            actionType: "deleteChat",
+        });
+    };
+
+    const handleExecuteConfirm = async () => {
+        const { actionType, payload } = confirmDialog;
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+
+        if (!activeConversation?._id) return;
+        const convId = activeConversation._id;
+
+        try {
+            if (actionType === "deleteForMe") {
+                const msgId = payload?.msg?._id;
+                if (!msgId) return;
+
+                setMessages((prev) => prev.filter((m) => m._id !== msgId));
+
+                if (socketRef.current?.connected) {
+                    socketRef.current.emit("chat:delete-message", {
+                        conversationId: convId,
+                        messageId: msgId,
+                        deleteType: "me",
+                    });
+                } else if (deleteMessageForMe) {
+                    await deleteMessageForMe(convId, msgId);
+                }
+            } else if (actionType === "deleteForEveryone") {
+                const msgId = payload?.msg?._id;
+                if (!msgId) return;
+
+                setMessages((prev) =>
+                    prev.map((m) =>
+                        m._id === msgId
+                            ? { ...m, isDeletedForEveryone: true, content: "This message was deleted" }
+                            : m
+                    )
+                );
+
+                if (socketRef.current?.connected) {
+                    socketRef.current.emit("chat:delete-message", {
+                        conversationId: convId,
+                        messageId: msgId,
+                        deleteType: "everyone",
+                    });
+                } else if (deleteMessageForEveryone) {
+                    await deleteMessageForEveryone(convId, msgId);
+                }
+            } else if (actionType === "clearChat") {
+                setMessages([]);
+                setConversations((prev) =>
+                    prev.map((c) =>
+                        c._id === convId ? { ...c, lastMessage: null, unreadCount: 0 } : c
+                    )
+                );
+
+                if (socketRef.current?.connected) {
+                    socketRef.current.emit("chat:clear", { conversationId: convId });
+                } else if (clearChat) {
+                    await clearChat(convId);
+                }
+            } else if (actionType === "deleteChat") {
+                setConversations((prev) => prev.filter((c) => c._id !== convId));
+                setActiveConversation(null);
+                setMessages([]);
+                setMobileShowChat(false);
+
+                if (socketRef.current?.connected) {
+                    socketRef.current.emit("chat:delete-conversation", { conversationId: convId });
+                } else if (deleteChat) {
+                    await deleteChat(convId);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to execute " + actionType + ":", err);
+        }
     };
 
     return (
@@ -1498,33 +1720,91 @@ function ChatPage() {
                                                         </Box>
                                                     </Box>
                                                 ) : (
-                                                    /* Text Message Bubble (Screen 4 style) */
+                                                    /* Text Message Bubble */
                                                     <Box
                                                         sx={{
                                                             position: "relative",
-                                                            maxWidth: { xs: "84%", sm: "68%" },
+                                                            maxWidth: { xs: "86%", sm: "70%" },
+                                                            "&:hover .msg-action-trigger": { opacity: 1 },
                                                         }}
                                                     >
-                                                        <Paper
-                                                            elevation={0}
-                                                            onDoubleClick={() => toggleHeartReaction(msg._id)}
-                                                            sx={{
-                                                                p: 1.6,
-                                                                px: 2.2,
-                                                                borderRadius: "20px",
-                                                                bgcolor: isMine ? BRAND_COLORS.brandBlue : "#18253A",
-                                                                color: isMine ? "#FFFFFF" : "#F8FAFC",
-                                                                borderTopRightRadius: isMine ? "4px" : "20px",
-                                                                borderTopLeftRadius: !isMine ? "4px" : "20px",
-                                                                border: isMine ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
-                                                                boxShadow: isMine ? "0 4px 14px rgba(37, 137, 216, 0.35)" : "0 4px 16px rgba(0, 0, 0, 0.25)",
-                                                                wordBreak: "break-word",
-                                                            }}
-                                                        >
-                                                            <Typography variant="body1" sx={{ fontSize: "0.95rem", lineHeight: 1.45, fontWeight: 400 }}>
-                                                                {msg.content}
-                                                            </Typography>
-                                                        </Paper>
+                                                        {msg.isDeletedForEveryone ? (
+                                                            <Paper
+                                                                elevation={0}
+                                                                sx={{
+                                                                    p: 1.3,
+                                                                    px: 2,
+                                                                    borderRadius: "18px",
+                                                                    bgcolor: isMine ? "rgba(37, 137, 216, 0.12)" : "rgba(255, 255, 255, 0.04)",
+                                                                    color: "rgba(255, 255, 255, 0.55)",
+                                                                    border: "1px dashed rgba(255, 255, 255, 0.18)",
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    gap: 1,
+                                                                }}
+                                                            >
+                                                                <BlockIcon sx={{ fontSize: 16, color: "rgba(255, 255, 255, 0.45)" }} />
+                                                                <Typography variant="body2" sx={{ fontStyle: "italic", fontSize: "0.9rem" }}>
+                                                                    This message was deleted
+                                                                </Typography>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    className="msg-action-trigger"
+                                                                    onClick={(e) => handleOpenMsgMenu(e, msg)}
+                                                                    sx={{
+                                                                        ml: "auto",
+                                                                        p: 0.3,
+                                                                        color: "rgba(255, 255, 255, 0.5)",
+                                                                        opacity: { xs: 0.7, sm: 0 },
+                                                                        transition: "opacity 0.2s ease",
+                                                                        "&:hover": { color: "#FFFFFF" },
+                                                                    }}
+                                                                >
+                                                                    <KeyboardArrowDownIcon fontSize="small" />
+                                                                </IconButton>
+                                                            </Paper>
+                                                        ) : (
+                                                            <Box sx={{ position: "relative" }}>
+                                                                <Paper
+                                                                    elevation={0}
+                                                                    onDoubleClick={() => toggleHeartReaction(msg._id)}
+                                                                    sx={{
+                                                                        p: 1.6,
+                                                                        px: 2.2,
+                                                                        borderRadius: "20px",
+                                                                        bgcolor: isMine ? BRAND_COLORS.brandBlue : "#18253A",
+                                                                        color: isMine ? "#FFFFFF" : "#F8FAFC",
+                                                                        borderTopRightRadius: isMine ? "4px" : "20px",
+                                                                        borderTopLeftRadius: !isMine ? "4px" : "20px",
+                                                                        border: isMine ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
+                                                                        boxShadow: isMine ? "0 4px 14px rgba(37, 137, 216, 0.35)" : "0 4px 16px rgba(0, 0, 0, 0.25)",
+                                                                        wordBreak: "break-word",
+                                                                        pr: 4,
+                                                                    }}
+                                                                >
+                                                                    <Typography variant="body1" sx={{ fontSize: "0.95rem", lineHeight: 1.45, fontWeight: 400 }}>
+                                                                        {msg.content}
+                                                                    </Typography>
+                                                                </Paper>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    className="msg-action-trigger"
+                                                                    onClick={(e) => handleOpenMsgMenu(e, msg)}
+                                                                    sx={{
+                                                                        position: "absolute",
+                                                                        top: 4,
+                                                                        right: 4,
+                                                                        p: 0.4,
+                                                                        color: isMine ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0.6)",
+                                                                        opacity: { xs: 0.7, sm: 0 },
+                                                                        transition: "opacity 0.2s ease",
+                                                                        "&:hover": { color: "#FFFFFF", bgcolor: "rgba(255, 255, 255, 0.15)" },
+                                                                    }}
+                                                                >
+                                                                    <KeyboardArrowDownIcon fontSize="small" />
+                                                                </IconButton>
+                                                            </Box>
+                                                        )}
 
                                                         {/* Heart Reaction pill if reacted */}
                                                         {isHearted && (
@@ -1864,6 +2144,23 @@ function ChatPage() {
                 <Divider sx={{ my: 1, borderColor: "rgba(255, 255, 255, 0.08)" }} />
 
                 <MenuItem
+                    onClick={promptClearChat}
+                    sx={{ gap: 1.5, py: 1.2, color: "#94A3B8", "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" } }}
+                >
+                    <DeleteSweepIcon fontSize="small" sx={{ color: "#94A3B8" }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Clear Chat</Typography>
+                </MenuItem>
+                <MenuItem
+                    onClick={promptDeleteChat}
+                    sx={{ gap: 1.5, py: 1.2, color: "#F87171", "&:hover": { bgcolor: "rgba(248, 113, 113, 0.1)" } }}
+                >
+                    <DeleteOutlineIcon fontSize="small" sx={{ color: "#F87171" }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Delete Chat</Typography>
+                </MenuItem>
+
+                <Divider sx={{ my: 1, borderColor: "rgba(255, 255, 255, 0.08)" }} />
+
+                <MenuItem
                     onClick={() => {
                         handleCloseMenu();
                         setSafetyActionType("unmatch");
@@ -1897,6 +2194,106 @@ function ChatPage() {
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>Block User</Typography>
                 </MenuItem>
             </Menu>
+
+            {/* Message Action Context Menu */}
+            <Menu
+                anchorEl={msgMenuAnchor}
+                open={Boolean(msgMenuAnchor)}
+                onClose={handleCloseMsgMenu}
+                PaperProps={{
+                    sx: {
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        borderRadius: "14px",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                    },
+                }}
+            >
+                <MenuItem
+                    onClick={() => promptDeleteForMe(targetMsg)}
+                    sx={{ gap: 1.5, py: 1.1, color: "#F8FAFC", "&:hover": { bgcolor: "rgba(255, 255, 255, 0.06)" } }}
+                >
+                    <DeleteOutlineIcon fontSize="small" sx={{ color: "#94A3B8" }} />
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>Delete for me</Typography>
+                </MenuItem>
+                {targetMsg && isOutgoingMessage(targetMsg, userData?._id) && !targetMsg.isDeletedForEveryone && (
+                    <MenuItem
+                        onClick={() => promptDeleteForEveryone(targetMsg)}
+                        sx={{ gap: 1.5, py: 1.1, color: "#F87171", "&:hover": { bgcolor: "rgba(248, 113, 113, 0.1)" } }}
+                    >
+                        <DeleteSweepIcon fontSize="small" sx={{ color: "#F87171" }} />
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>Delete for everyone</Typography>
+                    </MenuItem>
+                )}
+            </Menu>
+
+            {/* Confirmation Dialog for Chat / Message Actions */}
+            <Dialog
+                open={confirmDialog.open}
+                onClose={() => setConfirmDialog((prev) => ({ ...prev, open: false }))}
+                PaperProps={{
+                    sx: {
+                        bgcolor: BRAND_COLORS.surfaceDark,
+                        border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
+                        borderRadius: "20px",
+                        color: "#FFFFFF",
+                        p: 1,
+                        maxWidth: 400,
+                    },
+                }}
+            >
+                <DialogTitle sx={{ fontWeight: 700, fontSize: "1.15rem" }}>
+                    {confirmDialog.title}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText sx={{ color: "rgba(255, 255, 255, 0.7)", fontSize: "0.95rem" }}>
+                        {confirmDialog.description}
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+                    <Button
+                        onClick={() => setConfirmDialog((prev) => ({ ...prev, open: false }))}
+                        sx={{
+                            color: "#94A3B8",
+                            fontWeight: 600,
+                            textTransform: "none",
+                            borderRadius: "12px",
+                            "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" },
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleExecuteConfirm}
+                        variant="contained"
+                        sx={{
+                            bgcolor:
+                                confirmDialog.actionType === "deleteChat" ||
+                                confirmDialog.actionType === "deleteForEveryone"
+                                    ? "#EF4444"
+                                    : BRAND_COLORS.brandBlue,
+                            color: "#FFFFFF",
+                            fontWeight: 700,
+                            textTransform: "none",
+                            borderRadius: "12px",
+                            px: 2.5,
+                            "&:hover": {
+                                bgcolor:
+                                    confirmDialog.actionType === "deleteChat" ||
+                                    confirmDialog.actionType === "deleteForEveryone"
+                                        ? "#DC2626"
+                                        : BRAND_COLORS.brandBlueHover,
+                            },
+                        }}
+                    >
+                        {confirmDialog.actionType === "clearChat"
+                            ? "Clear Chat"
+                            : confirmDialog.actionType === "deleteChat"
+                            ? "Delete Chat"
+                            : "Delete"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Dating Safety Action Modal (Block, Report, Unmatch) */}
             <SafetyActionModal
