@@ -137,6 +137,8 @@ function ChatPage() {
         getConversationMessages,
         markConversationRead,
         sendMessageRest,
+        setUnreadChatCount,
+        getUnreadChatCount,
         blockUser,
         reportUser,
         unmatchUser,
