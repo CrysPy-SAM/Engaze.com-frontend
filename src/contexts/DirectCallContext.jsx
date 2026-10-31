@@ -915,6 +915,14 @@ export const DirectCallProvider = ({ children }) => {
         setUnreadChatCount,
         getMissedCallCount,
         setUnseenMissedCallCount,
+        getIncomingMatchRequests,
+        getLikesYou,
+        getUnreadNotificationCount,
+        setIncomingRequestsCount,
+        setLikesYouCount,
+        setUnreadLikesCount,
+        setUnreadNotificationCount,
+        setUnreadRequestsCount,
     ]);
 
     const value = useMemo(
