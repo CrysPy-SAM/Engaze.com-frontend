@@ -502,15 +502,22 @@ function MatchesPage() {
             {/* Unified Brand Navigation with Search & More Options */}
             <Navbar rightActions={matchesRightActions} />
 
-            <Container maxWidth="sm" sx={{ pt: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3 } }}>
+            <Container
+                maxWidth="lg"
+                sx={{
+                    pt: { xs: 2, sm: 3, md: 4 },
+                    px: { xs: 1.5, sm: 2.5, md: 4 },
+                    maxWidth: { xs: "100%", sm: "640px", md: "960px", lg: "1140px" },
+                }}
+            >
                 {error && (
-                    <Box sx={{ mb: 2, p: 1.5, borderRadius: "16px", bgcolor: "rgba(239, 68, 68, 0.15)", color: "#EF4444", fontSize: "0.85rem" }}>
+                    <Box sx={{ mb: 2, p: 1.5, borderRadius: "16px", bgcolor: "rgba(239, 68, 68, 0.15)", color: "#EF4444", fontSize: "0.85rem", maxWidth: { xs: "100%", sm: 580 }, mx: "auto" }}>
                         {error}
                     </Box>
                 )}
                 {/* Search Bar (Toggleable / Expandable) */}
                 {searchOpen && (
-                    <Box sx={{ mb: 2.5 }}>
+                    <Box sx={{ mb: 2.5, maxWidth: { xs: "100%", sm: 580 }, mx: "auto" }}>
                         <TextField
                             autoFocus
                             fullWidth
@@ -546,98 +553,151 @@ function MatchesPage() {
                 )}
 
                 {/* Segmented Tab Control: Matches vs Requests vs Likes You */}
-                <Stack direction="row" spacing={1.5} sx={{ mb: 2.5 }}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        bgcolor: "#121C2D",
+                        borderRadius: "9999px",
+                        p: { xs: 0.5, sm: 0.8 },
+                        border: "1px solid rgba(255, 255, 255, 0.08)",
+                        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.35)",
+                        maxWidth: { xs: "100%", sm: 580, md: 620 },
+                        mx: "auto",
+                        mb: { xs: 2.5, md: 3.5 },
+                        gap: { xs: 0.5, sm: 1 },
+                    }}
+                >
                     <Button
                         fullWidth
+                        aria-label={`Matches (${matches.length})`}
                         onClick={() => handleTabChange("matches")}
-                        startIcon={<FavoriteRoundedIcon fontSize="small" />}
+                        startIcon={<FavoriteRoundedIcon sx={{ fontSize: { xs: 15, sm: 18 } }} />}
                         sx={{
-                            py: 1.2,
+                            py: { xs: 0.85, sm: 1.1 },
+                            px: { xs: 0.6, sm: 1.8 },
                             borderRadius: "9999px",
                             fontWeight: activeTab === "matches" ? 900 : 700,
-                            fontSize: "0.85rem",
+                            fontSize: { xs: "0.74rem", sm: "0.85rem" },
                             textTransform: "none",
-                            bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlue : "#121C2D",
-                            border: activeTab === "matches" ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
+                            whiteSpace: "nowrap",
+                            minWidth: 0,
+                            bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlue : "transparent",
                             color: activeTab === "matches" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "matches" ? "0 4px 16px rgba(37, 137, 216, 0.4)" : "0 2px 6px rgba(0, 0, 0, 0.2)",
+                            boxShadow: activeTab === "matches" ? "0 4px 14px rgba(37, 137, 216, 0.45)" : "none",
                             transition: "all 0.18s ease",
+                            "& .MuiButton-startIcon": {
+                                mr: { xs: 0.4, sm: 0.8 },
+                                ml: 0,
+                            },
                             "&:hover": {
-                                bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlueHover : "#18253A",
+                                bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlueHover : "rgba(255, 255, 255, 0.05)",
                                 color: "#FFFFFF",
-                                transform: "translateY(-1px)",
                             },
                         }}
                     >
                         Matches ({matches.length})
                     </Button>
+
                     <Badge
                         badgeContent={unreadRequestsCount}
                         color="error"
                         max={99}
                         invisible={unreadRequestsCount === 0}
-                        sx={{ width: "100%", "& .MuiBadge-badge": { right: 18, top: 10 } }}
+                        sx={{
+                            width: "100%",
+                            "& .MuiBadge-badge": {
+                                right: { xs: 6, sm: 12 },
+                                top: { xs: 6, sm: 8 },
+                                fontSize: "0.68rem",
+                                height: 18,
+                                minWidth: 18,
+                                px: 0.5,
+                            },
+                        }}
                     >
                         <Button
                             fullWidth
                             aria-label={`Requests (${incomingRequests.length})`}
                             onClick={() => handleTabChange("requests")}
-                            startIcon={<NotificationsRoundedIcon fontSize="small" />}
+                            startIcon={<NotificationsRoundedIcon sx={{ fontSize: { xs: 15, sm: 18 } }} />}
                             sx={{
-                                py: 1.2,
+                                py: { xs: 0.85, sm: 1.1 },
+                                px: { xs: 0.6, sm: 1.8 },
                                 borderRadius: "9999px",
                                 fontWeight: activeTab === "requests" ? 900 : 700,
-                                fontSize: "0.85rem",
+                                fontSize: { xs: "0.74rem", sm: "0.85rem" },
                                 textTransform: "none",
-                                bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlue : "#121C2D",
-                                border: activeTab === "requests" ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
+                                whiteSpace: "nowrap",
+                                minWidth: 0,
+                                bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlue : "transparent",
                                 color: activeTab === "requests" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                                boxShadow: activeTab === "requests" ? "0 4px 16px rgba(37, 137, 216, 0.4)" : "0 2px 6px rgba(0, 0, 0, 0.2)",
+                                boxShadow: activeTab === "requests" ? "0 4px 14px rgba(37, 137, 216, 0.45)" : "none",
                                 transition: "all 0.18s ease",
+                                "& .MuiButton-startIcon": {
+                                    mr: { xs: 0.4, sm: 0.8 },
+                                    ml: 0,
+                                },
                                 "&:hover": {
-                                    bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlueHover : "#18253A",
+                                    bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlueHover : "rgba(255, 255, 255, 0.05)",
                                     color: "#FFFFFF",
-                                    transform: "translateY(-1px)",
                                 },
                             }}
                         >
                             Requests ({incomingRequests.length})
                         </Button>
                     </Badge>
+
                     <Badge
                         badgeContent={unreadLikesCount}
                         color="error"
                         max={99}
                         invisible={unreadLikesCount === 0}
-                        sx={{ width: "100%", "& .MuiBadge-badge": { right: 18, top: 10 } }}
+                        sx={{
+                            width: "100%",
+                            "& .MuiBadge-badge": {
+                                right: { xs: 6, sm: 12 },
+                                top: { xs: 6, sm: 8 },
+                                fontSize: "0.68rem",
+                                height: 18,
+                                minWidth: 18,
+                                px: 0.5,
+                            },
+                        }}
                     >
                         <Button
                             fullWidth
                             aria-label={`Likes You (${likesYouProfiles.length})`}
                             onClick={() => handleTabChange("likes")}
-                            startIcon={<WhatshotRoundedIcon fontSize="small" />}
+                            startIcon={<WhatshotRoundedIcon sx={{ fontSize: { xs: 15, sm: 18 } }} />}
                             sx={{
-                                py: 1.2,
+                                py: { xs: 0.85, sm: 1.1 },
+                                px: { xs: 0.6, sm: 1.8 },
                                 borderRadius: "9999px",
                                 fontWeight: activeTab === "likes" ? 900 : 700,
-                                fontSize: "0.85rem",
+                                fontSize: { xs: "0.74rem", sm: "0.85rem" },
                                 textTransform: "none",
-                                bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlue : "#121C2D",
-                                border: activeTab === "likes" ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
+                                whiteSpace: "nowrap",
+                                minWidth: 0,
+                                bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlue : "transparent",
                                 color: activeTab === "likes" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                                boxShadow: activeTab === "likes" ? "0 4px 16px rgba(37, 137, 216, 0.4)" : "0 2px 6px rgba(0, 0, 0, 0.2)",
+                                boxShadow: activeTab === "likes" ? "0 4px 14px rgba(37, 137, 216, 0.45)" : "none",
                                 transition: "all 0.18s ease",
+                                "& .MuiButton-startIcon": {
+                                    mr: { xs: 0.4, sm: 0.8 },
+                                    ml: 0,
+                                },
                                 "&:hover": {
-                                    bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlueHover : "#18253A",
+                                    bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlueHover : "rgba(255, 255, 255, 0.05)",
                                     color: "#FFFFFF",
-                                    transform: "translateY(-1px)",
                                 },
                             }}
                         >
                             Likes You ({likesYouProfiles.length})
                         </Button>
                     </Badge>
-                </Stack>
+                </Box>
 
                 {activeTab === "matches" && (
                     <>
@@ -748,6 +808,7 @@ function MatchesPage() {
                 <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.06)", mb: 2 }} />
 
                 {/* 3. VERTICAL CONVERSATIONS LIST (Direct Chat Snippets) */}
+                <Box sx={{ maxWidth: { xs: "100%", md: 780 }, mx: "auto" }}>
                 {loading && (
                     <Stack spacing={2}>
                         {[1, 2, 3, 4, 5].map((i) => (
@@ -776,8 +837,8 @@ function MatchesPage() {
                                     <ListItemButton
                                         onClick={() => openChatByConversation(conv)}
                                         sx={{
-                                            py: 1.5,
-                                            px: { xs: 1.8, sm: 2.2 },
+                                            py: { xs: 1.2, sm: 1.5 },
+                                            px: { xs: 1.4, sm: 2.2 },
                                             borderRadius: "20px",
                                             bgcolor: "#121C2D",
                                             border: "1px solid rgba(255, 255, 255, 0.08)",
@@ -791,15 +852,15 @@ function MatchesPage() {
                                             },
                                         }}
                                     >
-                                        <ListItemAvatar sx={{ minWidth: 68 }}>
+                                        <ListItemAvatar sx={{ minWidth: { xs: 58, sm: 68 } }}>
                                             <Box sx={{ position: "relative", display: "inline-block" }}>
                                                 <Box className="story-avatar-ring" sx={{ p: "2px" }}>
                                                     <Avatar
                                                         src={other.photos?.[0]}
                                                         alt={other.name}
                                                         sx={{
-                                                            width: 52,
-                                                            height: 52,
+                                                            width: { xs: 46, sm: 52 },
+                                                            height: { xs: 46, sm: 52 },
                                                             border: `2px solid ${BRAND_COLORS.bgDark}`,
                                                         }}
                                                     >
@@ -812,14 +873,16 @@ function MatchesPage() {
                                         </ListItemAvatar>
 
                                         <ListItemText
+                                            sx={{ minWidth: 0, flex: "1 1 auto", pr: { xs: 0.5, sm: 1 }, my: 0 }}
                                             primary={
-                                                <Stack direction="row" spacing={0.6} alignItems="center" sx={{ mb: 0.4 }}>
+                                                <Stack direction="row" spacing={0.6} alignItems="center" sx={{ mb: 0.3 }}>
                                                     <Typography
                                                         variant="subtitle1"
+                                                        noWrap
                                                         sx={{
                                                             fontWeight: unread ? 800 : 700,
                                                             color: BRAND_COLORS.deepNavy,
-                                                            fontSize: "0.98rem",
+                                                            fontSize: { xs: "0.92rem", sm: "0.98rem" },
                                                         }}
                                                     >
                                                         {other.name}
@@ -833,8 +896,8 @@ function MatchesPage() {
                                                     sx={{
                                                         color: unread ? "#FFFFFF" : BRAND_COLORS.textSecondary,
                                                         fontWeight: unread ? 700 : 400,
-                                                        fontSize: "0.85rem",
-                                                        maxWidth: { xs: 200, sm: 280 },
+                                                        fontSize: { xs: "0.78rem", sm: "0.85rem" },
+                                                        display: "block",
                                                     }}
                                                 >
                                                     {isPhoto ? (
@@ -851,14 +914,15 @@ function MatchesPage() {
                                         />
 
                                         {/* Timestamp, Unread Badge & Safety Options */}
-                                        <Stack direction="row" alignItems="center" spacing={1} sx={{ pl: 1 }}>
-                                            <Stack alignItems="flex-end" spacing={0.8}>
+                                        <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1 }} sx={{ pl: { xs: 0.5, sm: 1 }, flexShrink: 0 }}>
+                                            <Stack alignItems="flex-end" spacing={0.5}>
                                                 <Typography
                                                     variant="caption"
+                                                    noWrap
                                                     sx={{
                                                         color: unread ? BRAND_COLORS.coralPink : BRAND_COLORS.textMuted,
                                                         fontWeight: unread ? 700 : 500,
-                                                        fontSize: "0.75rem",
+                                                        fontSize: { xs: "0.7rem", sm: "0.75rem" },
                                                     }}
                                                 >
                                                     {formatTimeShort(conv.lastMessageAt || lastMsg?.createdAt)}
@@ -869,13 +933,13 @@ function MatchesPage() {
                                                         role="status"
                                                         aria-label={`${conv.unreadCount} unread messages`}
                                                         sx={{
-                                                            minWidth: 20,
-                                                            height: 20,
+                                                            minWidth: 18,
+                                                            height: 18,
                                                             px: 0.5,
                                                             borderRadius: "9999px",
                                                             bgcolor: BRAND_COLORS.coralPink,
                                                             color: "#FFFFFF",
-                                                            fontSize: "0.72rem",
+                                                            fontSize: "0.7rem",
                                                             fontWeight: 900,
                                                             display: "flex",
                                                             alignItems: "center",
@@ -901,7 +965,7 @@ function MatchesPage() {
                                                 }}
                                                 sx={{
                                                     color: BRAND_COLORS.textMuted,
-                                                    p: 0.5,
+                                                    p: { xs: 0.3, sm: 0.5 },
                                                     "&:hover": {
                                                         color: "#FFFFFF",
                                                         bgcolor: "rgba(255, 255, 255, 0.08)",
@@ -909,7 +973,7 @@ function MatchesPage() {
                                                 }}
                                                 aria-label="Safety options"
                                             >
-                                                <MoreVertRoundedIcon sx={{ fontSize: 19 }} />
+                                                <MoreVertRoundedIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
                                             </IconButton>
                                         </Stack>
                                     </ListItemButton>
@@ -924,19 +988,21 @@ function MatchesPage() {
                     <Paper
                         elevation={0}
                         sx={{
-                            p: 4.5,
+                            p: { xs: 3.5, sm: 4.5 },
                             textAlign: "center",
                             borderRadius: "24px",
                             bgcolor: BRAND_COLORS.surfaceDark,
                             border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                             boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
                             mt: 3,
+                            maxWidth: 480,
+                            mx: "auto",
                         }}
                     >
                         <Box
                             sx={{
-                                width: 76,
-                                height: 76,
+                                width: { xs: 64, sm: 76 },
+                                height: { xs: 64, sm: 76 },
                                 borderRadius: "50%",
                                 bgcolor: "rgba(255, 90, 112, 0.1)",
                                 display: "flex",
@@ -946,7 +1012,7 @@ function MatchesPage() {
                                 mb: 2.2,
                             }}
                         >
-                            <FavoriteRoundedIcon sx={{ fontSize: 38, color: BRAND_COLORS.coralPink }} />
+                            <FavoriteRoundedIcon sx={{ fontSize: { xs: 32, sm: 38 }, color: BRAND_COLORS.coralPink }} />
                         </Box>
                         <Typography variant="h6" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy, mb: 1, letterSpacing: "-0.01em" }}>
                             No Matches Yet
@@ -980,6 +1046,7 @@ function MatchesPage() {
                         </Button>
                     </Paper>
                 )}
+                </Box>
                     </>
                 )}
 
@@ -987,13 +1054,13 @@ function MatchesPage() {
                 {activeTab === "requests" && (
                     <Box>
                         {requestsError && (
-                            <Box sx={{ mb: 2, p: 1.5, borderRadius: "16px", bgcolor: "rgba(239, 68, 68, 0.15)", color: "#EF4444", fontSize: "0.85rem" }}>
+                            <Box sx={{ mb: 2, p: 1.5, borderRadius: "16px", bgcolor: "rgba(239, 68, 68, 0.15)", color: "#EF4444", fontSize: "0.85rem", maxWidth: 600, mx: "auto" }}>
                                 {requestsError}
                             </Box>
                         )}
 
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 1.8 }}>
-                            <Typography variant="h5" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy, letterSpacing: "-0.02em" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 1.5 }}>
+                            <Typography variant="h5" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy, letterSpacing: "-0.02em", fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
                                 Match Requests
                             </Typography>
                             {incomingRequests.length > 0 && (
@@ -1016,14 +1083,25 @@ function MatchesPage() {
                                 </Box>
                             )}
                         </Box>
-                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 2.5 }}>
+                        <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, mb: 3, maxWidth: 640 }}>
                             Members who want to connect with you. Accept to establish a connection, start chatting and video calling!
                         </Typography>
 
                         {loadingRequests && (
-                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", md: "repeat(4, 1fr)" }, gap: 2 }}>
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gridTemplateColumns: {
+                                        xs: "1fr",
+                                        sm: "repeat(2, 1fr)",
+                                        md: "repeat(3, 1fr)",
+                                        lg: "repeat(4, 1fr)",
+                                    },
+                                    gap: { xs: 2, sm: 2.5 },
+                                }}
+                            >
                                 {[1, 2, 3, 4].map((i) => (
-                                    <Skeleton key={i} variant="rounded" height={260} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)", borderRadius: "20px" }} />
+                                    <Skeleton key={i} variant="rounded" height={340} sx={{ bgcolor: "rgba(255, 255, 255, 0.05)", borderRadius: "20px" }} />
                                 ))}
                             </Box>
                         )}
@@ -1032,13 +1110,15 @@ function MatchesPage() {
                             <Paper
                                 elevation={0}
                                 sx={{
-                                    p: 5,
+                                    p: { xs: 3.5, sm: 5 },
                                     textAlign: "center",
                                     borderRadius: "24px",
                                     bgcolor: BRAND_COLORS.surfaceDark,
                                     border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                     boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
                                     my: 4,
+                                    maxWidth: 480,
+                                    mx: "auto",
                                 }}
                             >
                                 <Box
@@ -1079,7 +1159,18 @@ function MatchesPage() {
                         )}
 
                         {!loadingRequests && incomingRequests.length > 0 && (
-                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" }, gap: 2.5 }}>
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gridTemplateColumns: {
+                                        xs: "1fr",
+                                        sm: "repeat(2, 1fr)",
+                                        md: "repeat(3, 1fr)",
+                                        lg: "repeat(4, 1fr)",
+                                    },
+                                    gap: { xs: 2, sm: 2.5 },
+                                }}
+                            >
                                 {incomingRequests.map((reqItem) => {
                                     const sender = reqItem.sender;
                                     if (!sender) return null;
@@ -1106,11 +1197,11 @@ function MatchesPage() {
                                                 },
                                             }}
                                         >
-                                            <Box sx={{ position: "relative", height: 220, bgcolor: "#111" }}>
+                                            <Box sx={{ position: "relative", height: { xs: 260, sm: 220, md: 230 }, bgcolor: "#111", width: "100%" }}>
                                                 <img
                                                     src={sender.photos?.[0] || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80"}
                                                     alt={sender.name}
-                                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                                                 />
                                                 <Box
                                                     sx={{
@@ -1122,31 +1213,42 @@ function MatchesPage() {
                                                         p: 1.5,
                                                     }}
                                                 >
-                                                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>
+                                                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", lineHeight: 1.2, fontSize: "1.05rem" }}>
                                                         {sender.name}{sender.age ? `, ${sender.age}` : ""}
                                                     </Typography>
                                                 </Box>
                                             </Box>
 
-                                            <Box sx={{ p: 2, display: "flex", flexDirection: "column", flexGrow: 1, gap: 1.5 }}>
+                                            <Box sx={{ p: 2, display: "flex", flexDirection: "column", flexGrow: 1, gap: 1.2 }}>
                                                 {reqItem.message && (
                                                     <Box sx={{ p: 1.2, borderRadius: "12px", bgcolor: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
-                                                        <Typography variant="caption" sx={{ color: BRAND_COLORS.coralPink, fontWeight: 700, display: "block" }}>
+                                                        <Typography variant="caption" sx={{ color: BRAND_COLORS.coralPink, fontWeight: 700, display: "block", fontSize: "0.72rem" }}>
                                                             Personal Note
                                                         </Typography>
-                                                        <Typography variant="body2" sx={{ color: "#eee", fontStyle: "italic", fontSize: "0.85rem" }}>
+                                                        <Typography variant="body2" sx={{ color: "#eee", fontStyle: "italic", fontSize: "0.82rem", lineHeight: 1.4 }}>
                                                             "{reqItem.message}"
                                                         </Typography>
                                                     </Box>
                                                 )}
 
                                                 {sender.bio && (
-                                                    <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary, fontSize: "0.82rem", lineClamp: 2, overflow: "hidden" }}>
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            color: BRAND_COLORS.textSecondary,
+                                                            fontSize: "0.82rem",
+                                                            display: "-webkit-box",
+                                                            WebkitLineClamp: 2,
+                                                            WebkitBoxOrient: "vertical",
+                                                            overflow: "hidden",
+                                                            lineHeight: 1.4,
+                                                        }}
+                                                    >
                                                         {sender.bio}
                                                     </Typography>
                                                 )}
 
-                                                <Stack direction="row" spacing={1.5} sx={{ mt: "auto", pt: 1 }}>
+                                                <Stack direction="row" spacing={1.2} sx={{ mt: "auto", pt: 1.5 }}>
                                                     <Button
                                                         variant="contained"
                                                         fullWidth
@@ -1155,10 +1257,12 @@ function MatchesPage() {
                                                         sx={{
                                                             background: BRAND_COLORS.primaryGradient,
                                                             borderRadius: "12px",
-                                                            py: 1,
+                                                            py: 0.9,
                                                             fontWeight: 700,
                                                             textTransform: "none",
                                                             fontSize: "0.85rem",
+                                                            whiteSpace: "nowrap",
+                                                            minWidth: 0,
                                                         }}
                                                     >
                                                         {isAccepting ? "Connecting..." : "Accept"}
@@ -1172,10 +1276,12 @@ function MatchesPage() {
                                                             borderRadius: "12px",
                                                             borderColor: "rgba(255, 255, 255, 0.15)",
                                                             color: BRAND_COLORS.textSecondary,
-                                                            py: 1,
+                                                            py: 0.9,
                                                             fontWeight: 600,
                                                             textTransform: "none",
                                                             fontSize: "0.85rem",
+                                                            whiteSpace: "nowrap",
+                                                            minWidth: 0,
                                                             "&:hover": {
                                                                 borderColor: "rgba(239, 68, 68, 0.4)",
                                                                 color: "#EF4444",
@@ -1198,63 +1304,78 @@ function MatchesPage() {
                 {activeTab === "likes" && (
                     <Box>
                         {likesError && (
-                            <Box sx={{ mb: 2, p: 1.5, borderRadius: "16px", bgcolor: "rgba(239, 68, 68, 0.15)", color: "#EF4444", fontSize: "0.85rem" }}>
+                            <Box sx={{ mb: 2, p: 1.5, borderRadius: "16px", bgcolor: "rgba(239, 68, 68, 0.15)", color: "#EF4444", fontSize: "0.85rem", maxWidth: 600, mx: "auto" }}>
                                 {likesError}
                             </Box>
                         )}
 
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.5 }}>
                             <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                                <Typography variant="h5" sx={{ fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.02em", fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
                                     Interested in You
                                 </Typography>
-                                <Box
-                                    sx={{
-                                        width: 24,
-                                        height: 24,
-                                        borderRadius: "50%",
-                                        bgcolor: BRAND_COLORS.coralPink,
-                                        color: "#FFFFFF",
-                                        fontSize: "0.8rem",
-                                        fontWeight: 800,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        boxShadow: "0 2px 8px rgba(253, 58, 115, 0.5)",
-                                    }}
-                                >
-                                    {likesYouProfiles.length}
-                                </Box>
+                                {likesYouProfiles.length > 0 && (
+                                    <Box
+                                        sx={{
+                                            width: 24,
+                                            height: 24,
+                                            borderRadius: "50%",
+                                            bgcolor: BRAND_COLORS.coralPink,
+                                            color: "#FFFFFF",
+                                            fontSize: "0.8rem",
+                                            fontWeight: 800,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            boxShadow: "0 2px 8px rgba(253, 58, 115, 0.5)",
+                                        }}
+                                    >
+                                        {likesYouProfiles.length}
+                                    </Box>
+                                )}
                             </Box>
                             {likesYouProfiles.length > 0 && (
-                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary }}>
+                                <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, fontSize: { xs: "0.75rem", sm: "0.8rem" } }}>
                                     Match back to chat
                                 </Typography>
                             )}
                         </Box>
 
                         {loadingLikes && (
-                            <Stack spacing={2}>
-                                {[1, 2, 3].map((i) => (
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gridTemplateColumns: {
+                                        xs: "1fr",
+                                        sm: "repeat(2, 1fr)",
+                                        md: "repeat(3, 1fr)",
+                                        lg: "repeat(4, 1fr)",
+                                    },
+                                    gap: { xs: 2, sm: 2.5 },
+                                }}
+                            >
+                                {[1, 2, 3, 4].map((i) => (
                                     <Box key={i} sx={{ p: 2, borderRadius: "24px", bgcolor: BRAND_COLORS.surfaceDark, border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}` }}>
-                                        <Skeleton variant="rounded" width="100%" height={200} sx={{ borderRadius: "16px", bgcolor: "rgba(255,255,255,0.05)", mb: 1.5 }} />
+                                        <Skeleton variant="rounded" width="100%" height={220} sx={{ borderRadius: "16px", bgcolor: "rgba(255,255,255,0.05)", mb: 1.5 }} />
                                         <Skeleton variant="text" width="50%" height={24} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
                                         <Skeleton variant="text" width="80%" height={18} sx={{ bgcolor: "rgba(255,255,255,0.05)" }} />
                                     </Box>
                                 ))}
-                            </Stack>
+                            </Box>
                         )}
 
                         {!loadingLikes && likesYouProfiles.length === 0 && (
                             <Paper
                                 elevation={0}
                                 sx={{
-                                    p: 4,
+                                    p: { xs: 3.5, sm: 5 },
                                     textAlign: "center",
                                     borderRadius: "28px",
                                     bgcolor: BRAND_COLORS.surfaceDark,
                                     border: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
-                                    mt: 2,
+                                    my: 4,
+                                    maxWidth: 480,
+                                    mx: "auto",
                                 }}
                             >
                                 <Box
@@ -1299,7 +1420,18 @@ function MatchesPage() {
                         )}
 
                         {!loadingLikes && likesYouProfiles.length > 0 && (
-                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gridTemplateColumns: {
+                                        xs: "1fr",
+                                        sm: "repeat(2, 1fr)",
+                                        md: "repeat(3, 1fr)",
+                                        lg: "repeat(4, 1fr)",
+                                    },
+                                    gap: { xs: 2, sm: 2.5 },
+                                }}
+                            >
                                 {likesYouProfiles.map((profile) => (
                                     <Box
                                         key={profile._id}
@@ -1320,13 +1452,13 @@ function MatchesPage() {
                                         }}
                                     >
                                         {/* Profile Photo with Overlay */}
-                                        <Box sx={{ position: "relative", height: 240, width: "100%", bgcolor: "#111" }}>
+                                        <Box sx={{ position: "relative", height: { xs: 280, sm: 230, md: 240 }, width: "100%", bgcolor: "#111" }}>
                                             {profile.photos?.[0] ? (
                                                 <Box
                                                     component="img"
                                                     src={profile.photos[0]}
                                                     alt={profile.name}
-                                                    sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                                    sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                                                 />
                                             ) : (
                                                 <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1362,11 +1494,11 @@ function MatchesPage() {
                                             )}
                                             {/* Profile Name & Age */}
                                             <Box sx={{ position: "absolute", bottom: 12, left: 14, right: 14 }}>
-                                                <Typography variant="h6" sx={{ fontWeight: 900, color: "#fff", lineHeight: 1.2 }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 900, color: "#fff", lineHeight: 1.2, fontSize: "1.05rem" }}>
                                                     {profile.name}{profile.age ? `, ${profile.age}` : ""}
                                                 </Typography>
                                                 {profile.gender && (
-                                                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.7)", textTransform: "capitalize" }}>
+                                                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.7)", textTransform: "capitalize", fontSize: "0.74rem" }}>
                                                         {profile.gender}
                                                     </Typography>
                                                 )}
@@ -1386,6 +1518,7 @@ function MatchesPage() {
                                                         WebkitLineClamp: 2,
                                                         WebkitBoxOrient: "vertical",
                                                         overflow: "hidden",
+                                                        lineHeight: 1.4,
                                                     }}
                                                 >
                                                     {profile.bio}
@@ -1426,6 +1559,8 @@ function MatchesPage() {
                                                         fontSize: "0.82rem",
                                                         fontWeight: 700,
                                                         textTransform: "none",
+                                                        whiteSpace: "nowrap",
+                                                        minWidth: 0,
                                                         "&:hover": {
                                                             borderColor: "#EF4444",
                                                             bgcolor: "rgba(239, 68, 68, 0.1)",
@@ -1448,6 +1583,8 @@ function MatchesPage() {
                                                         fontSize: "0.82rem",
                                                         fontWeight: 800,
                                                         textTransform: "none",
+                                                        whiteSpace: "nowrap",
+                                                        minWidth: 0,
                                                         boxShadow: "0 4px 14px rgba(253, 58, 115, 0.35)",
                                                         "&:hover": {
                                                             background: BRAND_COLORS.primaryGradientHover,
