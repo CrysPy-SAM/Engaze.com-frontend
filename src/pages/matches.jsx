@@ -8,7 +8,6 @@ import { BRAND_COLORS } from "../theme";
 import "../App.css";
 import {
     Avatar,
-    Badge,
     Box,
     Button,
     Chip,
@@ -555,76 +554,64 @@ function MatchesPage() {
                 {/* Segmented Tab Control: Matches vs Requests vs Likes You */}
                 <Box
                     sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        bgcolor: "#121C2D",
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, 1fr)",
+                        bgcolor: "#0E1726",
                         borderRadius: "9999px",
                         p: { xs: 0.5, sm: 0.8 },
-                        border: "1px solid rgba(255, 255, 255, 0.08)",
-                        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.35)",
-                        maxWidth: { xs: "100%", sm: 580, md: 620 },
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        boxShadow: "0 6px 24px rgba(0, 0, 0, 0.4)",
+                        maxWidth: { xs: "100%", sm: 540, md: 620 },
                         mx: "auto",
                         mb: { xs: 2.5, md: 3.5 },
                         gap: { xs: 0.5, sm: 1 },
                     }}
                 >
-                    <Button
-                        fullWidth
-                        aria-label={`Matches (${matches.length})`}
-                        onClick={() => handleTabChange("matches")}
-                        startIcon={<FavoriteRoundedIcon sx={{ fontSize: { xs: 15, sm: 18 } }} />}
-                        sx={{
-                            py: { xs: 0.85, sm: 1.1 },
-                            px: { xs: 0.6, sm: 1.8 },
-                            borderRadius: "9999px",
-                            fontWeight: activeTab === "matches" ? 900 : 700,
-                            fontSize: { xs: "0.74rem", sm: "0.85rem" },
-                            textTransform: "none",
-                            whiteSpace: "nowrap",
-                            minWidth: 0,
-                            bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlue : "transparent",
-                            color: activeTab === "matches" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                            boxShadow: activeTab === "matches" ? "0 4px 14px rgba(37, 137, 216, 0.45)" : "none",
-                            transition: "all 0.18s ease",
-                            "& .MuiButton-startIcon": {
-                                mr: { xs: 0.4, sm: 0.8 },
-                                ml: 0,
-                            },
-                            "&:hover": {
-                                bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlueHover : "rgba(255, 255, 255, 0.05)",
-                                color: "#FFFFFF",
-                            },
-                        }}
-                    >
-                        Matches ({matches.length})
-                    </Button>
+                    <Box sx={{ position: "relative", width: "100%" }}>
+                        <Button
+                            fullWidth
+                            aria-label={`Matches (${matches.length})`}
+                            onClick={() => handleTabChange("matches")}
+                            startIcon={<FavoriteRoundedIcon sx={{ fontSize: { xs: 15, sm: 18 } }} />}
+                            sx={{
+                                py: { xs: 0.9, sm: 1.15 },
+                                px: { xs: 0.5, sm: 1.5 },
+                                width: "100%",
+                                borderRadius: "9999px",
+                                fontWeight: activeTab === "matches" ? 900 : 700,
+                                fontSize: { xs: "0.74rem", sm: "0.85rem" },
+                                textTransform: "none",
+                                whiteSpace: "nowrap",
+                                minWidth: 0,
+                                bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlue : "transparent",
+                                color: activeTab === "matches" ? "#FFFFFF" : "rgba(255, 255, 255, 0.72)",
+                                boxShadow: activeTab === "matches" ? "0 4px 16px rgba(37, 137, 216, 0.5)" : "none",
+                                border: activeTab === "matches" ? "1px solid rgba(255, 255, 255, 0.15)" : "1px solid transparent",
+                                transition: "all 0.18s ease",
+                                "& .MuiButton-startIcon": {
+                                    mr: { xs: 0.4, sm: 0.8 },
+                                    ml: 0,
+                                },
+                                "&:hover": {
+                                    bgcolor: activeTab === "matches" ? BRAND_COLORS.brandBlueHover : "rgba(255, 255, 255, 0.06)",
+                                    color: "#FFFFFF",
+                                },
+                            }}
+                        >
+                            Matches ({matches.length})
+                        </Button>
+                    </Box>
 
-                    <Badge
-                        badgeContent={unreadRequestsCount}
-                        color="error"
-                        max={99}
-                        invisible={unreadRequestsCount === 0}
-                        sx={{
-                            width: "100%",
-                            "& .MuiBadge-badge": {
-                                right: { xs: 6, sm: 12 },
-                                top: { xs: 6, sm: 8 },
-                                fontSize: "0.68rem",
-                                height: 18,
-                                minWidth: 18,
-                                px: 0.5,
-                            },
-                        }}
-                    >
+                    <Box sx={{ position: "relative", width: "100%" }}>
                         <Button
                             fullWidth
                             aria-label={`Requests (${incomingRequests.length})`}
                             onClick={() => handleTabChange("requests")}
                             startIcon={<NotificationsRoundedIcon sx={{ fontSize: { xs: 15, sm: 18 } }} />}
                             sx={{
-                                py: { xs: 0.85, sm: 1.1 },
-                                px: { xs: 0.6, sm: 1.8 },
+                                py: { xs: 0.9, sm: 1.15 },
+                                px: { xs: 0.5, sm: 1.5 },
+                                width: "100%",
                                 borderRadius: "9999px",
                                 fontWeight: activeTab === "requests" ? 900 : 700,
                                 fontSize: { xs: "0.74rem", sm: "0.85rem" },
@@ -632,48 +619,59 @@ function MatchesPage() {
                                 whiteSpace: "nowrap",
                                 minWidth: 0,
                                 bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlue : "transparent",
-                                color: activeTab === "requests" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                                boxShadow: activeTab === "requests" ? "0 4px 14px rgba(37, 137, 216, 0.45)" : "none",
+                                color: activeTab === "requests" ? "#FFFFFF" : "rgba(255, 255, 255, 0.72)",
+                                boxShadow: activeTab === "requests" ? "0 4px 16px rgba(37, 137, 216, 0.5)" : "none",
+                                border: activeTab === "requests" ? "1px solid rgba(255, 255, 255, 0.15)" : "1px solid transparent",
                                 transition: "all 0.18s ease",
                                 "& .MuiButton-startIcon": {
                                     mr: { xs: 0.4, sm: 0.8 },
                                     ml: 0,
                                 },
                                 "&:hover": {
-                                    bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlueHover : "rgba(255, 255, 255, 0.05)",
+                                    bgcolor: activeTab === "requests" ? BRAND_COLORS.brandBlueHover : "rgba(255, 255, 255, 0.06)",
                                     color: "#FFFFFF",
                                 },
                             }}
                         >
                             Requests ({incomingRequests.length})
                         </Button>
-                    </Badge>
+                        {unreadRequestsCount > 0 && (
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    top: { xs: -2, sm: 0 },
+                                    right: { xs: 2, sm: 8 },
+                                    minWidth: { xs: 16, sm: 18 },
+                                    height: { xs: 16, sm: 18 },
+                                    px: 0.5,
+                                    borderRadius: "9999px",
+                                    bgcolor: BRAND_COLORS.coralPink,
+                                    color: "#FFFFFF",
+                                    fontSize: { xs: "0.62rem", sm: "0.68rem" },
+                                    fontWeight: 900,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    boxShadow: "0 2px 8px rgba(253, 58, 115, 0.7)",
+                                    pointerEvents: "none",
+                                    zIndex: 2,
+                                }}
+                            >
+                                {unreadRequestsCount > 99 ? "99+" : unreadRequestsCount}
+                            </Box>
+                        )}
+                    </Box>
 
-                    <Badge
-                        badgeContent={unreadLikesCount}
-                        color="error"
-                        max={99}
-                        invisible={unreadLikesCount === 0}
-                        sx={{
-                            width: "100%",
-                            "& .MuiBadge-badge": {
-                                right: { xs: 6, sm: 12 },
-                                top: { xs: 6, sm: 8 },
-                                fontSize: "0.68rem",
-                                height: 18,
-                                minWidth: 18,
-                                px: 0.5,
-                            },
-                        }}
-                    >
+                    <Box sx={{ position: "relative", width: "100%" }}>
                         <Button
                             fullWidth
                             aria-label={`Likes You (${likesYouProfiles.length})`}
                             onClick={() => handleTabChange("likes")}
                             startIcon={<WhatshotRoundedIcon sx={{ fontSize: { xs: 15, sm: 18 } }} />}
                             sx={{
-                                py: { xs: 0.85, sm: 1.1 },
-                                px: { xs: 0.6, sm: 1.8 },
+                                py: { xs: 0.9, sm: 1.15 },
+                                px: { xs: 0.5, sm: 1.5 },
+                                width: "100%",
                                 borderRadius: "9999px",
                                 fontWeight: activeTab === "likes" ? 900 : 700,
                                 fontSize: { xs: "0.74rem", sm: "0.85rem" },
@@ -681,26 +679,253 @@ function MatchesPage() {
                                 whiteSpace: "nowrap",
                                 minWidth: 0,
                                 bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlue : "transparent",
-                                color: activeTab === "likes" ? "#FFFFFF" : BRAND_COLORS.textSecondary,
-                                boxShadow: activeTab === "likes" ? "0 4px 14px rgba(37, 137, 216, 0.45)" : "none",
+                                color: activeTab === "likes" ? "#FFFFFF" : "rgba(255, 255, 255, 0.72)",
+                                boxShadow: activeTab === "likes" ? "0 4px 16px rgba(37, 137, 216, 0.5)" : "none",
+                                border: activeTab === "likes" ? "1px solid rgba(255, 255, 255, 0.15)" : "1px solid transparent",
                                 transition: "all 0.18s ease",
                                 "& .MuiButton-startIcon": {
                                     mr: { xs: 0.4, sm: 0.8 },
                                     ml: 0,
                                 },
                                 "&:hover": {
-                                    bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlueHover : "rgba(255, 255, 255, 0.05)",
+                                    bgcolor: activeTab === "likes" ? BRAND_COLORS.brandBlueHover : "rgba(255, 255, 255, 0.06)",
                                     color: "#FFFFFF",
                                 },
                             }}
                         >
                             Likes You ({likesYouProfiles.length})
                         </Button>
-                    </Badge>
+                        {unreadLikesCount > 0 && (
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    top: { xs: -2, sm: 0 },
+                                    right: { xs: 2, sm: 8 },
+                                    minWidth: { xs: 16, sm: 18 },
+                                    height: { xs: 16, sm: 18 },
+                                    px: 0.5,
+                                    borderRadius: "9999px",
+                                    bgcolor: BRAND_COLORS.coralPink,
+                                    color: "#FFFFFF",
+                                    fontSize: { xs: "0.62rem", sm: "0.68rem" },
+                                    fontWeight: 900,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    boxShadow: "0 2px 8px rgba(253, 58, 115, 0.7)",
+                                    pointerEvents: "none",
+                                    zIndex: 2,
+                                }}
+                            >
+                                {unreadLikesCount > 99 ? "99+" : unreadLikesCount}
+                            </Box>
+                        )}
+                    </Box>
                 </Box>
 
                 {activeTab === "matches" && (
                     <>
+                {/* PROMINENT PENDING ACTIONS HUB (Requests & Likes Banners) */}
+                {(incomingRequests.length > 0 || likesYouProfiles.length > 0) && (
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                sm: (incomingRequests.length > 0 && likesYouProfiles.length > 0) ? "repeat(2, 1fr)" : "1fr",
+                            },
+                            gap: 1.8,
+                            mb: 3,
+                        }}
+                    >
+                        {incomingRequests.length > 0 && (
+                            <Paper
+                                elevation={0}
+                                onClick={() => handleTabChange("requests")}
+                                sx={{
+                                    p: { xs: 1.8, sm: 2.2 },
+                                    borderRadius: "20px",
+                                    cursor: "pointer",
+                                    background: "linear-gradient(135deg, rgba(37, 137, 216, 0.22) 0%, #121C2D 100%)",
+                                    border: "1px solid rgba(37, 137, 216, 0.35)",
+                                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    gap: 1.5,
+                                    transition: "all 0.22s ease",
+                                    "&:hover": {
+                                        transform: "translateY(-2px)",
+                                        borderColor: BRAND_COLORS.brandBlue,
+                                        boxShadow: "0 12px 32px rgba(37, 137, 216, 0.3)",
+                                    },
+                                }}
+                            >
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+                                    <Box sx={{ position: "relative", flexShrink: 0 }}>
+                                        <Avatar
+                                            src={incomingRequests[0]?.sender?.photos?.[0]}
+                                            alt={incomingRequests[0]?.sender?.name}
+                                            sx={{
+                                                width: { xs: 46, sm: 50 },
+                                                height: { xs: 46, sm: 50 },
+                                                border: `2px solid ${BRAND_COLORS.brandBlue}`,
+                                            }}
+                                        >
+                                            {incomingRequests[0]?.sender?.name?.charAt(0) || "R"}
+                                        </Avatar>
+                                        <Box
+                                            sx={{
+                                                position: "absolute",
+                                                bottom: -2,
+                                                right: -2,
+                                                width: 18,
+                                                height: 18,
+                                                borderRadius: "50%",
+                                                bgcolor: BRAND_COLORS.brandBlue,
+                                                color: "#fff",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.5)",
+                                            }}
+                                        >
+                                            <NotificationsRoundedIcon sx={{ fontSize: 11 }} />
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{ minWidth: 0 }}>
+                                        <Typography
+                                            variant="subtitle2"
+                                            noWrap
+                                            sx={{ fontWeight: 800, color: "#FFFFFF", fontSize: { xs: "0.88rem", sm: "0.95rem" } }}
+                                        >
+                                            {incomingRequests.length} Match Request{incomingRequests.length > 1 ? "s" : ""}
+                                        </Typography>
+                                        <Typography
+                                            variant="caption"
+                                            noWrap
+                                            sx={{ color: "rgba(255, 255, 255, 0.7)", display: "block", fontSize: { xs: "0.74rem", sm: "0.8rem" } }}
+                                        >
+                                            {incomingRequests[0]?.sender?.name ? `${incomingRequests[0].sender.name} wants to connect` : "Respond to connect"}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                                <Button
+                                    size="small"
+                                    sx={{
+                                        borderRadius: "9999px",
+                                        bgcolor: BRAND_COLORS.brandBlue,
+                                        color: "#fff",
+                                        fontWeight: 800,
+                                        fontSize: { xs: "0.72rem", sm: "0.78rem" },
+                                        textTransform: "none",
+                                        px: { xs: 1.4, sm: 2 },
+                                        py: 0.6,
+                                        whiteSpace: "nowrap",
+                                        flexShrink: 0,
+                                        "&:hover": { bgcolor: BRAND_COLORS.brandBlueHover },
+                                    }}
+                                >
+                                    Review ➔
+                                </Button>
+                            </Paper>
+                        )}
+
+                        {likesYouProfiles.length > 0 && (
+                            <Paper
+                                elevation={0}
+                                onClick={() => handleTabChange("likes")}
+                                sx={{
+                                    p: { xs: 1.8, sm: 2.2 },
+                                    borderRadius: "20px",
+                                    cursor: "pointer",
+                                    background: "linear-gradient(135deg, rgba(253, 58, 115, 0.22) 0%, #121C2D 100%)",
+                                    border: "1px solid rgba(253, 58, 115, 0.35)",
+                                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    gap: 1.5,
+                                    transition: "all 0.22s ease",
+                                    "&:hover": {
+                                        transform: "translateY(-2px)",
+                                        borderColor: BRAND_COLORS.coralPink,
+                                        boxShadow: "0 12px 32px rgba(253, 58, 115, 0.3)",
+                                    },
+                                }}
+                            >
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+                                    <Box sx={{ position: "relative", flexShrink: 0 }}>
+                                        <Avatar
+                                            src={likesYouProfiles[0]?.photos?.[0]}
+                                            alt={likesYouProfiles[0]?.name}
+                                            sx={{
+                                                width: { xs: 46, sm: 50 },
+                                                height: { xs: 46, sm: 50 },
+                                                border: `2px solid ${BRAND_COLORS.coralPink}`,
+                                            }}
+                                        >
+                                            {likesYouProfiles[0]?.name?.charAt(0) || "L"}
+                                        </Avatar>
+                                        <Box
+                                            sx={{
+                                                position: "absolute",
+                                                bottom: -2,
+                                                right: -2,
+                                                width: 18,
+                                                height: 18,
+                                                borderRadius: "50%",
+                                                bgcolor: BRAND_COLORS.coralPink,
+                                                color: "#fff",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.5)",
+                                            }}
+                                        >
+                                            <WhatshotRoundedIcon sx={{ fontSize: 11 }} />
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{ minWidth: 0 }}>
+                                        <Typography
+                                            variant="subtitle2"
+                                            noWrap
+                                            sx={{ fontWeight: 800, color: "#FFFFFF", fontSize: { xs: "0.88rem", sm: "0.95rem" } }}
+                                        >
+                                            {likesYouProfiles.length} Interested In You
+                                        </Typography>
+                                        <Typography
+                                            variant="caption"
+                                            noWrap
+                                            sx={{ color: "rgba(255, 255, 255, 0.7)", display: "block", fontSize: { xs: "0.74rem", sm: "0.8rem" } }}
+                                        >
+                                            Liked your profile • Match back
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                                <Button
+                                    size="small"
+                                    sx={{
+                                        borderRadius: "9999px",
+                                        bgcolor: BRAND_COLORS.coralPink,
+                                        color: "#fff",
+                                        fontWeight: 800,
+                                        fontSize: { xs: "0.72rem", sm: "0.78rem" },
+                                        textTransform: "none",
+                                        px: { xs: 1.4, sm: 2 },
+                                        py: 0.6,
+                                        whiteSpace: "nowrap",
+                                        flexShrink: 0,
+                                        "&:hover": { bgcolor: "#E61A68" },
+                                    }}
+                                >
+                                    See Likes ➔
+                                </Button>
+                            </Paper>
+                        )}
+                    </Box>
+                )}
+
                 {/* 1. MATCHES SECTION HEADER (Matches 5) */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 1.8 }}>
                     <Typography variant="h5" sx={{ fontWeight: 900, color: BRAND_COLORS.deepNavy, letterSpacing: "-0.02em" }}>
@@ -726,10 +951,10 @@ function MatchesPage() {
                 </Box>
 
                 {/* 2. HORIZONTAL RECENT MATCHES RAIL */}
-                {(loading || matches.length > 0) && (
+                {(loading || matches.length > 0 || likesYouProfiles.length > 0 || incomingRequests.length > 0) && (
                     <Box sx={{ mb: 2.5 }}>
                         <Typography variant="caption" sx={{ color: BRAND_COLORS.textSecondary, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", mb: 1.5 }}>
-                            Recent Matches
+                            Recent Matches & Activity
                         </Typography>
                         <Box
                             sx={{
@@ -742,6 +967,128 @@ function MatchesPage() {
                                 "::-webkit-scrollbar-thumb": { bgcolor: "rgba(255,255,255,0.1)", borderRadius: "9999px" },
                             }}
                         >
+                            {/* Likes You Story Avatar in Rail */}
+                            {!loading && likesYouProfiles.length > 0 && (
+                                <Box
+                                    onClick={() => handleTabChange("likes")}
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                        cursor: "pointer",
+                                        minWidth: 70,
+                                        transition: "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                                        "&:hover": { transform: "scale(1.06)" },
+                                        "&:active": { transform: "scale(0.96)" },
+                                    }}
+                                >
+                                    <Box sx={{ mb: 0.8, position: "relative" }}>
+                                        <Avatar
+                                            src={likesYouProfiles[0]?.photos?.[0]}
+                                            alt="Likes You"
+                                            sx={{
+                                                width: 58,
+                                                height: 58,
+                                                border: `2.5px solid ${BRAND_COLORS.coralPink}`,
+                                                boxShadow: "0 4px 14px rgba(253, 58, 115, 0.4)",
+                                            }}
+                                        />
+                                        <Box
+                                            sx={{
+                                                position: "absolute",
+                                                bottom: -2,
+                                                right: -2,
+                                                width: 20,
+                                                height: 20,
+                                                borderRadius: "50%",
+                                                bgcolor: BRAND_COLORS.coralPink,
+                                                color: "#fff",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.5)",
+                                            }}
+                                        >
+                                            <WhatshotRoundedIcon sx={{ fontSize: 13 }} />
+                                        </Box>
+                                    </Box>
+                                    <Typography
+                                        variant="caption"
+                                        noWrap
+                                        sx={{
+                                            fontWeight: 800,
+                                            color: BRAND_COLORS.coralPink,
+                                            maxWidth: 68,
+                                            textAlign: "center",
+                                            fontSize: "0.78rem",
+                                        }}
+                                    >
+                                        {likesYouProfiles.length} Like{likesYouProfiles.length > 1 ? "s" : ""}
+                                    </Typography>
+                                </Box>
+                            )}
+
+                            {/* Match Requests Story Avatar in Rail */}
+                            {!loading && incomingRequests.length > 0 && (
+                                <Box
+                                    onClick={() => handleTabChange("requests")}
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                        cursor: "pointer",
+                                        minWidth: 70,
+                                        transition: "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                                        "&:hover": { transform: "scale(1.06)" },
+                                        "&:active": { transform: "scale(0.96)" },
+                                    }}
+                                >
+                                    <Box sx={{ mb: 0.8, position: "relative" }}>
+                                        <Avatar
+                                            src={incomingRequests[0]?.sender?.photos?.[0]}
+                                            alt="Requests"
+                                            sx={{
+                                                width: 58,
+                                                height: 58,
+                                                border: `2.5px solid ${BRAND_COLORS.brandBlue}`,
+                                                boxShadow: "0 4px 14px rgba(37, 137, 216, 0.4)",
+                                            }}
+                                        />
+                                        <Box
+                                            sx={{
+                                                position: "absolute",
+                                                bottom: -2,
+                                                right: -2,
+                                                width: 20,
+                                                height: 20,
+                                                borderRadius: "50%",
+                                                bgcolor: BRAND_COLORS.brandBlue,
+                                                color: "#fff",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.5)",
+                                            }}
+                                        >
+                                            <NotificationsRoundedIcon sx={{ fontSize: 13 }} />
+                                        </Box>
+                                    </Box>
+                                    <Typography
+                                        variant="caption"
+                                        noWrap
+                                        sx={{
+                                            fontWeight: 800,
+                                            color: BRAND_COLORS.brandBlue,
+                                            maxWidth: 68,
+                                            textAlign: "center",
+                                            fontSize: "0.78rem",
+                                        }}
+                                    >
+                                        {incomingRequests.length} Request{incomingRequests.length > 1 ? "s" : ""}
+                                    </Typography>
+                                </Box>
+                            )}
+
                             {loading && (
                                 <>
                                     {[1, 2, 3, 4].map((i) => (
