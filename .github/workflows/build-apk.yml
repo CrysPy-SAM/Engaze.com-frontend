@@ -35,6 +35,8 @@ jobs:
         run: npm run build
         env:
           CI: false
+          REACT_APP_API_URL: https://enagaze-com-backend.onrender.com
+          REACT_APP_GOOGLE_CLIENT_ID: 564036796132-l4ojuk8un6ui6iepgu4ddjq322p8h4vl.apps.googleusercontent.com
 
       - name: Sync Capacitor Android
         run: npx cap sync android

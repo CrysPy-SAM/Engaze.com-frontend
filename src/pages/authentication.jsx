@@ -196,7 +196,8 @@ export default function Authentication() {
     const [formState, setFormState] = React.useState(0); // 0 = Sign In, 1 = Sign Up
     const [loading, setLoading] = React.useState(false);
 
-    const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+    const DEFAULT_GOOGLE_CLIENT_ID = "564036796132-l4ojuk8un6ui6iepgu4ddjq322p8h4vl.apps.googleusercontent.com";
+    const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID;
     const {
         handleRegister,
         handleLogin,

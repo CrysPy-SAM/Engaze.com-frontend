@@ -8,10 +8,20 @@ const getBaseServerUrl = () => {
         return process.env.REACT_APP_API_URL.trim();
     }
 
-    // 2. Intelligent browser runtime detection
+    // 2. Intelligent browser & mobile runtime detection
     if (typeof window !== "undefined" && window.location) {
+        // Detect native mobile runtime (Capacitor/Cordova runs inside Android WebView from localhost)
+        const isCapacitor = Boolean(window.Capacitor) ||
+            window.location.protocol === "capacitor:" ||
+            window.location.protocol === "ionic:" ||
+            (window.location.hostname === "localhost" && navigator.userAgent.includes("Android"));
+
+        if (isCapacitor) {
+            return PRODUCTION_BACKEND_URL;
+        }
+
         const hostname = window.location.hostname;
-        // If not on localhost or 127.0.0.1 (e.g. on Vercel, custom domain, or mobile device hitting LAN), use production Render backend
+        // If not on local dev server, use production Render backend
         if (hostname !== "localhost" && hostname !== "127.0.0.1" && hostname !== "0.0.0.0") {
             return PRODUCTION_BACKEND_URL;
         }
