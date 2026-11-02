@@ -4,12 +4,19 @@ User-agent: *
 # Allow crawling of public landing page
 Allow: /
 Allow: /auth
+Allow: /safety
+Allow: /terms
+Allow: /privacy
 
 # Allow crawling of static assets and branding (including Google Favicon bot)
 Allow: /favicon.ico
 Allow: /favicon.svg
+Allow: /favicon-16x16.png
+Allow: /favicon-32x32.png
 Allow: /favicon-48x48.png
+Allow: /favicon-96x96.png
 Allow: /apple-touch-icon.png
+Allow: /logo.png
 Allow: /logo192.png
 Allow: /logo512.png
 Allow: /manifest.json

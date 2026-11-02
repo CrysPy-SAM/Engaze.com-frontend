@@ -6,16 +6,21 @@
     <meta name="theme-color" content="#0B0D17" />
     <meta
       name="description"
-      content="Meet new people on Engaze, a modern dating platform for discovering profiles, instant messaging, and secure 1-on-1 video calls. Find genuine connections online."
+      content="Meet new people on Engaze (engaze.date), the official online dating and live video connections platform. Discover verified profiles, chat with mutual matches, and connect over secure 1-on-1 browser video dates."
     />
+    <meta name="keywords" content="Engaze, engaze.date, engaze dating, engaze dating app, online dating platform, live video dating, speed dating, video date, find singles, singles matchmaking" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://www.engaze.date/" />
 
     <!-- Engaze Brand Favicons (Google Search, Modern Browsers, & Apple Devices) -->
-    <!-- Primary 48x48 PNG icon for Google Search (Google requires 48px square multiple) -->
+    <!-- Google Search Crawler requires a square multiple of 48px (48x48, 96x96, etc.) -->
     <link rel="icon" type="image/png" sizes="48x48" href="%PUBLIC_URL%/favicon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="%PUBLIC_URL%/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
     <!-- Standard multi-resolution ICO (48x48, 32x32, 16x16) for legacy and fallback crawlers -->
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" sizes="48x48 32x32 16x16" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
     <!-- Vector icon for modern desktop browser tabs -->
     <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />
     <!-- Apple Touch Icon for iOS Safari & bookmarks -->
@@ -29,7 +34,7 @@
     <meta property="og:title" content="Engaze — Dating & Live Video Connections" />
     <meta
       property="og:description"
-      content="Meet new people on Engaze, a modern dating platform for discovering profiles, instant messaging, and secure 1-on-1 video calls. Find genuine connections online."
+      content="Engaze is an official online dating platform connecting singles through mutual discovery, real-time chat, and encrypted 1-on-1 video dates."
     />
     <meta property="og:url" content="https://www.engaze.date/" />
     <meta property="og:image" content="https://www.engaze.date/logo512.png" />
@@ -43,7 +48,7 @@
     <meta name="twitter:title" content="Engaze — Dating & Live Video Connections" />
     <meta
       name="twitter:description"
-      content="Meet new people on Engaze, a modern dating platform for discovering profiles, instant messaging, and secure 1-on-1 video calls. Find genuine connections online."
+      content="Engaze is an official online dating platform connecting singles through mutual discovery, real-time chat, and encrypted 1-on-1 video dates."
     />
     <meta name="twitter:image" content="https://www.engaze.date/logo512.png" />
     <meta name="twitter:image:alt" content="Engaze Dating and Live Video Brand Logo" />
@@ -57,7 +62,25 @@
           "@type": "Organization",
           "@id": "https://www.engaze.date/#organization",
           "name": "Engaze",
+          "alternateName": [
+            "Engaze Dating",
+            "Engaze.date",
+            "Engaze Dating Platform",
+            "Engaze Video Dating"
+          ],
           "url": "https://www.engaze.date/",
+          "disambiguatingDescription": "Engaze (engaze.date) is an official online dating and live video connections platform for singles. It is not affiliated with engaze.in (an enterprise software consultancy) or any productivity mobile application.",
+          "sameAs": [
+            "https://www.instagram.com/engaze.date?vrfl=M3ducDhpNTRhbmRp"
+          ],
+          "knowsAbout": [
+            "Online Dating",
+            "Singles Matchmaking",
+            "Video Dating",
+            "Dating App",
+            "Live Video Connections",
+            "Mutual Matching"
+          ],
           "logo": {
             "@type": "ImageObject",
             "@id": "https://www.engaze.date/#logo",
@@ -92,7 +115,11 @@
             "Engaze Dating Platform"
           ],
           "url": "https://www.engaze.date/",
-          "description": "Engaze is a modern dating platform for discovering profiles, instant messaging, and secure 1-on-1 video calls.",
+          "description": "Engaze is an official modern dating platform for discovering singles, instant messaging, and secure 1-on-1 video calls.",
+          "about": {
+            "@type": "Thing",
+            "name": "Online Dating and Video Connections Platform"
+          },
           "publisher": {
             "@id": "https://www.engaze.date/#organization"
           },
@@ -104,13 +131,23 @@
           "name": "Engaze Dating Platform",
           "url": "https://www.engaze.date/",
           "applicationCategory": "DatingApplication",
-          "operatingSystem": "All modern web browsers",
-          "description": "Online dating application featuring compatible candidate discovery, instant messaging with mutual matches, and direct 1-on-1 live video calls."
+          "applicationSubCategory": "SocialNetworkingApplication",
+          "operatingSystem": "All modern web browsers, iOS Safari, Android Chrome",
+          "description": "Official online dating application featuring compatible candidate discovery, instant messaging with mutual matches, and direct 1-on-1 live video calls.",
+          "disambiguatingDescription": "Online dating and live video platform for singles (engaze.date)."
         },
         {
           "@type": "FAQPage",
           "@id": "https://www.engaze.date/#faq",
           "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Is Engaze a dating app or dating platform?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Engaze (accessible at https://www.engaze.date/) is an official online dating and live video connections platform created for adult singles to discover matches, chat, and connect through secure 1-on-1 video dates. Engaze is an online dating service and is not an enterprise IT consultancy (such as engaze.in) nor an unrelated productivity software application."
+              }
+            },
             {
               "@type": "Question",
               "name": "What is Engaze?",

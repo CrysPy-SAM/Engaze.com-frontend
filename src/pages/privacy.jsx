@@ -292,7 +292,7 @@ export default function PrivacyPolicy() {
                 }}
             >
                 <Typography variant="body2" sx={{ color: BRAND_COLORS.textSecondary }}>
-                    &copy; {new Date().getFullYear()} Engaze.com &bull; All Rights Reserved. &bull; <Link to="/terms" style={{ color: BRAND_COLORS.brandBlue, textDecoration: "none", fontWeight: 600 }}>Terms of Service</Link> &bull; <Link to="/safety" style={{ color: BRAND_COLORS.brandBlue, textDecoration: "none", fontWeight: 600 }}>Safety Center</Link>
+                    &copy; {new Date().getFullYear()} Engaze.com &bull; All Rights Reserved. &bull; <Link to="/terms" style={{ color: BRAND_COLORS.brandBlue, textDecoration: "none", fontWeight: 600 }}>Terms of Service</Link> &bull; <Link to="/safety" style={{ color: BRAND_COLORS.brandBlue, textDecoration: "none", fontWeight: 600 }}>Safety Center</Link> &bull; <a href="https://www.instagram.com/engaze.date?vrfl=M3ducDhpNTRhbmRp" target="_blank" rel="noopener noreferrer" style={{ color: "#E1306C", textDecoration: "none", fontWeight: 600 }}>Instagram</a>
                 </Typography>
             </Box>
         </Box>

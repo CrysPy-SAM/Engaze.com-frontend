@@ -39,6 +39,7 @@ import LocalCafeRoundedIcon from "@mui/icons-material/LocalCafeRounded";
 import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
 import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
 import VerifiedUserRoundedIcon from "@mui/icons-material/VerifiedUserRounded";
+import InstagramIcon from "@mui/icons-material/Instagram";
 
 // Hand-drawn SVG Doodles matching Sky Blue Hero styling
 const BurstLines = ({ sx = {}, rotation = 0, color = "#0A6CFF" }) => (
@@ -3044,6 +3045,10 @@ export default function LandingPage() {
                     <Stack spacing={2.5}>
                         {[
                             {
+                                q: "Is Engaze a dating app or dating platform?",
+                                a: "Yes! Engaze (engaze.date) is an official modern online dating and live video connections platform. It is built specifically for adult singles to find compatible matches, chat securely, and connect on encrypted 1-on-1 video dates. Engaze is an online dating platform and is not affiliated with engaze.in (an enterprise software consultancy) or mobile productivity apps.",
+                            },
+                            {
                                 q: "What is Engaze?",
                                 a: "Engaze is an online dating platform designed for genuine singles. It combines portrait card discovery, real-time mutual chat, and browser-based 1-on-1 video dates to help you discover authentic chemistry without having to exchange phone numbers.",
                             },
@@ -3286,6 +3291,39 @@ export default function LandingPage() {
                                     <span>contact@engaze.date</span>
                                 </Box>
                             </Stack>
+
+                            {/* Official Instagram Profile Link */}
+                            <Box sx={{ mt: 2.5 }}>
+                                <Box
+                                    component="a"
+                                    href="https://www.instagram.com/engaze.date?vrfl=M3ducDhpNTRhbmRp"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Engaze on Instagram"
+                                    sx={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 1,
+                                        color: "#FFFFFF",
+                                        background: "linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)",
+                                        borderRadius: "9999px",
+                                        px: 2,
+                                        py: 0.8,
+                                        fontSize: "0.88rem",
+                                        fontWeight: 700,
+                                        textDecoration: "none",
+                                        boxShadow: "0 2px 10px rgba(221, 42, 123, 0.35)",
+                                        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                                        "&:hover": {
+                                            transform: "translateY(-1px)",
+                                            boxShadow: "0 4px 16px rgba(221, 42, 123, 0.5)",
+                                        },
+                                    }}
+                                >
+                                    <InstagramIcon sx={{ fontSize: 20 }} />
+                                    <span>Follow @engaze.date</span>
+                                </Box>
+                            </Box>
                         </Grid>
 
                         <Grid item xs={6} sm={4} md={2}>
@@ -3315,9 +3353,30 @@ export default function LandingPage() {
                             <Typography sx={{ fontWeight: 900, fontSize: "0.95rem", color: "#FFFFFF", mb: 2 }}>
                                 JOIN THE COMMUNITY
                             </Typography>
-                            <Typography sx={{ color: "#9CA3AF", fontSize: "0.88rem", mb: 2.5, lineHeight: 1.5 }}>
+                            <Typography sx={{ color: "#9CA3AF", fontSize: "0.88rem", mb: 1.8, lineHeight: 1.5 }}>
                                 Free account setup. Zero credit card required. Connect authentically today.
                             </Typography>
+                            <Box sx={{ mb: 2.2 }}>
+                                <Box
+                                    component="a"
+                                    href="https://www.instagram.com/engaze.date?vrfl=M3ducDhpNTRhbmRp"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{
+                                        color: "#FD79A8",
+                                        fontSize: "0.85rem",
+                                        fontWeight: 600,
+                                        textDecoration: "none",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 0.8,
+                                        "&:hover": { textDecoration: "underline", color: "#FFFFFF" },
+                                    }}
+                                >
+                                    <InstagramIcon sx={{ fontSize: 18 }} />
+                                    <span>@engaze.date on Instagram</span>
+                                </Box>
+                            </Box>
                             <Button
                                 component={Link}
                                 to="/auth"
@@ -3354,10 +3413,26 @@ export default function LandingPage() {
                         <Typography variant="body2" sx={{ color: "#6B7280", fontSize: "0.85rem" }}>
                             © {new Date().getFullYear()} Engaze. All rights reserved. Strictly 18+ adult dating service.
                         </Typography>
-                        <Stack direction="row" spacing={3}>
+                        <Stack direction="row" spacing={3} alignItems="center">
                             <Box component={Link} to="/privacy" sx={{ color: "#6B7280", textDecoration: "none", "&:hover": { color: "#FFFFFF" } }}>Privacy</Box>
                             <Box component={Link} to="/terms" sx={{ color: "#6B7280", textDecoration: "none", "&:hover": { color: "#FFFFFF" } }}>Terms</Box>
                             <Box component={Link} to="/safety" sx={{ color: "#6B7280", textDecoration: "none", "&:hover": { color: "#FFFFFF" } }}>Safety</Box>
+                            <Box
+                                component="a"
+                                href="https://www.instagram.com/engaze.date?vrfl=M3ducDhpNTRhbmRp"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Engaze on Instagram"
+                                sx={{
+                                    color: "#9CA3AF",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    transition: "color 0.2s ease, transform 0.2s ease",
+                                    "&:hover": { color: "#FD79A8", transform: "scale(1.15)" },
+                                }}
+                            >
+                                <InstagramIcon sx={{ fontSize: 20 }} />
+                            </Box>
                         </Stack>
                     </Box>
                 </Container>
