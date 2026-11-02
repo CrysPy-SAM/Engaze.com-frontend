@@ -2,6 +2,8 @@ import React, { useEffect, Suspense, lazy } from 'react';
 import './App.css';
 import { Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { ThemeProvider, CssBaseline, Box, CircularProgress, Typography, Button } from '@mui/material';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import theme from './theme';
 import LandingPage from './pages/landing';
 import { AuthProvider } from './contexts/AuthContext';
@@ -211,6 +213,16 @@ export function PageTitleManager() {
 }
 
 function App() {
+  useEffect(() => {
+    // Only applies inside installed mobile app (Capacitor), zero effect on web browser
+    if (Capacitor.isNativePlatform()) {
+      document.body.classList.add('capacitor-native');
+      StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+      StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
+      StatusBar.setBackgroundColor({ color: '#0B0D17' }).catch(() => {});
+    }
+  }, []);
+
   const appContent = (
     <ThemeProvider theme={theme}>
       <CssBaseline />
