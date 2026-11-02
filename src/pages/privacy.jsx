@@ -23,6 +23,7 @@ export default function PrivacyPolicy() {
                 sx={{
                     px: { xs: 2, sm: 4, md: 8 },
                     py: { xs: 1.8, md: 2.2 },
+                    pt: { xs: "calc(var(--safe-top, 0px) + 14px)", md: 2.2 },
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",

@@ -865,7 +865,7 @@ export default function LandingPage() {
                 component="header"
                 sx={{
                     position: "sticky",
-                    top: { xs: 8, md: 16 },
+                    top: { xs: "calc(var(--safe-top, 0px) + 8px)", md: 16 },
                     zIndex: 1100,
                     px: { xs: 2, sm: 3, md: 4 },
                     display: "flex",
@@ -1025,7 +1025,7 @@ export default function LandingPage() {
                 onClose={() => setMobileMenuOpen(false)}
                 PaperProps={{
                     sx: {
-                        top: { xs: 10, sm: 16 },
+                        top: { xs: "calc(var(--safe-top, 0px) + 10px)", sm: 16 },
                         mx: "auto",
                         width: { xs: "calc(100% - 24px)", sm: "calc(100% - 36px)" },
                         maxWidth: 400,

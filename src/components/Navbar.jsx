@@ -253,6 +253,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                         borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
                         boxShadow: "0 4px 20px rgba(0, 0, 0, 0.4)",
                         zIndex: 1100,
+                        pt: "var(--safe-top, 0px)",
                     }}
                 >
                     <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
