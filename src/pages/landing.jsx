@@ -43,6 +43,7 @@ import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
 import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
 import VerifiedUserRoundedIcon from "@mui/icons-material/VerifiedUserRounded";
 import InstagramIcon from "@mui/icons-material/Instagram";
+import AndroidRoundedIcon from "@mui/icons-material/AndroidRounded";
 
 // Hand-drawn SVG Doodles matching Sky Blue Hero styling
 const BurstLines = ({ sx = {}, rotation = 0, color = "#0A6CFF" }) => (
@@ -1535,6 +1536,7 @@ export default function LandingPage() {
                         spacing={1.8}
                         justifyContent="center"
                         alignItems="center"
+                        sx={{ mt: { xs: 3, sm: 4 }, width: "100%", flexWrap: "wrap", gap: 1.5 }}
                     >
                         <Button
                             component={Link}
@@ -1583,6 +1585,40 @@ export default function LandingPage() {
                             >
                                 →
                             </Box>
+                        </Button>
+
+                        <Button
+                            component="a"
+                            href="https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="engaze-btn-download-apk"
+                            variant="outlined"
+                            startIcon={<AndroidRoundedIcon sx={{ color: "#0A8A42", fontSize: 21 }} />}
+                            sx={{
+                                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                                backdropFilter: "blur(6px)",
+                                color: "#0D2B45",
+                                borderColor: "rgba(10, 138, 66, 0.35)",
+                                px: { xs: 2.8, sm: 3.2 },
+                                py: { xs: 1.05, sm: 1.2 },
+                                fontSize: { xs: "0.90rem", sm: "0.95rem" },
+                                fontWeight: 700,
+                                textTransform: "none",
+                                width: { xs: "100%", sm: "auto" },
+                                maxWidth: { xs: 300, sm: "none" },
+                                borderRadius: "9999px",
+                                boxShadow: "0 4px 14px rgba(10, 138, 66, 0.12)",
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                    backgroundColor: "#FFFFFF",
+                                    borderColor: "#0A8A42",
+                                    transform: "translateY(-2px)",
+                                    boxShadow: "0 6px 18px rgba(10, 138, 66, 0.22)",
+                                },
+                            }}
+                        >
+                            Download Android App (.apk)
                         </Button>
 
                         <Button
