@@ -1,10 +1,15 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag (e.g. v1.0.0)'
+        required: false
+        default: 'v1.0.0'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-android:
@@ -49,10 +54,39 @@ jobs:
           cd android
           ./gradlew assembleDebug --no-daemon
 
-      - name: Upload Android APK
+      - name: Upload Android APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Engaze-Android-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
+
+      - name: Prepare APK for Release
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Engaze.apk
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: success()
+        with:
+          tag_name: ${{ github.event.inputs.version || 'v1.0.0' }}
+          name: "Engaze Android App ${{ github.event.inputs.version || 'v1.0.0' }}"
+          body: |
+            ## 📱 Engaze Android App
+            
+            ### ✨ What's New:
+            - **Google Sign-In**: Fixed authentication popup & account selection
+            - **Native Mobile Experience**: 100dvh mobile dating UI (Tinder / Bumble style)
+            - **Edge-to-Edge Chat**: Notch & safe-area navigation padding
+            - **In-App Updates**: Automatic update notification for future releases
+            - **Video Dating**: Real-time 1-on-1 video calling
+            
+            ### 📥 Download:
+            Download **Engaze.apk** below to install directly on your Android phone.
+          draft: false
+          prerelease: false
+          files: |
+            android/app/build/outputs/apk/debug/Engaze.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

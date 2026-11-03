@@ -977,7 +977,7 @@ export default function LandingPage() {
 
                         <Button
                             component="a"
-                            href="https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest"
+                            href="https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest/download/Engaze.apk"
                             target="_blank"
                             rel="noopener noreferrer"
                             variant="outlined"
@@ -1207,7 +1207,7 @@ export default function LandingPage() {
                 {/* Mobile Drawer APK Download */}
                 <Button
                     component="a"
-                    href="https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest"
+                    href="https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest/download/Engaze.apk"
                     target="_blank"
                     rel="noopener noreferrer"
                     variant="outlined"
@@ -1641,7 +1641,7 @@ export default function LandingPage() {
 
                         <Button
                             component="a"
-                            href="https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest"
+                            href="https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest/download/Engaze.apk"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="engaze-btn-download-apk"
