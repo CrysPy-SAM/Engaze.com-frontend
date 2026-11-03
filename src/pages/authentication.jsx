@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
@@ -188,6 +188,7 @@ const HeartDoodle = ({ sx = {}, rotation = 0, color = "#FF7A8A" }) => (
 
 export default function Authentication() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [name, setName] = React.useState("");
@@ -195,6 +196,17 @@ export default function Authentication() {
     const [error, setError] = React.useState("");
     const [formState, setFormState] = React.useState(0); // 0 = Sign In, 1 = Sign Up
     const [loading, setLoading] = React.useState(false);
+
+    // Sync formState from URL query param (e.g. /auth?mode=register or /auth?mode=login)
+    React.useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const mode = params.get("mode");
+        if (mode === "register" || mode === "signup") {
+            setFormState(1);
+        } else if (mode === "login" || mode === "signin") {
+            setFormState(0);
+        }
+    }, [location.search]);
 
     const DEFAULT_GOOGLE_CLIENT_ID = "564036796132-l4ojuk8un6ui6iepgu4ddjq322p8h4vl.apps.googleusercontent.com";
     const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID;
@@ -563,7 +575,7 @@ export default function Authentication() {
                 </Typography>
             </Grid>
 
-            {/* Right Form Card Section (Warm Ivory & Polished Modern Card) */}
+            {/* Right Form Card Section (Edge-to-edge Native App on xs, Warm Ivory Card on sm+) */}
             <Grid
                 item
                 xs={12}
@@ -571,13 +583,13 @@ export default function Authentication() {
                 md={6}
                 lg={5.5}
                 sx={{
-                    bgcolor: "#FFFDFB",
+                    bgcolor: { xs: "#FFFFFF", sm: "#FFFDFB" },
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
                     alignItems: "center",
                     minHeight: "100vh",
-                    p: { xs: 2, sm: 4, md: 6, lg: 8 },
+                    p: { xs: 0, sm: 4, md: 6, lg: 8 },
                     boxSizing: "border-box",
                     width: "100%",
                     maxWidth: "100%",
@@ -588,62 +600,49 @@ export default function Authentication() {
                         maxWidth: 440,
                         width: "100%",
                         bgcolor: "#FFFFFF",
-                        p: { xs: 2.5, sm: 4.5 },
-                        borderRadius: { xs: "22px", sm: "28px" },
-                        boxShadow: "0 18px 50px rgba(255, 160, 140, 0.12)",
-                        border: "1px solid rgba(255, 193, 181, 0.35)",
+                        px: { xs: 2.5, sm: 4.5 },
+                        py: { xs: 2.5, sm: 4.5 },
+                        pt: { xs: "calc(var(--safe-top, 0px) + 16px)", sm: 4.5 },
+                        pb: { xs: "calc(var(--safe-bottom, 0px) + 24px)", sm: 4.5 },
+                        borderRadius: { xs: 0, sm: "28px" },
+                        boxShadow: { xs: "none", sm: "0 18px 50px rgba(255, 160, 140, 0.12)" },
+                        border: { xs: "none", sm: "1px solid rgba(255, 193, 181, 0.35)" },
                         boxSizing: "border-box",
                         mx: "auto",
+                        minHeight: { xs: "100vh", sm: "auto" },
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
                     }}
                 >
                     {/* Mobile Brand Header */}
                     <Box
                         sx={{
                             display: { xs: "flex", sm: "none" },
-                            flexDirection: "column",
                             alignItems: "center",
-                            mb: 3,
+                            justifyContent: "space-between",
+                            mb: 2.5,
                         }}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", mb: 2 }}>
-                            <EngazeLogo
-                                size={32}
-                                fontSize="1.35rem"
-                                textColor="#142B45"
-                                onClick={() => navigate("/")}
-                            />
-                            <Box
-                                component={Link}
-                                to="/"
-                                sx={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 0.5,
-                                    color: "#2589D8",
-                                    fontWeight: 700,
-                                    fontSize: "0.80rem",
-                                    textDecoration: "none",
-                                }}
-                            >
-                                <ArrowBackRoundedIcon sx={{ fontSize: 14 }} />
-                                <span>Home</span>
-                            </Box>
-                        </Box>
-                        <Box
+                        <IconButton
+                            onClick={() => navigate(-1)}
+                            aria-label="Go Back"
                             sx={{
-                                bgcolor: "rgba(255, 233, 226, 0.6)",
-                                color: "#2589D8",
-                                px: 1.8,
-                                py: 0.45,
-                                borderRadius: "9999px",
-                                fontSize: "0.75rem",
-                                fontWeight: 800,
-                                letterSpacing: "0.04em",
-                                border: "1px solid rgba(255, 193, 181, 0.40)",
+                                color: "#142B45",
+                                bgcolor: "rgba(20, 43, 69, 0.05)",
+                                p: 1,
+                                "&:active": { transform: "scale(0.92)" },
                             }}
                         >
-                            Real Connections • Mutual Matches Only
-                        </Box>
+                            <ArrowBackRoundedIcon sx={{ fontSize: 22 }} />
+                        </IconButton>
+                        <EngazeLogo
+                            size={32}
+                            fontSize="1.35rem"
+                            textColor="#142B45"
+                            onClick={() => navigate("/")}
+                        />
+                        <Box sx={{ width: 40 }} />
                     </Box>
 
                     {/* Form Title & Description */}

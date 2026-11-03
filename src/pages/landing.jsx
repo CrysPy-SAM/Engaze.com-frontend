@@ -1,5 +1,8 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useContext, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
+import { AuthContext } from "../contexts/AuthContext";
+import NativeMobileWelcome from "../components/NativeMobileWelcome";
 import "../App.css";
 import {
     Box,
@@ -845,7 +848,21 @@ function MobileDifferenceSwitch() {
 }
 
 export default function LandingPage() {
+    const navigate = useNavigate();
+    const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    // If user is already authenticated, take them straight to the main app feed
+    useEffect(() => {
+        if (!authLoading && isAuthenticated) {
+            navigate("/home", { replace: true });
+        }
+    }, [authLoading, isAuthenticated, navigate]);
+
+    // Inside native mobile app (Capacitor APK), present true native mobile onboarding
+    if (Capacitor.isNativePlatform()) {
+        return <NativeMobileWelcome />;
+    }
 
     const scrollToSection = (id) => {
         setMobileMenuOpen(false);

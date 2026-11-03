@@ -114,7 +114,7 @@ function HomeComponent() {
             {/* Unified Bottom Navigation Dock */}
             <Navbar hideTopNav={true} />
 
-            <Container maxWidth="sm" sx={{ pt: { xs: 3, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+            <Container maxWidth="sm" sx={{ pt: { xs: "calc(var(--safe-top, 0px) + 20px)", sm: 4 }, px: { xs: 2, sm: 3 } }}>
                 {/* 1. TOP USER PROFILE HEADER */}
                 <Box
                     sx={{
