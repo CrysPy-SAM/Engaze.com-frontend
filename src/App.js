@@ -8,6 +8,7 @@ import theme from './theme';
 import LandingPage from './pages/landing';
 import { AuthProvider } from './contexts/AuthContext';
 import { DirectCallProvider } from './contexts/DirectCallContext';
+import AppUpdateChecker from './components/AppUpdateChecker';
 const DirectVideoCallModal = lazy(() => import('./components/DirectVideoCallModal'));
 // GoogleOAuthProvider loaded lazily inside Authentication route
 
@@ -257,6 +258,7 @@ function App() {
               <Suspense fallback={null}>
                 <DirectVideoCallModal />
               </Suspense>
+              <AppUpdateChecker />
             </DirectCallProvider>
           </AuthProvider>
         </Router>
