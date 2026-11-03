@@ -1,9 +1,13 @@
 package com.engaze.date;
 
 import android.app.Dialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
+import android.webkit.DownloadListener;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -13,6 +17,29 @@ import com.getcapacitor.BridgeWebChromeClient;
 public class MainActivity extends BridgeActivity {
     private Dialog popupDialog = null;
 
+    private boolean handleExternalUrl(String url) {
+        if (url != null && (
+            url.endsWith(".apk") || 
+            url.contains(".apk?") || 
+            url.contains("/download/") || 
+            url.contains("/releases/") ||
+            url.contains("github.com")
+        )) {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                MainActivity.this.startActivity(intent);
+                if (popupDialog != null && popupDialog.isShowing()) {
+                    popupDialog.dismiss();
+                }
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,6 +48,20 @@ public class MainActivity extends BridgeActivity {
         WebSettings mainSettings = mainWebView.getSettings();
         mainSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         mainSettings.setSupportMultipleWindows(true);
+
+        DownloadListener downloadListener = (url, userAgent, contentDisposition, mimetype, contentLength) -> {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                MainActivity.this.startActivity(intent);
+                if (popupDialog != null && popupDialog.isShowing()) {
+                    popupDialog.dismiss();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        };
+        mainWebView.setDownloadListener(downloadListener);
 
         mainWebView.setWebChromeClient(new BridgeWebChromeClient(this.bridge) {
             @Override
@@ -40,6 +81,8 @@ public class MainActivity extends BridgeActivity {
                 });
                 popupDialog.show();
 
+                popupWebView.setDownloadListener(downloadListener);
+
                 popupWebView.setWebChromeClient(new WebChromeClient() {
                     @Override
                     public void onCloseWindow(WebView window) {
@@ -52,6 +95,19 @@ public class MainActivity extends BridgeActivity {
                 popupWebView.setWebViewClient(new WebViewClient() {
                     @Override
                     public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                        if (handleExternalUrl(url)) {
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                        if (request != null && request.getUrl() != null) {
+                            if (handleExternalUrl(request.getUrl().toString())) {
+                                return true;
+                            }
+                        }
                         return false;
                     }
 

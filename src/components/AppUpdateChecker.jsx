@@ -85,7 +85,12 @@ export default function AppUpdateChecker() {
 
     const handleUpdateClick = () => {
         if (updateInfo.apkDownloadUrl) {
-            window.open(updateInfo.apkDownloadUrl, "_system");
+            setDialogOpen(false);
+            try {
+                window.location.href = updateInfo.apkDownloadUrl;
+            } catch (err) {
+                window.open(updateInfo.apkDownloadUrl, "_system");
+            }
         }
     };
 
