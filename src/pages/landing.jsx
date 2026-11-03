@@ -976,6 +976,33 @@ export default function LandingPage() {
                         </Button>
 
                         <Button
+                            component="a"
+                            href="https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            variant="outlined"
+                            startIcon={<AndroidRoundedIcon sx={{ color: "#0A8A42", fontSize: 18 }} />}
+                            sx={{
+                                display: { xs: "none", md: "inline-flex" },
+                                borderColor: "rgba(10, 138, 66, 0.35)",
+                                color: "#0D2B45",
+                                px: 1.8,
+                                py: 0.65,
+                                fontSize: "0.82rem",
+                                fontWeight: 700,
+                                textTransform: "none",
+                                borderRadius: "9999px",
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                    borderColor: "#0A8A42",
+                                    backgroundColor: "rgba(10, 138, 66, 0.05)",
+                                },
+                            }}
+                        >
+                            Get App
+                        </Button>
+
+                        <Button
                             component={Link}
                             to="/auth"
                             className="engaze-btn-primary"
@@ -1176,6 +1203,31 @@ export default function LandingPage() {
                         Get Started →
                     </Button>
                 </Stack>
+
+                {/* Mobile Drawer APK Download */}
+                <Button
+                    component="a"
+                    href="https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="outlined"
+                    startIcon={<AndroidRoundedIcon sx={{ color: "#0A8A42", fontSize: 19 }} />}
+                    sx={{
+                        mt: 1.5,
+                        width: "100%",
+                        py: 1,
+                        borderRadius: "9999px",
+                        borderColor: "rgba(10, 138, 66, 0.4)",
+                        color: "#0D2B45",
+                        fontWeight: 700,
+                        fontSize: "0.85rem",
+                        textTransform: "none",
+                        justifyContent: "center",
+                        "&:hover": { borderColor: "#0A8A42", backgroundColor: "rgba(10, 138, 66, 0.05)" },
+                    }}
+                >
+                    Download Android App (.apk)
+                </Button>
             </Drawer>
 
             {/* ============================================================
