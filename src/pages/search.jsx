@@ -458,7 +458,7 @@ function SearchPage() {
     };
 
     return (
-        <Box sx={{ minHeight: "100vh", bgcolor: BRAND_COLORS.bgDark, pb: { xs: 12, md: 6 } }}>
+        <Box sx={{ minHeight: "100vh", bgcolor: BRAND_COLORS.bgDark, pb: { xs: "calc(var(--safe-bottom, 0px) + 84px)", md: 6 } }}>
             <Navbar />
 
             <Container maxWidth="sm" sx={{ pt: { xs: 2.5, sm: 4 }, px: { xs: 2, sm: 3 } }}>
