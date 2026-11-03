@@ -12,10 +12,10 @@ export default function NativeMobileWelcome() {
     const navigate = useNavigate();
     const { isAuthenticated, loading } = useContext(AuthContext);
 
-    // If user is already authenticated, take them straight to dashboard
+    // If user is already authenticated, take them straight to discovery
     useEffect(() => {
         if (!loading && isAuthenticated) {
-            navigate("/home", { replace: true });
+            navigate("/discovery", { replace: true });
         }
     }, [loading, isAuthenticated, navigate]);
 
