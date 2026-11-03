@@ -164,6 +164,10 @@ export const DirectCallProvider = ({ children }) => {
     useEffect(() => {
         activeChatConvIdRef.current = activeChatConversationId;
     }, [activeChatConversationId]);
+    const userDataRef = useRef(userData);
+    useEffect(() => {
+        userDataRef.current = userData;
+    }, [userData]);
 
     callSessionRef.current = callSession;
 
@@ -773,7 +777,7 @@ export const DirectCallProvider = ({ children }) => {
         // 1b. INCOMING CHAT MESSAGE EVENT (Global background notification)
         socket.on("chat:new-message", (newMsg) => {
             if (!newMsg) return;
-            const myId = userData?._id?.toString();
+            const myId = userDataRef.current?._id?.toString();
             const senderId = (newMsg.sender?._id || newMsg.sender)?.toString();
 
             if (senderId && myId && senderId !== myId) {

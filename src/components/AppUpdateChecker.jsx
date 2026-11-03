@@ -16,8 +16,8 @@ import axios from "axios";
 import server from "../environment";
 
 // Current installed version of this client bundle
-export const CURRENT_APP_VERSION = "1.0.1";
-export const CURRENT_VERSION_CODE = 2;
+export const CURRENT_APP_VERSION = "1.0.2";
+export const CURRENT_VERSION_CODE = 3;
 
 /**
  * Compare two semver strings (e.g. "1.0.1" > "1.0.0")
