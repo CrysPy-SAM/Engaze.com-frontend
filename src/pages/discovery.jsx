@@ -540,7 +540,7 @@ function DiscoveryPage() {
                     justifyContent: "center",
                     px: { xs: 1.5, sm: 2, md: 3 },
                     pt: { xs: 1.5, sm: 2 },
-                    pb: { xs: 10, md: 4 },
+                    pb: { xs: "calc(var(--safe-bottom, 0px) + 80px)", md: 4 },
                     maxWidth: 520,
                     width: "100%",
                     mx: "auto",
