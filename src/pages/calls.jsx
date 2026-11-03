@@ -143,7 +143,7 @@ export default function CallsPage() {
     };
 
     return (
-        <Box sx={{ minHeight: "100vh", bgcolor: BRAND_COLORS.background, color: BRAND_COLORS.textPrimary, pb: { xs: 12, md: 6 } }}>
+        <Box sx={{ minHeight: "100vh", bgcolor: BRAND_COLORS.background, color: BRAND_COLORS.textPrimary, pb: { xs: "calc(var(--safe-bottom, 0px) + 84px)", md: 6 } }}>
             <Navbar />
 
             <Container maxWidth="md" sx={{ pt: { xs: 2.5, md: 4 }, px: { xs: 2, sm: 3 } }}>
