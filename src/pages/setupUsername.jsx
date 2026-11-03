@@ -185,6 +185,8 @@ export default function SetupUsernamePage() {
                 alignItems: "center",
                 justifyContent: "center",
                 p: { xs: 2, sm: 3 },
+                pt: { xs: "calc(var(--safe-top, 0px) + 20px)", sm: 4 },
+                pb: { xs: "calc(var(--safe-bottom, 0px) + 20px)", sm: 4 },
                 bgcolor: "#0A111C",
                 background: "radial-gradient(ellipse 90% 85% at 50% 20%, #121C2D 0%, #0A111C 65%, #070B13 100%)",
                 position: "relative",
