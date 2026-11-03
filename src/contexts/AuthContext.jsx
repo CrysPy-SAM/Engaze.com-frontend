@@ -179,7 +179,7 @@ export const AuthProvider = ({ children }) => {
                     localStorage.setItem("token", newToken);
                     setToken(newToken);
                     setUserData(response.data.user);
-                    router("/home");
+                    router("/discovery");
                 }
                 return response.data.message || "Registration successful!";
             } else {
@@ -217,7 +217,7 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem("token", newToken);
                 setToken(newToken);
                 setUserData(response.data.user);
-                router("/home");
+                router("/discovery");
                 return response.data;
             } else {
                 throw new Error(response.data?.message || "Invalid credentials");
@@ -257,7 +257,7 @@ export const AuthProvider = ({ children }) => {
                     if (response.data.requiresUsernameSetup || response.data.user?.usernameSetupCompleted === false) {
                         router("/setup-username");
                     } else {
-                        router("/home");
+                        router("/discovery");
                     }
                 }
                 return response.data;
