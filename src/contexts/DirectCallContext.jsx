@@ -105,6 +105,9 @@ class RingtoneEngine {
             clearInterval(this.timer);
             this.timer = null;
         }
+        if (typeof window !== "undefined" && window.EngazeNativeNotifications?.cancelCall) {
+            window.EngazeNativeNotifications.cancelCall();
+        }
     }
 }
 
@@ -113,6 +116,7 @@ const ringtone = new RingtoneEngine();
 export const DirectCallProvider = ({ children }) => {
     const {
         token,
+        userData,
         getIceServers,
         setUnreadChatCount,
         getUnreadChatCount,
@@ -139,6 +143,13 @@ export const DirectCallProvider = ({ children }) => {
     const [callDuration, setCallDuration] = useState(0);
     const [statusMessage, setStatusMessage] = useState("");
     const [callError, setCallError] = useState(null);
+
+    // Request Android 13+ Notification Permission on app launch
+    useEffect(() => {
+        if (token && typeof window !== "undefined" && window.EngazeNativeNotifications?.requestPermission) {
+            window.EngazeNativeNotifications.requestPermission();
+        }
+    }, [token]);
 
     // Refs
     const socketRef = useRef(null);
@@ -733,6 +744,11 @@ export const DirectCallProvider = ({ children }) => {
 
         // 1. INCOMING CALL EVENT (Callee received call from partner)
         socket.on("call:incoming", ({ callId, caller, conversationId }) => {
+            // Trigger Android Native Incoming Call Heads-up & Ringtone notification
+            if (typeof window !== "undefined" && window.EngazeNativeNotifications?.showCall) {
+                window.EngazeNativeNotifications.showCall(caller?.name || "Match", callId);
+            }
+
             // If already busy on another call or currently in random video pool, report busy
             const inRandomVideo = typeof window !== "undefined" && (
                 window.location.pathname.startsWith("/random-video") ||
@@ -752,6 +768,28 @@ export const DirectCallProvider = ({ children }) => {
             setCallState("incoming_ringing");
             setStatusMessage(`Incoming video call from ${caller?.name || "someone"}...`);
             ringtone.startRing("incoming");
+        });
+
+        // 1b. INCOMING CHAT MESSAGE EVENT (Global background notification)
+        socket.on("chat:new-message", (newMsg) => {
+            if (!newMsg) return;
+            const myId = userData?._id?.toString();
+            const senderId = (newMsg.sender?._id || newMsg.sender)?.toString();
+
+            if (senderId && myId && senderId !== myId) {
+                const activePath = typeof window !== "undefined" ? window.location.pathname : "";
+                const isViewingChat = activePath.startsWith("/chat");
+
+                // Trigger notification if app is minimized or user is on another screen
+                if (!isViewingChat || (typeof document !== "undefined" && document.hidden)) {
+                    const senderName = newMsg.sender?.name || "New Message";
+                    const text = newMsg.content || (newMsg.mediaUrl ? "Sent a photo 📷" : "Sent a message");
+                    const convId = newMsg.conversation?._id || newMsg.conversation || "";
+                    if (typeof window !== "undefined" && window.EngazeNativeNotifications?.showMessage) {
+                        window.EngazeNativeNotifications.showMessage(senderName, text, convId.toString());
+                    }
+                }
+            }
         });
 
         // 2. CALL ACCEPTED EVENT (Caller notified that Callee accepted)
