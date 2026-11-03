@@ -26,6 +26,6 @@ code {
 /* Mobile App Native Insets - only applies inside installed mobile app (Capacitor) */
 body.capacitor-native {
   --safe-top: max(env(safe-area-inset-top, 0px), 32px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
   padding-bottom: var(--safe-bottom);
 }
