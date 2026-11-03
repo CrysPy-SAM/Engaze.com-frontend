@@ -225,7 +225,7 @@ export default function Authentication() {
             if (userData?.usernameSetupCompleted === false) {
                 navigate("/setup-username", { replace: true });
             } else {
-                navigate("/home", { replace: true });
+                navigate("/discovery", { replace: true });
             }
         }
     }, [authLoading, isAuthenticated, userData, navigate]);
