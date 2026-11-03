@@ -666,7 +666,7 @@ function ProfilePage() {
     }
 
     return (
-        <Box sx={{ minHeight: "100vh", bgcolor: BRAND_COLORS.backgroundDark, pb: 10 }}>
+        <Box sx={{ minHeight: "100vh", bgcolor: BRAND_COLORS.backgroundDark, pb: { xs: "calc(var(--safe-bottom, 0px) + 84px)", md: 6 } }}>
             {/* Unified Brand Navigation */}
             <Navbar />
 
