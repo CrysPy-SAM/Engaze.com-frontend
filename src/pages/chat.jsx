@@ -1449,6 +1449,7 @@ function ChatPage() {
                             <Box
                                 sx={{
                                     p: 1.6,
+                                    pt: { xs: "calc(var(--safe-top, 0px) + 12px)", sm: 1.6 },
                                     px: { xs: 2, md: 3 },
                                     borderBottom: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                     display: "flex",
@@ -1984,6 +1985,7 @@ function ChatPage() {
                                 }}
                                 sx={{
                                     p: { xs: 1.2, sm: 1.8 },
+                                    pb: { xs: "calc(var(--safe-bottom, 0px) + 8px)", sm: 1.8 },
                                     borderTop: `1px solid ${BRAND_COLORS.surfaceDarkBorder}`,
                                     bgcolor: BRAND_COLORS.surfaceDark,
                                     display: "flex",
