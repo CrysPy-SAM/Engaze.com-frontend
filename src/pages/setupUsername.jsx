@@ -77,7 +77,7 @@ export default function SetupUsernamePage() {
             if (!isAuthenticated) {
                 navigate("/auth", { replace: true });
             } else if (userData?.usernameSetupCompleted === true) {
-                navigate("/home", { replace: true });
+                navigate("/discovery", { replace: true });
             }
         }
     }, [authLoading, isAuthenticated, userData, navigate]);
@@ -161,7 +161,7 @@ export default function SetupUsernamePage() {
         setSubmitting(true);
         try {
             await setupUsername(clientVal.trimmed);
-            navigate("/home", { replace: true });
+            navigate("/discovery", { replace: true });
         } catch (err) {
             setSubmitError(err.message || "Failed to set up username. Please try again.");
             if (err.suggestions && err.suggestions.length > 0) {

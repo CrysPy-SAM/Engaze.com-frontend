@@ -853,10 +853,10 @@ export default function LandingPage() {
     const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    // If user is already authenticated, take them straight to the main app feed
+    // If user is already authenticated, take them straight to discovery
     useEffect(() => {
         if (!authLoading && isAuthenticated) {
-            navigate("/home", { replace: true });
+            navigate("/discovery", { replace: true });
         }
     }, [authLoading, isAuthenticated, navigate]);
 
@@ -1226,7 +1226,7 @@ export default function LandingPage() {
                         "&:hover": { borderColor: "#0A8A42", backgroundColor: "rgba(10, 138, 66, 0.05)" },
                     }}
                 >
-                    Download Android App (.apk)
+                    Download Android App
                 </Button>
             </Drawer>
 
