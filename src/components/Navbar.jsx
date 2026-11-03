@@ -818,7 +818,7 @@ export default function Navbar({ hideBottomNav = false, hideTopNav = false, righ
                         justifyContent: "space-around",
                         zIndex: 1200,
                         pt: 1,
-                        pb: "max(12px, env(safe-area-inset-bottom))",
+                        pb: "max(12px, var(--safe-bottom, 0px))",
                         px: 1,
                         boxShadow: "0 -4px 24px rgba(0, 0, 0, 0.5)",
                     }}
