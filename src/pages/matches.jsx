@@ -497,7 +497,7 @@ function MatchesPage() {
     );
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#0A111C", pb: { xs: 12, md: 6 } }}>
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#0A111C", pb: { xs: "calc(var(--safe-bottom, 0px) + 84px)", md: 6 } }}>
             {/* Unified Brand Navigation with Search & More Options */}
             <Navbar rightActions={matchesRightActions} />
 
