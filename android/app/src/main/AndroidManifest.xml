@@ -33,9 +33,27 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!-- Firebase Cloud Messaging Push Service -->
+        <service
+            android:name=".EngazeFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- BroadcastReceiver for Incoming Call Actions (e.g. Decline) -->
+        <receiver
+            android:name=".CallActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.engaze.date.ACTION_DECLINE_CALL" />
+            </intent-filter>
+        </receiver>
     </application>
 
-    <!-- Permissions for Real-time Video Dating, Audio, Connectivity and Notifications -->
+    <!-- Permissions for Real-time Video Dating, Audio, Connectivity, Full-Screen Incoming Calls and Notifications -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -44,6 +62,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
 
     <!-- Optional Hardware Features for Maximum Device Compatibility -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
