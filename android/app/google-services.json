@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "920468905642",
+    "project_id": "engazedate",
+    "storage_bucket": "engazedate.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:920468905642:android:9ea7604a69011b7efbbad3",
+        "android_client_info": {
+          "package_name": "com.engaze.date"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFDyt2ob_qaACL-18CieknNn1eKG0SfO0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
