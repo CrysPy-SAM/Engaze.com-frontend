@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.RingtoneManager;
@@ -13,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
+import android.util.Log;
 import android.webkit.DownloadListener;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -25,10 +27,14 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.BridgeWebChromeClient;
+import com.google.firebase.messaging.FirebaseMessaging;
+import org.json.JSONObject;
 
 public class MainActivity extends BridgeActivity {
+    private static final String TAG = "MainActivity";
     private Dialog popupDialog = null;
     private static final int CALL_NOTIF_ID = 2001;
+    private String pendingActionJson = null;
 
     private boolean handleExternalUrl(String url) {
         if (url != null && (
@@ -188,6 +194,108 @@ public class MainActivity extends BridgeActivity {
                 e.printStackTrace();
             }
         }
+
+        @JavascriptInterface
+        public String getInitialAction() {
+            String action = pendingActionJson;
+            pendingActionJson = null;
+            return action;
+        }
+
+        @JavascriptInterface
+        public String getFcmToken() {
+            SharedPreferences prefs = getSharedPreferences(EngazeFirebaseMessagingService.PREFS_NAME, Context.MODE_PRIVATE);
+            return prefs.getString(EngazeFirebaseMessagingService.KEY_FCM_TOKEN, null);
+        }
+
+        @JavascriptInterface
+        public void refreshFcmToken() {
+            try {
+                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        String token = task.getResult();
+                        SharedPreferences prefs = getSharedPreferences(EngazeFirebaseMessagingService.PREFS_NAME, Context.MODE_PRIVATE);
+                        prefs.edit().putString(EngazeFirebaseMessagingService.KEY_FCM_TOKEN, token).apply();
+                        notifyWebviewToken(token);
+                    }
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Error refreshing FCM token", e);
+            }
+        }
+    }
+
+    private String extractIntentPayload(Intent intent) {
+        if (intent == null) return null;
+        String route = intent.getStringExtra("route");
+        String action = intent.getStringExtra("action");
+        String callId = intent.getStringExtra("callId");
+        String callerId = intent.getStringExtra("callerId");
+        String callerName = intent.getStringExtra("callerName");
+        String callerPhoto = intent.getStringExtra("callerPhoto");
+        String callType = intent.getStringExtra("callType");
+        String conversationId = intent.getStringExtra("conversationId");
+
+        if (route == null && action == null && callId == null && conversationId == null) {
+            return null;
+        }
+
+        try {
+            JSONObject json = new JSONObject();
+            if (action != null) json.put("action", action);
+            if (route != null) json.put("route", route);
+            if (callId != null) json.put("callId", callId);
+            if (callerId != null) json.put("callerId", callerId);
+            if (callerName != null) json.put("callerName", callerName);
+            if (callerPhoto != null) json.put("callerPhoto", callerPhoto);
+            if (callType != null) json.put("callType", callType);
+            if (conversationId != null) json.put("conversationId", conversationId);
+            return json.toString();
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to serialize intent payload", e);
+            return null;
+        }
+    }
+
+    private void notifyWebviewToken(String token) {
+        if (token == null) return;
+        try {
+            WebView webView = this.bridge != null ? this.bridge.getWebView() : null;
+            if (webView != null) {
+                webView.post(() -> {
+                    String script = "window.dispatchEvent(new CustomEvent('nativeFcmToken', { detail: { token: '" + token + "' } }));";
+                    webView.evaluateJavascript(script, null);
+                });
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to dispatch nativeFcmToken event", e);
+        }
+    }
+
+    private void dispatchPendingAction(String payload) {
+        if (payload == null) return;
+        try {
+            WebView webView = this.bridge != null ? this.bridge.getWebView() : null;
+            if (webView != null) {
+                webView.post(() -> {
+                    String script = "window.dispatchEvent(new CustomEvent('nativeNotificationAction', { detail: " + payload + " }));";
+                    webView.evaluateJavascript(script, null);
+                });
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to dispatch nativeNotificationAction event", e);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String payload = extractIntentPayload(intent);
+        if (payload != null) {
+            pendingActionJson = payload;
+            dispatchPendingAction(payload);
+        }
     }
 
     @Override
@@ -195,6 +303,21 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
 
         createNotificationChannels();
+
+        pendingActionJson = extractIntentPayload(getIntent());
+
+        try {
+            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    String token = task.getResult();
+                    SharedPreferences prefs = getSharedPreferences(EngazeFirebaseMessagingService.PREFS_NAME, Context.MODE_PRIVATE);
+                    prefs.edit().putString(EngazeFirebaseMessagingService.KEY_FCM_TOKEN, token).apply();
+                    notifyWebviewToken(token);
+                }
+            });
+        } catch (Exception e) {
+            Log.w(TAG, "FCM proactive token fetch exception: " + e.getMessage());
+        }
 
         WebView mainWebView = this.bridge.getWebView();
         WebSettings mainSettings = mainWebView.getSettings();
