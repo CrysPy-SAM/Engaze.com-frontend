@@ -279,8 +279,59 @@ export const AuthProvider = ({ children }) => {
         }
     }, [router]);
 
+    // 2b. REGISTER FCM DEVICE TOKEN
+    const registerDeviceToken = useCallback(async (deviceToken) => {
+        if (!deviceToken) return;
+        try {
+            await api.post("/users/device-token", {
+                token: deviceToken,
+                platform: "android",
+            });
+            console.log("[FCM] Device token registered with backend successfully");
+        } catch (err) {
+            console.warn("[FCM] Failed to register device token with backend:", err.message);
+        }
+    }, []);
+
+    // Proactive FCM token registration on session establishment
+    useEffect(() => {
+        if (!token) return;
+
+        if (typeof window !== "undefined" && window.EngazeNativeNotifications) {
+            if (typeof window.EngazeNativeNotifications.getFcmToken === "function") {
+                const currentToken = window.EngazeNativeNotifications.getFcmToken();
+                if (currentToken) {
+                    registerDeviceToken(currentToken);
+                }
+            }
+            if (typeof window.EngazeNativeNotifications.refreshFcmToken === "function") {
+                window.EngazeNativeNotifications.refreshFcmToken();
+            }
+        }
+
+        const onFcmTokenRefreshed = (e) => {
+            const refreshedToken = e.detail?.token;
+            if (refreshedToken) {
+                registerDeviceToken(refreshedToken);
+            }
+        };
+
+        window.addEventListener("nativeFcmToken", onFcmTokenRefreshed);
+        return () => {
+            window.removeEventListener("nativeFcmToken", onFcmTokenRefreshed);
+        };
+    }, [token, registerDeviceToken]);
+
     // 3. LOGOUT
     const handleLogout = useCallback(() => {
+        if (typeof window !== "undefined" && window.EngazeNativeNotifications?.getFcmToken) {
+            try {
+                const currentToken = window.EngazeNativeNotifications.getFcmToken();
+                if (currentToken) {
+                    api.delete("/users/device-token", { data: { token: currentToken } }).catch(() => {});
+                }
+            } catch (ignored) {}
+        }
         localStorage.removeItem("token");
         cachedIceServers = null;
         cachedIceServersExpiry = 0;
