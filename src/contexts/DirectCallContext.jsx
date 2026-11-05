@@ -158,6 +158,9 @@ export const DirectCallProvider = ({ children }) => {
     const remoteStreamRef = useRef(null);
     const pendingCandidatesRef = useRef([]);
     const callSessionRef = useRef(null);
+    const callStateRef = useRef(callState);
+    callStateRef.current = callState;
+    const pendingAcceptCallRef = useRef(null);
     const timerRef = useRef(null);
     const autoCloseTimeoutRef = useRef(null);
     const activeChatConvIdRef = useRef(null);
@@ -479,6 +482,9 @@ export const DirectCallProvider = ({ children }) => {
         }
     }, [acquireLocalMedia, createPeerConnection, closePeerConnection, stopLocalMedia]);
 
+    const acceptDirectCallRef = useRef(acceptDirectCall);
+    acceptDirectCallRef.current = acceptDirectCall;
+
     // -------------------------------------------------------------
     // 3. DECLINE INCOMING CALL (Callee Action)
     // -------------------------------------------------------------
@@ -516,6 +522,79 @@ export const DirectCallProvider = ({ children }) => {
         setCallState("ended");
         scheduleAutoClose(1800);
     }, [scheduleAutoClose]);
+
+    // -------------------------------------------------------------
+    // Native Android Notification Action Handler (Accept / Open)
+    // -------------------------------------------------------------
+    const handleNativeAction = useCallback((actionData) => {
+        if (!actionData || !actionData.callId) return;
+
+        if (actionData.action === "accept") {
+            const newSession = {
+                callId: actionData.callId,
+                role: "callee",
+                partner: {
+                    _id: actionData.callerId,
+                    name: actionData.callerName || "Engaze Match",
+                    photos: actionData.callerPhoto ? [actionData.callerPhoto] : [],
+                },
+                conversationId: actionData.conversationId || null,
+                callType: actionData.callType || "video",
+            };
+
+            setCallSession(newSession);
+            callSessionRef.current = newSession;
+
+            if (socketRef.current && socketRef.current.connected) {
+                acceptDirectCall();
+            } else {
+                pendingAcceptCallRef.current = newSession;
+            }
+        } else if (actionData.action === "incoming") {
+            const newSession = {
+                callId: actionData.callId,
+                role: "callee",
+                partner: {
+                    _id: actionData.callerId,
+                    name: actionData.callerName || "Engaze Match",
+                    photos: actionData.callerPhoto ? [actionData.callerPhoto] : [],
+                },
+                conversationId: actionData.conversationId || null,
+                callType: actionData.callType || "video",
+            };
+            setCallSession(newSession);
+            callSessionRef.current = newSession;
+            setCallState("incoming_ringing");
+            setStatusMessage(`Incoming call from ${actionData.callerName || "someone"}...`);
+            ringtone.startRing("incoming");
+        }
+    }, [acceptDirectCall]);
+
+    // Poll once on mount for initial action from Android intent & listen for background intents
+    useEffect(() => {
+        if (typeof window !== "undefined" && window.EngazeNativeNotifications?.getInitialAction) {
+            try {
+                const initialStr = window.EngazeNativeNotifications.getInitialAction();
+                if (initialStr) {
+                    const parsed = JSON.parse(initialStr);
+                    handleNativeAction(parsed);
+                }
+            } catch (e) {
+                console.warn("[DirectCall] Error parsing initial action:", e);
+            }
+        }
+
+        const onNativeAction = (e) => {
+            if (e.detail) {
+                handleNativeAction(e.detail);
+            }
+        };
+
+        window.addEventListener("nativeNotificationAction", onNativeAction);
+        return () => {
+            window.removeEventListener("nativeNotificationAction", onNativeAction);
+        };
+    }, [handleNativeAction]);
 
     // -------------------------------------------------------------
     // 5. MEDIA CONTROLS (Mute / Camera Toggle)
@@ -626,6 +705,10 @@ export const DirectCallProvider = ({ children }) => {
         const bindSocketEvents = (socket) => {
 
         socket.on("connect", () => {
+            if (pendingAcceptCallRef.current && acceptDirectCallRef.current) {
+                acceptDirectCallRef.current();
+                pendingAcceptCallRef.current = null;
+            }
             if (getUnreadChatCount) {
                 getUnreadChatCount().catch(() => {});
             }
@@ -747,7 +830,12 @@ export const DirectCallProvider = ({ children }) => {
         });
 
         // 1. INCOMING CALL EVENT (Callee received call from partner)
-        socket.on("call:incoming", ({ callId, caller, conversationId }) => {
+        socket.on("call:incoming", ({ callId, caller, conversationId, callType }) => {
+            // Check if already accepting or connected to this call session
+            if (callSessionRef.current?.callId === callId && (callStateRef.current === "connecting" || callStateRef.current === "connected")) {
+                return;
+            }
+
             // Trigger Android Native Incoming Call Heads-up & Ringtone notification
             if (typeof window !== "undefined" && window.EngazeNativeNotifications?.showCall) {
                 window.EngazeNativeNotifications.showCall(caller?.name || "Match", callId);
