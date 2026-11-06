@@ -125,30 +125,49 @@ jobs:
           ENGAZE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           ENGAZE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Verify Generated APK
+      - name: Verify Generated APK Artifact & Metadata
         run: |
           APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
           if [ ! -f "$APK_PATH" ]; then
             echo "::error::Build artifact app-debug.apk was not found!"
             exit 1
           fi
+
           FILESIZE=$(wc -c < "$APK_PATH")
           echo "APK generated successfully. Size: $FILESIZE bytes"
-          if [ "$FILESIZE" -lt 1000000 ]; then
-            echo "::error::Generated APK is suspiciously small ($FILESIZE bytes). Aborting release."
+          if [ "$FILESIZE" -lt 10000000 ]; then
+            echo "::error::Generated APK is suspiciously small ($FILESIZE bytes, expected >= 10MB). Aborting release."
             exit 1
           fi
 
-          # Verify Package ID in Gradle metadata
+          # Verify Package ID, versionCode, and versionName in Gradle metadata
           META_PATH="android/app/build/outputs/apk/debug/output-metadata.json"
-          if [ -f "$META_PATH" ]; then
-            APP_ID=$(node -e 'const m = require("./" + process.env.META_PATH); console.log(m.applicationId);' 2>/dev/null || echo "")
-            if [ "$APP_ID" != "com.engaze.date" ]; then
-              echo "::error::Package ID mismatch! Expected com.engaze.date, got '$APP_ID'"
-              exit 1
-            fi
-            echo "Verified Package ID: $APP_ID"
+          if [ ! -f "$META_PATH" ]; then
+            echo "::error::Gradle output metadata file $META_PATH was not found!"
+            exit 1
           fi
+
+          APP_ID=$(node -e 'const m = require("./" + process.env.META_PATH); console.log(m.applicationId);')
+          BUILD_CODE=$(node -e 'const m = require("./" + process.env.META_PATH); console.log(m.elements[0].versionCode);')
+          BUILD_NAME=$(node -e 'const m = require("./" + process.env.META_PATH); console.log(m.elements[0].versionName);')
+
+          if [ "$APP_ID" != "com.engaze.date" ]; then
+            echo "::error::Package ID mismatch! Expected com.engaze.date, got '$APP_ID'"
+            exit 1
+          fi
+
+          if [ -n "${{ env.TARGET_VERSION_CODE }}" ] && [ "$BUILD_CODE" != "${{ env.TARGET_VERSION_CODE }}" ]; then
+            echo "::error::versionCode mismatch! Expected ${{ env.TARGET_VERSION_CODE }}, got $BUILD_CODE"
+            exit 1
+          fi
+
+          echo "=================================================="
+          echo " Verified APK Artifact & Gradle Metadata:"
+          echo "   Package ID   : $APP_ID"
+          echo "   Version Name : $BUILD_NAME"
+          echo "   Version Code : $BUILD_CODE"
+          echo "   File Size    : $FILESIZE bytes"
+          echo "=================================================="
         env:
           META_PATH: android/app/build/outputs/apk/debug/output-metadata.json
 
