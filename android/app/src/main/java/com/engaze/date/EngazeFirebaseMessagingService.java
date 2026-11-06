@@ -6,6 +6,13 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -13,9 +20,19 @@ import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.Person;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.IconCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EngazeFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "EngazeFCM";
@@ -27,6 +44,25 @@ public class EngazeFirebaseMessagingService extends FirebaseMessagingService {
 
     public static final int CALL_NOTIF_ID = 2001;
     public static final int MISSED_CALL_BASE_ID = 3000;
+
+    // Cache recent messages per conversation for WhatsApp-style compact MessagingStyle stacking
+    private static final Map<String, List<MessageRecord>> conversationHistory = new ConcurrentHashMap<>();
+
+    public static class MessageRecord {
+        public final String text;
+        public final long timestamp;
+
+        public MessageRecord(String text, long timestamp) {
+            this.text = text;
+            this.timestamp = timestamp;
+        }
+    }
+
+    public static void clearConversationHistory(String conversationId) {
+        if (conversationId != null) {
+            conversationHistory.remove(conversationId);
+        }
+    }
 
     @Override
     public void onNewToken(@NonNull String token) {
@@ -84,7 +120,7 @@ public class EngazeFirebaseMessagingService extends FirebaseMessagingService {
                 manager.createNotificationChannel(msgChannel);
             }
 
-            // 2. Incoming Video Calls Channel (Ringtone + Max Importance)
+            // 2. Incoming Video & Audio Calls Channel (Ringtone + Max Importance)
             NotificationChannel callChannel = manager.getNotificationChannel(CHANNEL_CALLS);
             if (callChannel == null) {
                 callChannel = new NotificationChannel(
@@ -106,6 +142,62 @@ public class EngazeFirebaseMessagingService extends FirebaseMessagingService {
                 manager.createNotificationChannel(callChannel);
             }
         }
+    }
+
+    public static Bitmap getCircularBitmap(Bitmap bitmap) {
+        if (bitmap == null) return null;
+        try {
+            int size = Math.min(bitmap.getWidth(), bitmap.getHeight());
+            Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(output);
+            Paint paint = new Paint();
+            paint.setAntiAlias(true);
+            paint.setFilterBitmap(true);
+            Rect srcRect = new Rect((bitmap.getWidth() - size) / 2, (bitmap.getHeight() - size) / 2,
+                                    (bitmap.getWidth() + size) / 2, (bitmap.getHeight() + size) / 2);
+            Rect dstRect = new Rect(0, 0, size, size);
+            canvas.drawARGB(0, 0, 0, 0);
+            canvas.drawCircle(size / 2f, size / 2f, size / 2f, paint);
+            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+            canvas.drawBitmap(bitmap, srcRect, dstRect, paint);
+            return output;
+        } catch (Exception e) {
+            return bitmap;
+        }
+    }
+
+    public static Bitmap fetchBitmapFromUrl(String urlStr) {
+        if (urlStr == null || urlStr.trim().isEmpty() || !urlStr.startsWith("http")) {
+            return null;
+        }
+        try {
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoInput(true);
+            conn.setConnectTimeout(2500);
+            conn.setReadTimeout(2500);
+            conn.connect();
+            InputStream input = conn.getInputStream();
+            Bitmap raw = BitmapFactory.decodeStream(input);
+            input.close();
+            conn.disconnect();
+            if (raw != null) {
+                return getCircularBitmap(raw);
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Could not fetch avatar: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private Bitmap getBrandBitmap() {
+        try {
+            Bitmap raw = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            if (raw != null) {
+                return getCircularBitmap(raw);
+            }
+        } catch (Exception ignored) {}
+        return null;
     }
 
     private void handleIncomingCall(Map<String, String> data) {
@@ -182,21 +274,50 @@ public class EngazeFirebaseMessagingService extends FirebaseMessagingService {
 
         Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 
+        Bitmap callerBitmap = fetchBitmapFromUrl(callerPhoto);
+        if (callerBitmap == null) {
+            callerBitmap = getBrandBitmap();
+        }
+
         String callTypeLabel = "audio".equalsIgnoreCase(callType) ? "Audio" : "Video";
+        String statusText = "Incoming " + callTypeLabel.toLowerCase() + " call...";
+
+        Person.Builder callerPersonBuilder = new Person.Builder()
+            .setName(callerName)
+            .setKey(callerId != null ? callerId : callId);
+        if (callerBitmap != null) {
+            callerPersonBuilder.setIcon(IconCompat.createWithBitmap(callerBitmap));
+        }
+        Person callerPerson = callerPersonBuilder.build();
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_CALLS)
-            .setSmallIcon(android.R.drawable.ic_menu_call)
-            .setContentTitle("Incoming " + callTypeLabel + " Call 📞")
-            .setContentText(callerName + " is calling you on Engaze...")
+            .setSmallIcon(R.drawable.ic_notification_call)
+            .setColor(ContextCompat.getColor(this, R.color.notification_color))
+            .setContentTitle(callerName)
+            .setContentText(statusText)
+            .setSubText("Engaze Call")
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setSound(ringtoneUri)
             .setVibrate(new long[]{0, 1000, 500, 1000, 500, 1000, 500, 1000})
-            .setAutoCancel(true)
             .setOngoing(true)
+            .setAutoCancel(false)
             .setFullScreenIntent(fullScreenPendingIntent, true)
-            .setContentIntent(fullScreenPendingIntent)
-            .addAction(android.R.drawable.ic_menu_call, "Accept", acceptPendingIntent)
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Decline", declinePendingIntent);
+            .setContentIntent(fullScreenPendingIntent);
+
+        if (callerBitmap != null) {
+            builder.setLargeIcon(callerBitmap);
+        }
+
+        // On modern Android (API 31+), CallStyle provides the official system incoming call layout
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setStyle(
+                NotificationCompat.CallStyle.forIncomingCall(callerPerson, declinePendingIntent, acceptPendingIntent)
+            );
+        } else {
+            builder.addAction(R.drawable.ic_call_decline, "Decline", declinePendingIntent)
+                   .addAction(R.drawable.ic_call_accept, "Accept", acceptPendingIntent);
+        }
 
         manager.notify(CALL_NOTIF_ID, builder.build());
     }
@@ -210,8 +331,10 @@ public class EngazeFirebaseMessagingService extends FirebaseMessagingService {
 
         String reason = data.get("reason");
         String callId = data.get("callId");
+        String callerName = data.get("callerName");
+        String callType = data.get("callType");
 
-        // If the call was missed, show a missed call notification
+        // If the call was missed, show a clean missed call notification
         if ("missed".equalsIgnoreCase(reason) || "timeout".equalsIgnoreCase(reason)) {
             ensureChannels();
 
@@ -225,13 +348,25 @@ public class EngazeFirebaseMessagingService extends FirebaseMessagingService {
             openAppIntent.putExtra("route", "/chat");
             PendingIntent openPendingIntent = PendingIntent.getActivity(this, 1004, openAppIntent, pFlags);
 
+            String title = (callerName != null && !callerName.trim().isEmpty()) ? callerName : "Missed Call";
+            String callLabel = "audio".equalsIgnoreCase(callType) ? "audio" : "video";
+            String text = "Missed " + callLabel + " call";
+
             NotificationCompat.Builder missedBuilder = new NotificationCompat.Builder(this, CHANNEL_MESSAGES)
-                .setSmallIcon(android.R.drawable.ic_menu_call)
-                .setContentTitle("Missed Call 📞")
-                .setContentText("You missed an incoming call on Engaze.")
+                .setSmallIcon(R.drawable.ic_notification_call)
+                .setColor(ContextCompat.getColor(this, R.color.call_decline_color))
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSubText("Missed Call")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_MISSED_CALL)
                 .setAutoCancel(true)
                 .setContentIntent(openPendingIntent);
+
+            Bitmap brandBitmap = getBrandBitmap();
+            if (brandBitmap != null) {
+                missedBuilder.setLargeIcon(brandBitmap);
+            }
 
             int missedId = MISSED_CALL_BASE_ID + (callId != null ? Math.abs(callId.hashCode() % 1000) : 1);
             manager.notify(missedId, missedBuilder.build());
@@ -240,7 +375,9 @@ public class EngazeFirebaseMessagingService extends FirebaseMessagingService {
 
     private void handleChatMessage(Map<String, String> data) {
         String conversationId = data.get("conversationId");
+        String senderId = data.get("senderId");
         String senderName = data.get("senderName");
+        String senderPhoto = data.get("senderPhoto");
         String content = data.get("content");
 
         if (senderName == null || senderName.trim().isEmpty()) {
@@ -266,24 +403,62 @@ public class EngazeFirebaseMessagingService extends FirebaseMessagingService {
         if (conversationId != null) {
             chatIntent.putExtra("conversationId", conversationId);
         }
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-            this,
-            conversationId != null ? Math.abs(conversationId.hashCode()) : (int) System.currentTimeMillis(),
-            chatIntent,
-            pFlags
-        );
+        int reqCode = conversationId != null ? Math.abs(conversationId.hashCode()) : 1005;
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, reqCode, chatIntent, pFlags);
+
+        Bitmap senderAvatar = fetchBitmapFromUrl(senderPhoto);
+        if (senderAvatar == null) {
+            senderAvatar = getBrandBitmap();
+        }
+
+        // Person representing recipient ("You") and sender
+        Person userPerson = new Person.Builder().setName("You").build();
+        Person.Builder senderPersonBuilder = new Person.Builder()
+            .setName(senderName)
+            .setKey(senderId != null ? senderId : conversationId);
+        if (senderAvatar != null) {
+            senderPersonBuilder.setIcon(IconCompat.createWithBitmap(senderAvatar));
+        }
+        Person senderPerson = senderPersonBuilder.build();
+
+        // Manage multi-message history per conversation for WhatsApp-style compact MessagingStyle stacking
+        String convKey = conversationId != null ? conversationId : "default_conv";
+        List<MessageRecord> history = conversationHistory.computeIfAbsent(convKey, k -> Collections.synchronizedList(new ArrayList<>()));
+        synchronized (history) {
+            history.add(new MessageRecord(content, System.currentTimeMillis()));
+            while (history.size() > 5) {
+                history.remove(0);
+            }
+        }
+
+        NotificationCompat.MessagingStyle messagingStyle = new NotificationCompat.MessagingStyle(userPerson)
+            .setConversationTitle(null) // 1-on-1 chat: shows sender name as header
+            .setGroupConversation(false);
+
+        synchronized (history) {
+            for (MessageRecord msg : history) {
+                messagingStyle.addMessage(msg.text, msg.timestamp, senderPerson);
+            }
+        }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_MESSAGES)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setColor(ContextCompat.getColor(this, R.color.notification_color))
+            .setStyle(messagingStyle)
             .setContentTitle(senderName)
             .setContentText(content)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setAutoCancel(true)
-            .setContentIntent(pendingIntent);
+            .setContentIntent(pendingIntent)
+            .setGroup("engaze_chat_group");
+
+        if (senderAvatar != null) {
+            builder.setLargeIcon(senderAvatar);
+        }
 
         int notifId = conversationId != null ? Math.abs(conversationId.hashCode()) : (int) System.currentTimeMillis();
         manager.notify(notifId, builder.build());
     }
 }
-
