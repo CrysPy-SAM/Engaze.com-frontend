@@ -24,3 +24,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Keystore & Signing Secrets
+*.jks
+*.keystore
+*.p12
+*.signing
+*keystore*base64*
