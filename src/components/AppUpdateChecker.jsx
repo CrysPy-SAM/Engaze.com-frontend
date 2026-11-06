@@ -8,11 +8,9 @@ import {
     Stack,
     Chip,
     Fade,
-    LinearProgress,
 } from "@mui/material";
 import SystemUpdateRoundedIcon from "@mui/icons-material/SystemUpdateRounded";
 import RocketLaunchRoundedIcon from "@mui/icons-material/RocketLaunchRounded";
-import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
 import { Capacitor } from "@capacitor/core";
 import { App } from "@capacitor/app";
 import axios from "axios";
@@ -66,9 +64,6 @@ export async function getInstalledVersionInfo() {
 export default function AppUpdateChecker() {
     const [updateInfo, setUpdateInfo] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [downloadStatus, setDownloadStatus] = useState("idle"); // idle | downloading | completed | error
-    const [downloadProgress, setDownloadProgress] = useState(0);
-    const [downloadError, setDownloadError] = useState(null);
     const [installedVerName, setInstalledVerName] = useState(versionInfo.versionName || "1.0.3");
 
     const lastCheckTimeRef = useRef(0);
@@ -169,52 +164,29 @@ export default function AppUpdateChecker() {
         };
     }, [checkForUpdate]);
 
-    // Listen to native Android APK download progress events
-    useEffect(() => {
-        window.onUpdateDownloadProgress = (percent) => {
-            setDownloadStatus("downloading");
-            setDownloadProgress(percent);
-        };
-
-        window.onUpdateDownloadComplete = () => {
-            setDownloadStatus("completed");
-            setDownloadProgress(100);
-        };
-
-        window.onUpdateDownloadError = (msg) => {
-            setDownloadStatus("error");
-            setDownloadError(msg || "Download failed. Please check your network connection.");
-        };
-
-        return () => {
-            delete window.onUpdateDownloadProgress;
-            delete window.onUpdateDownloadComplete;
-            delete window.onUpdateDownloadError;
-        };
-    }, []);
-
     if (!updateInfo) return null;
 
     const handleUpdateClick = () => {
-        setDownloadStatus("downloading");
-        setDownloadProgress(0);
-        setDownloadError(null);
+        let url = updateInfo?.apkDownloadUrl || "https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest/download/Engaze.apk";
+        if (!url.startsWith("https://")) {
+            url = "https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest/download/Engaze.apk";
+        }
 
-        // 1. Native background downloader with progress & FileProvider install
-        if (window.EngazeAppUpdater && typeof window.EngazeAppUpdater.startDownload === "function") {
+        // 1. Native bridge to open system browser directly
+        if (window.EngazeNativeNotifications && typeof window.EngazeNativeNotifications.openBrowser === "function") {
             try {
-                window.EngazeAppUpdater.startDownload(updateInfo.apkDownloadUrl);
+                window.EngazeNativeNotifications.openBrowser(url);
                 return;
             } catch (err) {
-                console.error("[AppUpdateChecker] Native startDownload exception:", err);
+                console.warn("[AppUpdateChecker] EngazeNativeNotifications.openBrowser failed:", err);
             }
         }
 
         // 2. Direct browser intent fallback
         try {
-            window.location.href = updateInfo.apkDownloadUrl;
+            window.open(url, "_system");
         } catch {
-            window.open(updateInfo.apkDownloadUrl, "_system");
+            window.location.href = url;
         }
     };
 
@@ -222,11 +194,11 @@ export default function AppUpdateChecker() {
         <Dialog
             open={dialogOpen}
             onClose={() => {
-                if (!updateInfo.isForced && downloadStatus !== "downloading") {
+                if (!updateInfo.isForced) {
                     setDialogOpen(false);
                 }
             }}
-            disableEscapeKeyDown={updateInfo.isForced || downloadStatus === "downloading"}
+            disableEscapeKeyDown={updateInfo.isForced}
             TransitionComponent={Fade}
             PaperProps={{
                 sx: {
@@ -302,69 +274,11 @@ export default function AppUpdateChecker() {
                     {updateInfo.releaseNotes}
                 </Typography>
 
-                {/* Download Progress Bar */}
-                {downloadStatus === "downloading" && (
-                    <Box sx={{ mb: 2.5 }}>
-                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.8 }}>
-                            <Typography variant="caption" sx={{ color: "#94A3B8", fontWeight: 700 }}>
-                                Downloading Engaze.apk...
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: "#FD3A73", fontWeight: 800 }}>
-                                {downloadProgress}%
-                            </Typography>
-                        </Box>
-                        <LinearProgress
-                            variant="determinate"
-                            value={downloadProgress}
-                            sx={{
-                                height: 8,
-                                borderRadius: 4,
-                                bgcolor: "rgba(255, 255, 255, 0.08)",
-                                "& .MuiLinearProgress-bar": {
-                                    borderRadius: 4,
-                                    background: "linear-gradient(90deg, #FD3A73 0%, #FF7A00 100%)",
-                                },
-                            }}
-                        />
-                    </Box>
-                )}
-
-                {/* Download Completed Notification */}
-                {downloadStatus === "completed" && (
-                    <Typography variant="body2" sx={{ color: "#10B981", fontWeight: 700, mb: 2 }}>
-                        ✓ Download complete. Opening installer...
-                    </Typography>
-                )}
-
-                {/* Error Banner */}
-                {downloadStatus === "error" && (
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                            bgcolor: "rgba(239, 68, 68, 0.12)",
-                            border: "1px solid rgba(239, 68, 68, 0.3)",
-                            borderRadius: "12px",
-                            p: 1.2,
-                            mb: 2,
-                            color: "#EF4444",
-                            textAlign: "left",
-                        }}
-                    >
-                        <ErrorOutlineRoundedIcon sx={{ fontSize: 20 }} />
-                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                            {downloadError}
-                        </Typography>
-                    </Box>
-                )}
-
                 {/* Actions */}
                 <Stack spacing={1.2}>
                     <Button
                         fullWidth
                         variant="contained"
-                        disabled={downloadStatus === "downloading"}
                         onClick={handleUpdateClick}
                         sx={{
                             height: 50,
@@ -378,16 +292,12 @@ export default function AppUpdateChecker() {
                             "&:active": {
                                 transform: "scale(0.98)",
                             },
-                            "&.Mui-disabled": {
-                                background: "rgba(255, 255, 255, 0.12)",
-                                color: "rgba(255, 255, 255, 0.4)",
-                            },
                         }}
                     >
-                        {downloadStatus === "error" ? "Retry Update" : downloadStatus === "downloading" ? "Downloading..." : "Update Now"}
+                        Update Now
                     </Button>
 
-                    {!updateInfo.isForced && downloadStatus !== "downloading" && (
+                    {!updateInfo.isForced && (
                         <Button
                             fullWidth
                             variant="text"
