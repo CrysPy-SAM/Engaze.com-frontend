@@ -3,6 +3,7 @@ import {
     formatFileSize,
     parseUploadError,
     executePhotoUploadFlow,
+    normalizePhotoContentType,
     ALLOWED_IMAGE_TYPES,
     ALLOWED_EXTENSIONS,
     MAX_PHOTO_BYTES,
@@ -139,6 +140,28 @@ describe("Photo Upload Engine & Safety Tests (Prompt 14.3)", () => {
         });
     });
 
+    describe("3b. Content-Type Normalization for Mobile WebViews & S3 Parity", () => {
+        test("normalizes valid MIME types properly", () => {
+            expect(normalizePhotoContentType({ type: "image/jpeg" })).toBe("image/jpeg");
+            expect(normalizePhotoContentType({ type: "image/png" })).toBe("image/png");
+            expect(normalizePhotoContentType({ type: "image/webp" })).toBe("image/webp");
+        });
+
+        test("normalizes mobile edge-case variants such as image/jpg, uppercase, and charset parameters", () => {
+            expect(normalizePhotoContentType({ type: "image/jpg" })).toBe("image/jpeg");
+            expect(normalizePhotoContentType({ type: "IMAGE/JPEG" })).toBe("image/jpeg");
+            expect(normalizePhotoContentType({ type: "image/jpeg; charset=utf-8" })).toBe("image/jpeg");
+            expect(normalizePhotoContentType({ type: "IMAGE/PNG; charset=binary" })).toBe("image/png");
+        });
+
+        test("infers MIME type from filename extension when file.type is empty or missing", () => {
+            expect(normalizePhotoContentType({ name: "my_camera_pic.jpg", type: "" })).toBe("image/jpeg");
+            expect(normalizePhotoContentType({ name: "screenshot.png", type: "" })).toBe("image/png");
+            expect(normalizePhotoContentType({ name: "avatar.webp", type: undefined })).toBe("image/webp");
+            expect(normalizePhotoContentType(null)).toBe("image/jpeg");
+        });
+    });
+
     describe("4. Upload Flow Orchestration & Safety Guarantees", () => {
         const validFile = {
             name: "profile.jpg",
@@ -191,7 +214,8 @@ describe("Photo Upload Engine & Safety Tests (Prompt 14.3)", () => {
             expect(mockUploadBinary).toHaveBeenCalledWith(
                 mockAuthData.uploadUrl,
                 validFile,
-                expect.any(Function)
+                expect.any(Function),
+                "image/jpeg"
             );
             expect(mockConfirm).toHaveBeenCalledWith({
                 key: mockAuthData.key,
@@ -208,6 +232,38 @@ describe("Photo Upload Engine & Safety Tests (Prompt 14.3)", () => {
             expect(result.success).toBe(true);
             expect(result.photos).toEqual([mockAuthData.publicUrl]);
             expect(result.publicUrl).toBe(mockAuthData.publicUrl);
+        });
+
+        test("guarantees identical normalized Content-Type is passed to both requestUploadUrlFn and uploadBinaryFn", async () => {
+            const edgeCaseFile = {
+                name: "photo.png",
+                type: "IMAGE/PNG; charset=utf-8",
+                size: 1024 * 100,
+            };
+            const mockRequestUrl = jest.fn().mockResolvedValue({ data: mockAuthData });
+            const mockUploadBinary = jest.fn().mockResolvedValue({ ok: true });
+            const mockConfirm = jest.fn().mockResolvedValue({
+                data: { success: true, photos: ["url"], publicUrl: "url" },
+            });
+
+            await executePhotoUploadFlow({
+                file: edgeCaseFile,
+                requestUploadUrlFn: mockRequestUrl,
+                uploadBinaryFn: mockUploadBinary,
+                confirmUploadFn: mockConfirm,
+            });
+
+            // Step 1 requested URL with normalized MIME
+            expect(mockRequestUrl).toHaveBeenCalledWith(
+                expect.objectContaining({ contentType: "image/png" })
+            );
+            // Step 2 binary upload received the exact same normalized MIME
+            expect(mockUploadBinary).toHaveBeenCalledWith(
+                mockAuthData.uploadUrl,
+                edgeCaseFile,
+                expect.any(Function),
+                "image/png"
+            );
         });
 
         test("stops immediately on client validation error before network call", async () => {

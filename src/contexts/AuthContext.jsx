@@ -496,12 +496,16 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // 5e. UPLOAD PHOTO BINARY TO PROVIDER
-    const uploadPhotoBinary = useCallback(async (uploadUrl, file, onProgress) => {
+    const uploadPhotoBinary = useCallback(async (uploadUrl, file, onProgress, expectedContentType) => {
         try {
+            // Determine exact Content-Type, ensuring parity with presigned URL authorization
+            const rawType = (expectedContentType || file?.type || "image/jpeg").toLowerCase().split(";")[0].trim();
+            const normalizedContentType = rawType === "image/jpg" ? "image/jpeg" : (rawType || "image/jpeg");
+
             // Use axios directly so the api Authorization interceptor is bypassed for storage providers (S3/R2)
             const response = await axios.put(uploadUrl, file, {
                 headers: {
-                    "Content-Type": file.type || "application/octet-stream",
+                    "Content-Type": normalizedContentType,
                 },
                 onUploadProgress: (progressEvent) => {
                     if (onProgress && progressEvent.total) {

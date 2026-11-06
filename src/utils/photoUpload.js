@@ -51,6 +51,30 @@ export function validatePhotoFile(file) {
 }
 
 /**
+ * Normalize and resolve the authoritative Content-Type for an image file.
+ * Handles edge cases across web and mobile WebViews (e.g. image/jpg, empty file.type, uppercase, charset params)
+ * to ensure exact character-for-character consistency between presigned URL generation and binary PUT upload.
+ *
+ * @param {File|Blob|object} file
+ * @returns {string} Normalized MIME type (image/jpeg, image/png, or image/webp)
+ */
+export function normalizePhotoContentType(file) {
+    if (!file) return "image/jpeg";
+    const rawType = (file.type || "").trim().toLowerCase();
+    if (rawType.startsWith("image/")) {
+        const baseType = rawType.split(";")[0].trim();
+        if (baseType === "image/jpg") return "image/jpeg";
+        if (ALLOWED_IMAGE_TYPES.includes(baseType)) return baseType;
+    }
+
+    // Extension-based inference if MIME type is missing or generic
+    const fileName = (file.name || "").toLowerCase();
+    if (fileName.endsWith(".png")) return "image/png";
+    if (fileName.endsWith(".webp")) return "image/webp";
+    return "image/jpeg";
+}
+
+/**
  * Format bytes into human-readable string.
  *
  * @param {number} bytes
@@ -165,11 +189,12 @@ export async function executePhotoUploadFlow({
     }
 
     // Step 1: Request signed upload authorization from backend
+    const normalizedContentType = normalizePhotoContentType(file);
     let authData;
     try {
         const response = await requestUploadUrlFn({
             filename: file.name || "photo.jpg",
-            contentType: file.type || "image/jpeg",
+            contentType: normalizedContentType,
             fileSize: file.size,
             targetIndex: targetIndex !== undefined && targetIndex !== null ? Number(targetIndex) : undefined,
         });
@@ -202,7 +227,8 @@ export async function executePhotoUploadFlow({
                     const overall = 25 + Math.round((percent * 60) / 100);
                     onProgress(Math.min(overall, 85));
                 }
-            }
+            },
+            normalizedContentType
         );
     } catch (err) {
         const parsed = parseUploadError(err);
