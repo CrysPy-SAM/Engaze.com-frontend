@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -24,6 +26,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.Person;
 import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.BridgeWebChromeClient;
@@ -127,15 +130,39 @@ public class MainActivity extends BridgeActivity {
                 }
                 PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, (int) System.currentTimeMillis(), intent, flags);
 
-                int notifId = (int) System.currentTimeMillis();
+                Bitmap brandBitmap = null;
+                try {
+                    Bitmap raw = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+                    brandBitmap = EngazeFirebaseMessagingService.getCircularBitmap(raw);
+                } catch (Exception ignored) {}
+
+                String safeSender = (senderName != null && !senderName.trim().isEmpty()) ? senderName.trim() : "New Message";
+                String safeText = (messageText != null && !messageText.trim().isEmpty()) ? messageText.trim() : "You have a new message";
+
+                Person userPerson = new Person.Builder().setName("You").build();
+                Person senderPerson = new Person.Builder().setName(safeSender).build();
+
+                NotificationCompat.MessagingStyle messagingStyle = new NotificationCompat.MessagingStyle(userPerson)
+                    .setConversationTitle(null)
+                    .setGroupConversation(false)
+                    .addMessage(safeText, System.currentTimeMillis(), senderPerson);
+
+                int notifId = (conversationId != null) ? Math.abs(conversationId.hashCode()) : (int) System.currentTimeMillis();
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, "engaze_messages")
-                    .setSmallIcon(android.R.drawable.ic_dialog_info)
-                    .setContentTitle(senderName != null && !senderName.isEmpty() ? senderName : "New Message")
-                    .setContentText(messageText != null && !messageText.isEmpty() ? messageText : "You have a new message")
+                    .setSmallIcon(R.drawable.ic_notification)
+                    .setColor(ContextCompat.getColor(MainActivity.this, R.color.notification_color))
+                    .setStyle(messagingStyle)
+                    .setContentTitle(safeSender)
+                    .setContentText(safeText)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                     .setDefaults(NotificationCompat.DEFAULT_ALL)
                     .setAutoCancel(true)
                     .setContentIntent(pendingIntent);
+
+                if (brandBitmap != null) {
+                    builder.setLargeIcon(brandBitmap);
+                }
 
                 manager.notify(notifId, builder.build());
             } catch (Exception e) {
@@ -164,10 +191,20 @@ public class MainActivity extends BridgeActivity {
 
                 Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 
+                Bitmap brandBitmap = null;
+                try {
+                    Bitmap raw = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+                    brandBitmap = EngazeFirebaseMessagingService.getCircularBitmap(raw);
+                } catch (Exception ignored) {}
+
+                String safeCaller = (callerName != null && !callerName.trim().isEmpty()) ? callerName.trim() : "Someone";
+
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, "engaze_calls")
-                    .setSmallIcon(android.R.drawable.ic_menu_call)
-                    .setContentTitle("Incoming Video Call 📞")
-                    .setContentText((callerName != null && !callerName.isEmpty() ? callerName : "Someone") + " is video calling you...")
+                    .setSmallIcon(R.drawable.ic_notification_call)
+                    .setColor(ContextCompat.getColor(MainActivity.this, R.color.notification_color))
+                    .setContentTitle(safeCaller)
+                    .setContentText("Incoming video call...")
+                    .setSubText("Engaze Call")
                     .setPriority(NotificationCompat.PRIORITY_MAX)
                     .setCategory(NotificationCompat.CATEGORY_CALL)
                     .setSound(ringtoneUri)
@@ -176,6 +213,10 @@ public class MainActivity extends BridgeActivity {
                     .setOngoing(true)
                     .setFullScreenIntent(pendingIntent, true)
                     .setContentIntent(pendingIntent);
+
+                if (brandBitmap != null) {
+                    builder.setLargeIcon(brandBitmap);
+                }
 
                 manager.notify(CALL_NOTIF_ID, builder.build());
             } catch (Exception e) {
