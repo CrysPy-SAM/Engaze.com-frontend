@@ -4,9 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version tag (e.g. v1.0.2)'
+        description: 'Release version name (e.g. 1.0.3 - leave blank to auto-use version.json)'
         required: false
-        default: 'v1.0.2'
+        default: '1.0.3'
+      version_code:
+        description: 'Android versionCode (integer, e.g. 4 - leave blank to auto-use version.json)'
+        required: false
+        default: '4'
+      release_notes:
+        description: 'Release notes to show in app update popup'
+        required: false
+        default: 'WhatsApp-style incoming call and message notifications, custom app icon, and performance improvements.'
 
 permissions:
   contents: write
@@ -15,11 +23,13 @@ jobs:
   build-android:
     name: Build Android APK
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Java 21
         uses: actions/setup-java@v4
@@ -36,6 +46,61 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Verify Signing Secrets Configured
+        run: |
+          if [ -z "${{ secrets.ENGAZE_KEYSTORE_BASE64 }}" ] || [ -z "${{ secrets.KEYSTORE_PASSWORD }}" ] || [ -z "${{ secrets.KEY_ALIAS }}" ] || [ -z "${{ secrets.KEY_PASSWORD }}" ]; then
+            echo "::error::CRITICAL: ENGAZE_KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, or KEY_PASSWORD secret is missing from repository secrets! Aborting to prevent signing mismatch."
+            exit 1
+          fi
+
+      - name: Decode Persistent Keystore
+        run: |
+          mkdir -p android/app/keystores
+          echo "${{ secrets.ENGAZE_KEYSTORE_BASE64 }}" | base64 -d > android/app/keystores/engaze-release.jks
+          if [ ! -s "android/app/keystores/engaze-release.jks" ]; then
+            echo "::error::Failed to decode engaze-release.jks or keystore file is empty!"
+            exit 1
+          fi
+
+      - name: Synchronize and Validate Version
+        id: versioning
+        run: |
+          node -e '
+            const fs = require("fs");
+            let vData = { versionName: "1.0.3", versionCode: 4, minSupportedVersionCode: 1 };
+            try {
+              if (fs.existsSync("./version.json")) {
+                vData = Object.assign(vData, JSON.parse(fs.readFileSync("./version.json", "utf-8")));
+              }
+            } catch (e) {
+              console.warn("Notice: Using default version baseline:", e.message);
+            }
+
+            let inputVer = "${{ github.event.inputs.version }}".trim().replace(/^v/i, "");
+            let inputCode = parseInt("${{ github.event.inputs.version_code }}".trim(), 10);
+
+            let finalVersionName = inputVer || vData.versionName || "1.0.3";
+            let finalVersionCode = !isNaN(inputCode) && inputCode > 0 ? inputCode : (vData.versionCode || 4);
+
+            console.log("=========================================");
+            console.log(` Target Version Name : ${finalVersionName}`);
+            console.log(` Target Version Code : ${finalVersionCode}`);
+            console.log("=========================================");
+
+            vData.versionName = finalVersionName;
+            vData.versionCode = finalVersionCode;
+
+            fs.writeFileSync("./version.json", JSON.stringify(vData, null, 2) + "\n");
+            if (fs.existsSync("./src")) {
+              fs.writeFileSync("./src/version.json", JSON.stringify(vData, null, 2) + "\n");
+            }
+
+            const envFile = process.env.GITHUB_ENV;
+            fs.appendFileSync(envFile, `TARGET_VERSION_NAME=${finalVersionName}\n`);
+            fs.appendFileSync(envFile, `TARGET_VERSION_CODE=${finalVersionCode}\n`);
+            fs.appendFileSync(envFile, `TARGET_TAG=v${finalVersionName}\n`);
+          '
+
       - name: Build React production bundle
         run: npm run build
         env:
@@ -49,44 +114,117 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x android/gradlew
 
-      - name: Build Android Debug APK
+      - name: Build Android APK with Persistent Signature
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug -PversionCode=${{ env.TARGET_VERSION_CODE }} -PversionName=${{ env.TARGET_VERSION_NAME }} --no-daemon
+        env:
+          CI: true
+          ENGAZE_KEYSTORE_PATH: keystores/engaze-release.jks
+          ENGAZE_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ENGAZE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          ENGAZE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Verify Generated APK
+        run: |
+          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          if [ ! -f "$APK_PATH" ]; then
+            echo "::error::Build artifact app-debug.apk was not found!"
+            exit 1
+          fi
+          FILESIZE=$(wc -c < "$APK_PATH")
+          echo "APK generated successfully. Size: $FILESIZE bytes"
+          if [ "$FILESIZE" -lt 1000000 ]; then
+            echo "::error::Generated APK is suspiciously small ($FILESIZE bytes). Aborting release."
+            exit 1
+          fi
+
+          # Verify Package ID in Gradle metadata
+          META_PATH="android/app/build/outputs/apk/debug/output-metadata.json"
+          if [ -f "$META_PATH" ]; then
+            APP_ID=$(node -e 'const m = require("./" + process.env.META_PATH); console.log(m.applicationId);' 2>/dev/null || echo "")
+            if [ "$APP_ID" != "com.engaze.date" ]; then
+              echo "::error::Package ID mismatch! Expected com.engaze.date, got '$APP_ID'"
+              exit 1
+            fi
+            echo "Verified Package ID: $APP_ID"
+          fi
+        env:
+          META_PATH: android/app/build/outputs/apk/debug/output-metadata.json
+
+      - name: Verify APK Signing Certificate Identity
+        run: |
+          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          node -e '
+            const fs = require("fs");
+            const crypto = require("crypto");
+            const EXPECTED_SHA256 = "04:CA:D7:6B:10:14:E3:34:F9:26:88:5A:D1:12:78:BA:21:04:6D:A1:52:16:5B:29:D0:68:7C:9A:43:77:F9:D1";
+            const buf = fs.readFileSync("'$APK_PATH'");
+            let found = false;
+            for (let i = 0; i < buf.length - 1000; i++) {
+              if (buf[i] === 0x30 && buf[i+1] === 0x82) {
+                const len = (buf[i+2] << 8) | buf[i+3];
+                if (len > 300 && len < 2500) {
+                  try {
+                    const certDer = buf.subarray(i, i + 4 + len);
+                    const x509 = new crypto.X509Certificate(certDer);
+                    const actualSha256 = x509.fingerprint256.toUpperCase().trim();
+                    if (actualSha256 === EXPECTED_SHA256) {
+                      console.log("==================================================");
+                      console.log(" Verified Permanent Engaze Certificate SHA-256:");
+                      console.log("   " + actualSha256);
+                      console.log(" Subject: " + x509.subject);
+                      console.log("==================================================");
+                      found = true;
+                      break;
+                    }
+                  } catch (e) {}
+                }
+              }
+            }
+            if (!found) {
+              console.error("::error::CRITICAL: APK signature verification failed! APK does NOT match the required permanent SHA-256 fingerprint: " + EXPECTED_SHA256);
+              process.exit(1);
+            }
+          '
+
+      - name: Secure Cleanup of Keystore File
+        if: always()
+        run: |
+          if [ -f "android/app/keystores/engaze-release.jks" ]; then
+            rm -f "android/app/keystores/engaze-release.jks"
+            echo "Temporary keystore file securely wiped from runner disk."
+          fi
+
+      - name: Prepare Release APK
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Engaze.apk
 
       - name: Upload Android APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Engaze-Android-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: Engaze-Android-APK-${{ env.TARGET_TAG }}
+          path: android/app/build/outputs/apk/debug/Engaze.apk
           retention-days: 14
-
-      - name: Prepare APK for Release
-        run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Engaze.apk
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         if: success()
         with:
-          tag_name: ${{ github.event.inputs.version || 'v1.0.0' }}
-          name: "Engaze Android App ${{ github.event.inputs.version || 'v1.0.0' }}"
+          tag_name: ${{ env.TARGET_TAG }}
+          name: "Engaze Android App ${{ env.TARGET_TAG }}"
           body: |
-            ## 📱 Engaze Android App
-            
+            ## 📱 Engaze Android App ${{ env.TARGET_TAG }}
+            <!-- versionCode: ${{ env.TARGET_VERSION_CODE }} -->
+
             ### ✨ What's New:
-            - **Google Sign-In**: Fixed authentication popup & account selection
-            - **Native Mobile Experience**: 100dvh mobile dating UI (Tinder / Bumble style)
-            - **Edge-to-Edge Chat**: Notch & safe-area navigation padding
-            - **In-App Updates**: Automatic update notification for future releases
-            - **Video Dating**: Real-time 1-on-1 video calling
-            
-            ### 📥 Download:
-            Download **Engaze.apk** below to install directly on your Android phone.
+            ${{ github.event.inputs.release_notes || 'WhatsApp-style call and message push notifications, custom brand icon, and performance improvements.' }}
+
+            ### 📥 Download & In-App Update:
+            Download **Engaze.apk** below to install directly on your Android phone, or open Engaze to update automatically.
           draft: false
           prerelease: false
           files: |
             android/app/build/outputs/apk/debug/Engaze.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
