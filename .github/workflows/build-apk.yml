@@ -117,7 +117,7 @@ jobs:
       - name: Build Android APK with Persistent Signature
         run: |
           cd android
-          ./gradlew assembleDebug -PversionCode=${{ env.TARGET_VERSION_CODE }} -PversionName=${{ env.TARGET_VERSION_NAME }} --no-daemon
+          ./gradlew assembleRelease -PversionCode=${{ env.TARGET_VERSION_CODE }} -PversionName=${{ env.TARGET_VERSION_NAME }} --no-daemon
         env:
           CI: true
           ENGAZE_KEYSTORE_PATH: keystores/engaze-release.jks
@@ -127,9 +127,9 @@ jobs:
 
       - name: Verify Generated APK Artifact & Metadata
         run: |
-          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
           if [ ! -f "$APK_PATH" ]; then
-            echo "::error::Build artifact app-debug.apk was not found!"
+            echo "::error::Build artifact app-release.apk was not found!"
             exit 1
           fi
 
@@ -141,7 +141,7 @@ jobs:
           fi
 
           # Verify Package ID, versionCode, and versionName in Gradle metadata
-          META_PATH="android/app/build/outputs/apk/debug/output-metadata.json"
+          META_PATH="android/app/build/outputs/apk/release/output-metadata.json"
           if [ ! -f "$META_PATH" ]; then
             echo "::error::Gradle output metadata file $META_PATH was not found!"
             exit 1
@@ -169,11 +169,11 @@ jobs:
           echo "   File Size    : $FILESIZE bytes"
           echo "=================================================="
         env:
-          META_PATH: android/app/build/outputs/apk/debug/output-metadata.json
+          META_PATH: android/app/build/outputs/apk/release/output-metadata.json
 
       - name: Verify APK Signing Certificate Identity
         run: |
-          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
           node -e '
             const fs = require("fs");
             const crypto = require("crypto");
@@ -217,13 +217,13 @@ jobs:
 
       - name: Prepare Release APK
         run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Engaze.apk
+          cp android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/Engaze.apk
 
       - name: Upload Android APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Engaze-Android-APK-${{ env.TARGET_TAG }}
-          path: android/app/build/outputs/apk/debug/Engaze.apk
+          path: android/app/build/outputs/apk/release/Engaze.apk
           retention-days: 14
 
       - name: Publish GitHub Release
@@ -244,6 +244,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            android/app/build/outputs/apk/debug/Engaze.apk
+            android/app/build/outputs/apk/release/Engaze.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
