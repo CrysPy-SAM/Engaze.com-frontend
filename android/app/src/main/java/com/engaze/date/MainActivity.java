@@ -24,20 +24,84 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.provider.Settings;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.Person;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.BridgeWebChromeClient;
 import com.google.firebase.messaging.FirebaseMessaging;
 import org.json.JSONObject;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends BridgeActivity {
     private static final String TAG = "MainActivity";
     private Dialog popupDialog = null;
     private static final int CALL_NOTIF_ID = 2001;
     private String pendingActionJson = null;
+    private final ExecutorService updateExecutor = Executors.newSingleThreadExecutor();
+    private File pendingInstallApk = null;
+
+    private void triggerApkInstallation(File apkFile) {
+        if (apkFile == null || !apkFile.exists()) return;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (!getPackageManager().canRequestPackageInstalls()) {
+                    pendingInstallApk = apkFile;
+                    Intent settingsIntent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:" + getPackageName()));
+                    settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(settingsIntent);
+                    return;
+                }
+            }
+
+            Uri apkUri = FileProvider.getUriForFile(
+                MainActivity.this,
+                getApplicationContext().getPackageName() + ".fileprovider",
+                apkFile
+            );
+
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to launch package installer: " + e.getMessage(), e);
+            try {
+                Intent fallback = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/CrysPy-SAM/Engaze.com-frontend/releases/latest/download/Engaze.apk"));
+                fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(fallback);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (pendingInstallApk != null && pendingInstallApk.exists()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (getPackageManager().canRequestPackageInstalls()) {
+                    File apk = pendingInstallApk;
+                    pendingInstallApk = null;
+                    triggerApkInstallation(apk);
+                }
+            } else {
+                File apk = pendingInstallApk;
+                pendingInstallApk = null;
+                triggerApkInstallation(apk);
+            }
+        }
+    }
 
     private boolean handleExternalUrl(String url) {
         if (url != null && (
@@ -328,6 +392,150 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
+    class AppUpdaterBridge {
+        @JavascriptInterface
+        public void startDownload(String apkUrl) {
+            Log.d(TAG, "[AppUpdaterBridge] startDownload requested for: " + apkUrl);
+            updateExecutor.execute(() -> {
+                HttpURLConnection conn = null;
+                InputStream in = null;
+                FileOutputStream out = null;
+                try {
+                    if (apkUrl == null || (!apkUrl.startsWith("https://github.com/") &&
+                                           !apkUrl.startsWith("https://objects.githubusercontent.com/") &&
+                                           !apkUrl.startsWith("https://enagaze-com-backend.onrender.com"))) {
+                        throw new SecurityException("Untrusted APK download source rejected.");
+                    }
+                    URL url = new URL(apkUrl);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setInstanceFollowRedirects(true);
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(30000);
+                    conn.setRequestProperty("User-Agent", "Engaze-Android-AppUpdater");
+
+                    int status = conn.getResponseCode();
+                    int redirectCount = 0;
+                    while ((status == HttpURLConnection.HTTP_MOVED_TEMP ||
+                            status == HttpURLConnection.HTTP_MOVED_PERM ||
+                            status == HttpURLConnection.HTTP_SEE_OTHER ||
+                            status == 307 || status == 308) && redirectCount < 5) {
+                        String newUrl = conn.getHeaderField("Location");
+                        conn.disconnect();
+                        url = new URL(newUrl);
+                        conn = (HttpURLConnection) url.openConnection();
+                        conn.setConnectTimeout(15000);
+                        conn.setReadTimeout(30000);
+                        conn.setRequestProperty("User-Agent", "Engaze-Android-AppUpdater");
+                        status = conn.getResponseCode();
+                        redirectCount++;
+                    }
+
+                    if (status != HttpURLConnection.HTTP_OK) {
+                        throw new Exception("HTTP server returned: " + status);
+                    }
+
+                    long contentLength = conn.getContentLengthLong();
+                    in = conn.getInputStream();
+
+                    File cacheDir = getExternalCacheDir();
+                    if (cacheDir == null) {
+                        cacheDir = getCacheDir();
+                    }
+                    File apkFile = new File(cacheDir, "Engaze_update.apk");
+                    if (apkFile.exists()) {
+                        apkFile.delete();
+                    }
+                    out = new FileOutputStream(apkFile);
+
+                    byte[] buffer = new byte[8192];
+                    long totalBytesRead = 0;
+                    int bytesRead;
+                    int lastProgress = -1;
+
+                    while ((bytesRead = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                        totalBytesRead += bytesRead;
+
+                        if (contentLength > 0) {
+                            int progress = (int) ((totalBytesRead * 100) / contentLength);
+                            if (progress != lastProgress) {
+                                lastProgress = progress;
+                                final int p = progress;
+                                final long current = totalBytesRead;
+                                final long total = contentLength;
+                                runOnUiThread(() -> {
+                                    if (bridge != null && bridge.getWebView() != null) {
+                                        bridge.getWebView().evaluateJavascript(
+                                            String.format("window.onUpdateDownloadProgress && window.onUpdateDownloadProgress(%d, %d, %d);", p, current, total),
+                                            null
+                                        );
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    out.flush();
+
+                    if (!apkFile.exists() || apkFile.length() < 1000000) {
+                        throw new Exception("Downloaded file is incomplete (" + apkFile.length() + " bytes)");
+                    }
+
+                    runOnUiThread(() -> {
+                        if (bridge != null && bridge.getWebView() != null) {
+                            bridge.getWebView().evaluateJavascript(
+                                "window.onUpdateDownloadComplete && window.onUpdateDownloadComplete();",
+                                null
+                            );
+                        }
+                        triggerApkInstallation(apkFile);
+                    });
+                } catch (Exception e) {
+                    Log.e(TAG, "[AppUpdaterBridge] Download error: " + e.getMessage(), e);
+                    final String safeErr = e.getMessage() != null ? e.getMessage().replace("'", "\\'") : "Download failed";
+                    runOnUiThread(() -> {
+                        if (bridge != null && bridge.getWebView() != null) {
+                            bridge.getWebView().evaluateJavascript(
+                                String.format("window.onUpdateDownloadError && window.onUpdateDownloadError('%s');", safeErr),
+                                null
+                            );
+                        }
+                    });
+                } finally {
+                    try { if (in != null) in.close(); } catch (Exception ignored) {}
+                    try { if (out != null) out.close(); } catch (Exception ignored) {}
+                    if (conn != null) conn.disconnect();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public boolean isNativeUpdaterSupported() {
+            return true;
+        }
+
+        @JavascriptInterface
+        public boolean canInstallUnknownSources() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                return getPackageManager().canRequestPackageInstalls();
+            }
+            return true;
+        }
+
+        @JavascriptInterface
+        public void openUnknownSourcesSettings() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                try {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:" + getPackageName()));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e(TAG, "Cannot open unknown sources settings: " + e.getMessage());
+                }
+            }
+        }
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -366,6 +574,7 @@ public class MainActivity extends BridgeActivity {
         mainSettings.setSupportMultipleWindows(true);
 
         mainWebView.addJavascriptInterface(new NativeNotificationBridge(), "EngazeNativeNotifications");
+        mainWebView.addJavascriptInterface(new AppUpdaterBridge(), "EngazeAppUpdater");
 
         DownloadListener downloadListener = (url, userAgent, contentDisposition, mimetype, contentLength) -> {
             try {
@@ -464,6 +673,9 @@ public class MainActivity extends BridgeActivity {
             popupDialog.dismiss();
             popupDialog = null;
         }
+        try {
+            updateExecutor.shutdown();
+        } catch (Exception ignored) {}
         super.onDestroy();
     }
 }
