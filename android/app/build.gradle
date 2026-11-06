@@ -1,4 +1,42 @@
 apply plugin: 'com.android.application'
+import groovy.json.JsonSlurper
+
+def versionFile = file('../../version.json')
+def parsedVer = [versionCode: 4, versionName: "1.0.3"]
+if (versionFile.exists()) {
+    try {
+        parsedVer = new JsonSlurper().parseText(versionFile.text)
+    } catch (Exception ignored) {}
+}
+
+def appVersionCode = project.hasProperty('versionCode') ?
+    project.property('versionCode').toInteger() :
+    (parsedVer.versionCode ? parsedVer.versionCode.toInteger() : 4)
+
+def appVersionName = project.hasProperty('versionName') ?
+    project.property('versionName').toString() :
+    (parsedVer.versionName ?: "1.0.3")
+
+def signingProps = new Properties()
+def envSigningFile = file('.env.signing')
+if (envSigningFile.exists()) {
+    envSigningFile.withInputStream { signingProps.load(it) }
+}
+
+def signingStoreFile = System.getenv("ENGAZE_KEYSTORE_PATH") ?:
+    signingProps.getProperty("ENGAZE_KEYSTORE_PATH") ?:
+    (file("engaze-release.jks").exists() ? "engaze-release.jks" : null)
+
+def signingStorePassword = System.getenv("ENGAZE_KEYSTORE_PASSWORD") ?:
+    signingProps.getProperty("ENGAZE_KEYSTORE_PASSWORD")
+
+def signingKeyAlias = System.getenv("ENGAZE_KEY_ALIAS") ?:
+    signingProps.getProperty("ENGAZE_KEY_ALIAS") ?: "engaze"
+
+def signingKeyPassword = System.getenv("ENGAZE_KEY_PASSWORD") ?:
+    signingProps.getProperty("ENGAZE_KEY_PASSWORD") ?: signingStorePassword
+
+def hasPersistentSigning = signingStoreFile != null && file(signingStoreFile).exists() && signingStorePassword != null
 
 android {
     namespace = "com.engaze.date"
@@ -7,8 +45,8 @@ android {
         applicationId "com.engaze.date"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode appVersionCode
+        versionName appVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +54,32 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasPersistentSigning) {
+            persistent {
+                storeFile file(signingStoreFile)
+                storePassword signingStorePassword
+                keyAlias signingKeyAlias
+                keyPassword signingKeyPassword
+                v1SigningEnabled true
+                v2SigningEnabled true
+            }
+        }
+    }
     buildTypes {
+        debug {
+            if (hasPersistentSigning) {
+                signingConfig signingConfigs.persistent
+            } else if (System.getenv("CI") == "true") {
+                throw new GradleException("CI Build Error: Persistent signing configuration is missing. Ephemeral debug keystore fallback is forbidden in CI.")
+            }
+        }
         release {
+            if (hasPersistentSigning) {
+                signingConfig signingConfigs.persistent
+            } else if (System.getenv("CI") == "true") {
+                throw new GradleException("CI Build Error: Persistent signing configuration is missing for release build. Ephemeral fallback is forbidden in CI.")
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
