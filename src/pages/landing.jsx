@@ -45,7 +45,6 @@ import VerifiedUserRoundedIcon from "@mui/icons-material/VerifiedUserRounded";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import AndroidRoundedIcon from "@mui/icons-material/AndroidRounded";
 
-// Hand-drawn SVG Doodles matching Sky Blue Hero styling
 const BurstLines = ({ sx = {}, rotation = 0, color = "#0A6CFF" }) => (
     <Box
         component="svg"
